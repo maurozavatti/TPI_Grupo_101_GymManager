@@ -296,3 +296,59 @@ CLIENTE
 
 ---
 
+# 4. Colección `turnos`
+
+Representa los horarios disponibles dentro del gimnasio y los clientes asignados a cada uno.
+
+### Estructura
+
+```text
+turnos
+│
+├── _id
+├── dia
+├── horaInicio
+├── horaFin
+├── capacidad
+├── entrenadorId
+├── clientes[]
+├── activo
+└── observaciones
+```
+
+### Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador único del turno. |
+| `dia` | String | Día de la semana. |
+| `horaInicio` | String | Hora de inicio. |
+| `horaFin` | String | Hora de finalización. |
+| `capacidad` | Number | Cantidad máxima de clientes. |
+| `entrenadorId` | ObjectId | Entrenador responsable del turno. |
+| `clientes` | Array<ObjectId> | Clientes asignados al turno. |
+| `activo` | Boolean | Indica si el turno está disponible. |
+| `observaciones` | String | Información adicional. |
+
+### Ejemplo
+
+```json
+{
+  "_id": "ObjectId",
+  "dia": "Lunes",
+  "horaInicio": "18:00",
+  "horaFin": "19:00",
+  "capacidad": 10,
+  "entrenadorId": "ObjectId",
+  "clientes": [
+    "ObjectId",
+    "ObjectId",
+    "ObjectId"
+  ],
+  "activo": true,
+  "observaciones": ""
+}
+```
+
+---
+
