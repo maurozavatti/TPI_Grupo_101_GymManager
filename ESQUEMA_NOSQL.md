@@ -424,10 +424,6 @@ Aunque MongoDB es una base de datos documental y permite almacenar información 
 
 ---
 
-> **Aclaración:** `rutinas` e `historiaClinica` no aparecen como colecciones independientes en el diagrama porque forman parte del documento `CLIENTES`.
-
----
-
 # Justificación del modelo documental
 
 La elección de MongoDB permite representar determinados datos como documentos embebidos, reduciendo la necesidad de separar información que pertenece directamente a una entidad.
