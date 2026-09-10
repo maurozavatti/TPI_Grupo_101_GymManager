@@ -406,3 +406,110 @@ pagos
 
 ---
 
+# Relaciones entre colecciones
+
+Aunque MongoDB es una base de datos documental y permite almacenar información relacionada dentro de un mismo documento, algunas relaciones se resuelven mediante referencias entre colecciones. A continuación se describe cada una, indicando su tipo de cardinalidad.
+
+**Usuario y Cliente.** Un usuario con rol `USUARIO` representa la cuenta de acceso de un cliente, y se vinculan de forma cruzada: el usuario guarda el `clienteId` del cliente que representa, y el cliente guarda el `usuarioId` de su cuenta (si tiene una). Es una relación **uno a uno**: una cuenta de usuario corresponde a un único cliente, y un cliente tiene, como máximo, una cuenta de usuario asociada.
+
+**Pago y Cliente.** Cada documento de `pagos` referencia a un único cliente a través de `clienteId`, pero un mismo cliente puede tener registrados muchos pagos a lo largo del tiempo (inscripción, cuotas sucesivas, etc.). Es una relación **uno a muchos**: un cliente puede tener muchos pagos, pero cada pago pertenece a un solo cliente.
+
+**Turno y Entrenador.** Cada `turno` referencia, mediante `entrenadorId`, al usuario (con rol `ENTRENADOR`) que lo dicta. Un mismo entrenador puede dictar varios turnos a lo largo de la semana. Es una relación **uno a muchos**: un entrenador puede tener muchos turnos asignados, pero cada turno tiene un único entrenador responsable.
+
+**Turno y Clientes.** Cada `turno` mantiene un arreglo `clientes[]` con los clientes anotados a ese horario, y un mismo cliente puede estar anotado a más de un turno (por ejemplo, si asiste varios días a la semana o a distintas clases). Es una relación **muchos a muchos**: varios clientes pueden compartir un turno, y un cliente puede pertenecer a varios turnos.
+
+**Rutina y Entrenador.** Cada rutina embebida dentro de un cliente referencia, mediante `entrenadorId`, al entrenador que la asignó. Un mismo entrenador puede haber asignado rutinas a muchos clientes distintos (y, a lo largo del tiempo, varias rutinas al mismo cliente). Es una relación **uno a muchos**: un entrenador puede estar asociado a muchas rutinas, pero cada rutina fue asignada por un único entrenador.
+
+**Rutina y Ejercicio.** Cada rutina contiene un arreglo `ejercicios[]` donde cada elemento referencia, mediante `ejercicioId`, a un ejercicio del catálogo. Un mismo ejercicio puede formar parte de muchas rutinas distintas (de distintos clientes, o de distintas rutinas del mismo cliente), y una rutina normalmente incluye varios ejercicios. Es una relación **muchos a muchos**: un ejercicio puede estar en muchas rutinas, y una rutina puede tener muchos ejercicios.
+
+---
+
+# Diagrama de relaciones
+
+```mermaid
+erDiagram
+
+    USUARIOS {
+        ObjectId _id
+        string nombre
+        string apellido
+        string email
+        string password
+        string rol
+        ObjectId clienteId
+        boolean activo
+        date fechaCreacion
+        date fechaModificacion
+        date fechaBaja
+    }
+
+    CLIENTES {
+        ObjectId _id
+        string nombre
+        string apellido
+        string dni
+        date fechaNacimiento
+        string telefono
+        string email
+        ObjectId usuarioId
+        array rutinas
+        object historiaClinica
+        boolean activo
+        date fechaCreacion
+        date fechaModificacion
+        date fechaBaja
+    }
+
+    EJERCICIOS {
+        ObjectId _id
+        string codigo
+        string nombre
+        string descripcion
+        string grupoMuscular
+        boolean activo
+        date fechaCreacion
+        date fechaModificacion
+        date fechaBaja
+    }
+
+    TURNOS {
+        ObjectId _id
+        string dia
+        string horaInicio
+        string horaFin
+        int capacidad
+        ObjectId entrenadorId
+        array clientes
+        boolean activo
+    }
+
+    PAGOS {
+        ObjectId _id
+        ObjectId clienteId
+        string tipo
+        number monto
+        date fechaPago
+        date fechaVencimiento
+        string estado
+    }
+
+    USUARIOS ||--o| CLIENTES : "representa"
+    CLIENTES ||--o{ PAGOS : "realiza"
+    USUARIOS ||--o{ TURNOS : "administra como entrenador"
+    CLIENTES }o--o{ TURNOS : "asignado"
+    CLIENTES }o--o{ EJERCICIOS : "utiliza en rutina"
+```
+
+> **Aclaración:** `rutinas` e `historiaClinica` no aparecen como colecciones independientes en el diagrama porque forman parte del documento `CLIENTES`.
+
+---
+
+# Justificación del modelo documental
+
+La elección de MongoDB permite representar determinados datos como documentos embebidos, reduciendo la necesidad de separar información que pertenece directamente a una entidad.
+
+En particular, las **rutinas del cliente** se almacenarán dentro de `clientes`, ya que sus ejercicios, series, repeticiones, peso y observaciones forman parte de la información correspondiente a ese cliente.
+
+También se utilizará un documento embebido para la **historia clínica básica**, manteniendo esta información asociada directamente al cliente y aplicando controles de acceso según el rol.
+
+Por otro lado, se mantienen como colecciones independientes los ejercicios, turnos y pagos debido a que son elementos que pueden ser reutilizados o registrados múltiples veces.
