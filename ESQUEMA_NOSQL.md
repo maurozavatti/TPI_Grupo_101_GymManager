@@ -352,3 +352,57 @@ turnos
 
 ---
 
+# 5. Colección `pagos`
+
+Registra los pagos realizados por los clientes.
+
+Para el MVP se contemplan principalmente dos tipos de pago:
+
+- Inscripción inicial.
+- Cuota periódica.
+
+### Estructura
+
+```text
+pagos
+│
+├── _id
+├── clienteId
+├── tipo
+├── monto
+├── fechaPago
+├── fechaVencimiento
+├── estado
+└── observaciones
+```
+
+### Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador único del pago. |
+| `clienteId` | ObjectId | Cliente al que corresponde el pago. |
+| `tipo` | String | `INSCRIPCION` o `CUOTA`. |
+| `monto` | Number | Importe del pago. |
+| `fechaPago` | Date | Fecha en la que se realizó el pago. |
+| `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
+| `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
+| `observaciones` | String | Información adicional. |
+
+### Ejemplo
+
+```json
+{
+  "_id": "ObjectId",
+  "clienteId": "ObjectId",
+  "tipo": "CUOTA",
+  "monto": 25000,
+  "fechaPago": "2026-09-01",
+  "fechaVencimiento": "2026-10-01",
+  "estado": "PAGADO",
+  "observaciones": ""
+}
+```
+
+---
+
