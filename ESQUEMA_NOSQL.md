@@ -245,3 +245,54 @@ El acceso a esta información estará restringido según el rol del usuario.
 
 ---
 
+# 3. Colección `ejercicios`
+
+Contiene el catálogo general de ejercicios disponibles para que los entrenadores puedan crear las rutinas.
+
+### Estructura
+
+```text
+ejercicios
+│
+├── _id
+├── codigo
+├── nombre
+├── descripcion
+├── grupoMuscular
+├── activo
+├── fechaCreacion
+├── fechaModificacion
+└── fechaBaja (opcional)
+```
+
+### Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador interno generado por MongoDB. |
+| `codigo` | String | Identificador legible del ejercicio (por ejemplo, `EJ-0001`), usado para referenciarlo de forma más clara que con el `_id`. |
+| `nombre` | String | Nombre del ejercicio. |
+| `descripcion` | String | Descripción general. |
+| `grupoMuscular` | String | Grupo muscular trabajado. |
+| `activo` | Boolean | Permite realizar eliminación lógica. |
+| `fechaCreacion` | Date | Fecha en la que se dio de alta el ejercicio. |
+| `fechaModificacion` | Date | Fecha de la última modificación. |
+| `fechaBaja` | Date / null | Fecha en la que se dio de baja el ejercicio (`null` si sigue activo). |
+
+Los ejercicios serán referenciados desde las rutinas mediante `ejercicioId`.
+
+```text
+CLIENTE
+   │
+   └── rutinas[]
+         │
+         └── ejercicios[]
+                  │
+                  └── ejercicioId
+                         │
+                         ▼
+                    EJERCICIOS
+```
+
+---
+
