@@ -47,3 +47,44 @@ Administra el alta, modificación y baja de los clientes del gimnasio, con o sin
 - Edición de datos personales y de contacto.
 - Baja lógica de clientes (`activo`, `fechaBaja`).
 - Vinculación de un cliente sin cuenta con una cuenta nueva, si decide registrarse más adelante.
+
+---
+
+## 3. Catálogo de Ejercicios
+
+Administra el catálogo genérico de ejercicios que los entrenadores usan para armar rutinas.
+
+**Colecciones:** `ejercicios`.
+
+**Funcionalidades principales:**
+- Alta, modificación y baja lógica de ejercicios.
+- Identificación de cada ejercicio por `codigo` (además del `_id` de Mongo).
+- Búsqueda y filtrado (por ejemplo, por grupo muscular).
+
+---
+
+## 4. Rutinas
+
+Gestiona la creación y asignación de rutinas de entrenamiento a los clientes, con historial acotado.
+
+**Colecciones / subdocumentos:** `clientes.rutinas[]`, con referencias a `ejercicios`.
+
+**Funcionalidades principales:**
+- Creación de una rutina seleccionando ejercicios del catálogo (series, repeticiones, peso, orden, observaciones).
+- Asignación de la rutina a un cliente.
+- Al asignar una rutina nueva, baja lógica de la anterior (`activo: false`, `fechaBaja`) y límite de historial de 12 rutinas por cliente.
+- Consulta de la rutina vigente desde el perfil del cliente.
+- Impresión de la rutina para clientes sin cuenta.
+
+---
+
+## 5. Historia Clínica
+
+Gestiona la información básica de salud del cliente.
+
+**Colecciones / subdocumentos:** `clientes.historiaClinica`.
+
+**Funcionalidades principales:**
+- Carga inicial de antecedentes al registrarse (clientes con cuenta).
+- Actualización de lesiones si el cliente sufre una nueva.
+- Acceso restringido: solo Administrador y Entrenador pueden consultarla, no es visible para otros clientes.
