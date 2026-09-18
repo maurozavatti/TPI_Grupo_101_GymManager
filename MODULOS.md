@@ -88,3 +88,30 @@ Gestiona la información básica de salud del cliente.
 - Carga inicial de antecedentes al registrarse (clientes con cuenta).
 - Actualización de lesiones si el cliente sufre una nueva.
 - Acceso restringido: solo Administrador y Entrenador pueden consultarla, no es visible para otros clientes.
+
+---
+
+## 6. Turnos
+
+Gestiona los horarios de clase y la asignación de clientes a cada uno.
+
+**Colecciones:** `turnos`, con referencias a `clientes` y `usuarios` (entrenador).
+
+**Funcionalidades principales:**
+- Alta de turnos (día, horario, cupo máximo).
+- Asignación de un entrenador responsable.
+- Asignación y baja de clientes a un turno, respetando el cupo.
+- Consulta del turno asignado desde el perfil del cliente.
+
+---
+
+## 7. Pagos
+
+Registra y hace seguimiento de los pagos de los clientes.
+
+**Colecciones:** `pagos`, con referencia a `clientes`.
+
+**Funcionalidades principales:**
+- Registro de inscripción inicial y cuotas periódicas.
+- Registro de fecha de pago y fecha de vencimiento.
+- Consulta del estado de pago por cliente (`PAGADO`, `PENDIENTE`, `VENCIDO`).
