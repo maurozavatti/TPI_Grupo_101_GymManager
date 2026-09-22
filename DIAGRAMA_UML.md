@@ -8,7 +8,7 @@ El diseño detallado y la definición de los campos se encuentran en `ESQUEMA_NO
 
 También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_UML.PNG`:
 
-![Diagrama UML del modelo NoSQL](DIAGRAMA_UML.PNG)
+![Diagrama UML del modelo NoSQL](DIAGRAMA_UML.png)
 
 ### Cómo leer el diagrama
 
