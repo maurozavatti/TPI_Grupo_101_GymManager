@@ -1,3 +1,33 @@
+## Diagrama UML del modelo NoSQL
+
+El siguiente diagrama UML representa visualmente la estructura definida para el modelo NoSQL de **Gym Manager**. Su objetivo es facilitar la lectura de las colecciones, los documentos embebidos y las referencias entre ellos.
+
+El diseño detallado y la definición de los campos se encuentran en `ESQUEMA_NOSQL.md`.
+
+### Visualización
+
+También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_UML.PNG`:
+
+![Diagrama UML del modelo NoSQL](DIAGRAMA_UML.PNG)
+
+### Cómo leer el diagrama
+
+* Las clases marcadas como `<<collection>>` representan las **colecciones principales de MongoDB**.
+* Las clases marcadas como `<<embedded>>` representan **documentos embebidos** dentro de otra colección. No son colecciones independientes.
+* Las relaciones con **rombo negro (`*--`)** representan composición y se utilizan para mostrar los documentos que forman parte de otro documento.
+* Las relaciones con **líneas simples (`--`)** representan referencias entre documentos, generalmente mediante `ObjectId`.
+* Las relaciones con **flecha (`-->` o `<--`)** permiten identificar el sentido de la referencia.
+* Las multiplicidades (`1`, `0..1`, `0..*`, `1..*`, etc.) indican cuántos elementos pueden relacionarse entre sí.
+* Las clases marcadas como `<<enumeration>>` representan **valores posibles de determinados campos** y no colecciones de MongoDB.
+* Las relaciones punteadas (`..>`) indican que una colección utiliza una de estas enumeraciones como tipo de un campo.
+
+De esta forma, el diagrama permite distinguir visualmente entre:
+
+1. **Colecciones principales** de MongoDB.
+2. **Documentos embebidos** dentro de otras colecciones.
+3. **Referencias mediante `ObjectId`** entre documentos.
+4. **Enumeraciones** utilizadas para limitar los valores de determinados campos.
+
 ### Diagrama
 
 ```mermaid
