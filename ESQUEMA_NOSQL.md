@@ -383,7 +383,7 @@ pagos
 | `_id` | ObjectId | Identificador único del pago. |
 | `clienteId` | ObjectId | Cliente al que corresponde el pago. |
 | `tipo` | String | `INSCRIPCION` o `CUOTA`. |
-| `monto` | Number | Importe del pago. |
+| `monto` | Decimal128 | Importe del pago. Se usa `Decimal128` en lugar de `Number` para evitar errores de precisión al operar con montos de dinero (los `Number` de MongoDB usan punto flotante, que no es exacto para cálculos monetarios). |
 | `fechaPago` | Date | Fecha en la que se realizó el pago. |
 | `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
 | `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
@@ -396,13 +396,15 @@ pagos
   "_id": "ObjectId",
   "clienteId": "ObjectId",
   "tipo": "CUOTA",
-  "monto": 25000,
+  "monto": 25000.00,
   "fechaPago": "2026-09-01",
   "fechaVencimiento": "2026-10-01",
   "estado": "PAGADO",
   "observaciones": ""
 }
 ```
+
+> **Nota:** en el JSON de ejemplo, `monto` se muestra como string solo para representar el valor; en MongoDB se almacena con el tipo BSON `Decimal128`.
 
 ---
 

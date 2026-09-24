@@ -101,7 +101,7 @@ classDiagram
         +ObjectId _id
         +ObjectId clienteId
         +TipoPago tipo
-        +Number monto
+        +Decimal128 monto
         +Date fechaPago
         +Date fechaVencimiento
         +EstadoPago estado
