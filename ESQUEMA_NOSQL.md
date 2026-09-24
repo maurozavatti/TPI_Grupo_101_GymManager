@@ -406,6 +406,22 @@ pagos
 
 ---
 
+# Índices únicos
+
+Para garantizar la integridad de los datos, se definen los siguientes índices únicos a nivel de base de datos (no solo validados desde el backend):
+
+| Colección | Campo | Tipo de índice | Motivo |
+|---|---|---|---|
+| `usuarios` | `email` | Único | No puede haber dos cuentas con el mismo correo de acceso. |
+| `usuarios` | `clienteId` | Único (sparse) | Garantiza que un mismo cliente no quede vinculado a más de una cuenta de usuario. Es `sparse` porque no todos los usuarios tienen `clienteId` (los `ADMIN`/`ENTRENADOR`, no). |
+| `clientes` | `dni` | Único | No puede haber dos clientes registrados con el mismo documento de identidad. |
+| `clientes` | `usuarioId` | Único (sparse) | Garantiza que una misma cuenta de usuario no quede vinculada a más de un cliente. Es `sparse` porque no todos los clientes tienen cuenta. |
+| `ejercicios` | `codigo` | Único | El código legible de cada ejercicio (por ejemplo `EJ-0001`) debe ser irrepetible dentro del catálogo. |
+
+Los índices únicos y `sparse` sobre `usuarios.clienteId` y `clientes.usuarioId` son, en conjunto, los que garantizan a nivel de base de datos que la relación entre `usuarios` y `clientes` sea efectivamente **uno a uno** (ver sección de relaciones más abajo), y no solo una convención documentada.
+
+---
+
 # Relaciones entre colecciones
 
 Aunque MongoDB es una base de datos documental y permite almacenar información relacionada dentro de un mismo documento, algunas relaciones se resuelven mediante referencias entre colecciones. A continuación se describe cada una, indicando su tipo de cardinalidad.
