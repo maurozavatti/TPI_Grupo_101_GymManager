@@ -106,6 +106,7 @@ classDiagram
         +Date fechaVencimiento
         +EstadoPago estado
         +String observaciones
+        +ObjectId usuarioRegistroId
     }
 
 

@@ -376,6 +376,7 @@ pagos
 ├── fechaVencimiento
 ├── estado
 └── observaciones
+└── usuarioRegistroId
 ```
 
 ### Campos
@@ -390,6 +391,7 @@ pagos
 | `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
 | `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
 | `observaciones` | String | Información adicional. |
+| `usuarioRegistroId` | ObjectId | Referencia al usuario (`ADMIN` o `ENTRENADOR`) que registró el pago, para poder auditar quién lo cargó. |
 
 ### Ejemplo
 
@@ -403,6 +405,7 @@ pagos
   "fechaVencimiento": "2026-10-01",
   "estado": "PAGADO",
   "observaciones": ""
+  "usuarioRegistroId": "ObjectId"
 }
 ```
 
