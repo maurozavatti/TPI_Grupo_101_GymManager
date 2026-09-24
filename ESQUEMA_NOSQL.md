@@ -300,6 +300,8 @@ CLIENTE
 
 Representa los horarios disponibles dentro del gimnasio y los clientes asignados a cada uno.
 
+**Aclaración sobre `dia`, `horaInicio` y `horaFin`:** los turnos del MVP son **recurrentes semanales** (por ejemplo, "Lunes 18:00 a 19:00" se repite todas las semanas mientras el turno esté `activo`), no clases puntuales con una fecha específica. Por eso el documento no tiene un campo `fecha`: la recurrencia semanal está implícita en el campo `dia`. Si más adelante se necesitaran turnos de fecha única (por ejemplo, una clase especial), se evaluará agregar un campo `fecha` opcional; para el MVP no es necesario.
+
 ### Estructura
 
 ```text
