@@ -43,7 +43,7 @@ classDiagram
         +String nombre
         +String apellido
         +String email
-        +String password
+        +String passwordHash
         +Rol rol
         +ObjectId clienteId
         +Boolean activo

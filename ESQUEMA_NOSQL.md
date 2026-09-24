@@ -41,7 +41,7 @@ usuarios
 ├── nombre
 ├── apellido
 ├── email
-├── password
+├── passwordHash
 ├── rol
 ├── clienteId (opcional)
 ├── activo
@@ -58,7 +58,7 @@ usuarios
 | `nombre` | String | Nombre del usuario. |
 | `apellido` | String | Apellido del usuario. |
 | `email` | String | Correo utilizado para iniciar sesión. |
-| `password` | String | Contraseña almacenada de forma segura. |
+| `passwordHash` | String | Hash de la contraseña (nunca se almacena en texto plano). |
 | `rol` | String | `ADMIN`, `ENTRENADOR` o `USUARIO`. |
 | `clienteId` | ObjectId / null | Referencia al cliente cuando el usuario representa a un cliente. |
 | `activo` | Boolean | Indica si la cuenta está habilitada (baja lógica). |
@@ -74,7 +74,7 @@ usuarios
   "nombre": "Juan",
   "apellido": "Pérez",
   "email": "juan@email.com",
-  "password": "********",
+  "password": "$2b$12$K3n9...",
   "rol": "USUARIO",
   "clienteId": "ObjectId",
   "activo": true,
