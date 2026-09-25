@@ -244,7 +244,7 @@ La historia clínica básica también se almacenará dentro del documento del cl
 
 Su objetivo será registrar información mínima necesaria para el funcionamiento del MVP, como antecedentes, lesiones y observaciones.
 
-Es un campo **opcional** (cardinalidad `0..1`): no se exige al cliente completarla para poder registrarse, sino que se carga la primera vez que él mismo decide hacerlo. Un cliente sin historia clínica cargada simplemente no tiene ese campo en su documento.
+Es un campo **opcional** (cardinalidad `0..1`): no se exige al cliente completarla para poder registrarse. Puede ser cargada por el propio cliente si tiene cuenta o por el administrador/entrenador cuando corresponda, incluyendo clientes sin cuenta. Un cliente sin historia clínica cargada simplemente no tiene ese campo en su documento.
 
 El acceso a esta información estará restringido según el rol del usuario
 
