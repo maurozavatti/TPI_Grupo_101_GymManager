@@ -74,7 +74,7 @@ usuarios
   "nombre": "Juan",
   "apellido": "Pérez",
   "email": "juan@email.com",
-  "password": "$2b$12$K3n9...",
+  "passwordHash": "$2b$12$K3n9...",
   "rol": "USUARIO",
   "clienteId": "ObjectId",
   "activo": true,
@@ -380,7 +380,7 @@ pagos
 ├── fechaPago
 ├── fechaVencimiento
 ├── estado
-└── observaciones
+├── observaciones
 └── usuarioRegistroId
 ```
 
@@ -409,12 +409,12 @@ pagos
   "fechaPago": "2026-09-01",
   "fechaVencimiento": "2026-10-01",
   "estado": "PAGADO",
-  "observaciones": ""
+  "observaciones": "",
   "usuarioRegistroId": "ObjectId"
 }
 ```
 
-> **Nota:** en el JSON de ejemplo, `monto` se muestra como string solo para representar el valor; en MongoDB se almacena con el tipo BSON `Decimal128`.
+> **Nota:** en MongoDB, `monto` se almacena con el tipo BSON `Decimal128`, aunque en este ejemplo se representa de forma simplificada como un valor numérico.
 
 ---
 
