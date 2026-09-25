@@ -115,6 +115,9 @@ Registra y hace seguimiento de los pagos de los clientes.
 **Funcionalidades principales:**
 - Registro de inscripción inicial y cuotas periódicas.
 - Registro de fecha de pago y fecha de vencimiento.
+- Detección de cuotas vencidas: actualización del `estado` a `VENCIDO` cuando se supera la `fechaVencimiento` sin registrarse un nuevo pago.
+- Alertas de vencimiento próximo (por ejemplo, cuotas que vencen en los próximos días), para que el administrador pueda avisar al cliente antes de que se corte el servicio.
+- Renovación de membresía: registro de la cuota siguiente al vencer la anterior, manteniendo la continuidad del historial de pagos del cliente.
 - Consulta del estado de pago por cliente (`PAGADO`, `PENDIENTE`, `VENCIDO`).
 
 ---
