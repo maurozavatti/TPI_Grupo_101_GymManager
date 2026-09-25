@@ -21,6 +21,7 @@ También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_U
 * Las clases marcadas como `<<enumeration>>` representan **valores posibles de determinados campos** y no colecciones de MongoDB.
 * Las relaciones punteadas (`..>`) indican que una colección utiliza una de estas enumeraciones como tipo de un campo.
 * La relación `usuarios -- clientes` indica además que `clienteId` (en `usuarios`) y `usuarioId` (en `clientes`) son campos `UNIQUE`, lo que garantiza que la relación sea realmente uno a uno (ver `ESQUEMA_NOSQL.md`, sección "Índices únicos").
+* Las **notas** (`note for ...`) documentan reglas de negocio que no se pueden representar únicamente con cardinalidades (por ejemplo, que solo una rutina puede estar activa a la vez).
 
 De esta forma, el diagrama permite distinguir visualmente entre:
 
@@ -217,4 +218,11 @@ classDiagram
     pagos ..> TipoPago : tipo
 
     pagos ..> EstadoPago : estado
+
+
+    %% =====================================================
+    %% NOTAS DE REGLAS DE NEGOCIO (no representables como cardinalidad)
+    %% =====================================================
+
+    note for Rutina "Regla de negocio: en el arreglo rutinas[] de un mismo cliente, solo una Rutina puede tener activo = true a la vez (la vigente). El historial se limita a 12 rutinas por cliente; al superar ese límite se elimina físicamente la más antigua entre las inactivas."
 ```
