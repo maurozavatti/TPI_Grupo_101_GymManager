@@ -19,6 +19,7 @@ Cada módulo agrupa una responsabilidad concreta del sistema, las colecciones (o
 | 5 | Historia Clínica | `clientes.historiaClinica` | Cliente, Administrador, Entrenador |
 | 6 | Turnos | `turnos`, `clientes`, `usuarios` | Administrador, Entrenador, Cliente |
 | 7 | Pagos | `pagos`, `clientes` | Administrador |
+| 8 | Dashboard y Reportes | `clientes`, `pagos`, `turnos` | Administrador |
 
 ---
 
@@ -115,3 +116,17 @@ Registra y hace seguimiento de los pagos de los clientes.
 - Registro de inscripción inicial y cuotas periódicas.
 - Registro de fecha de pago y fecha de vencimiento.
 - Consulta del estado de pago por cliente (`PAGADO`, `PENDIENTE`, `VENCIDO`).
+
+---
+
+## 8. Dashboard y Reportes
+
+Ofrece al administrador una vista consolidada del estado general del gimnasio, sin tener que revisar cliente por cliente.
+
+**Colecciones:** `clientes`, `pagos`, `turnos` (solo lectura; este módulo no modifica datos, los consulta y agrega).
+
+**Funcionalidades principales:**
+- Cantidad de clientes activos.
+- Cuotas vencidas y próximas a vencer.
+- Ocupación de turnos (cupo utilizado vs. cupo máximo, por turno).
+- Ingresos del mes, a partir de los pagos registrados en `pagos`.
