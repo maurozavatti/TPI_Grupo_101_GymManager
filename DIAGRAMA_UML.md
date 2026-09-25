@@ -20,6 +20,7 @@ También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_U
 * Las multiplicidades (`1`, `0..1`, `0..*`, `1..*`, etc.) indican cuántos elementos pueden relacionarse entre sí.
 * Las clases marcadas como `<<enumeration>>` representan **valores posibles de determinados campos** y no colecciones de MongoDB.
 * Las relaciones punteadas (`..>`) indican que una colección utiliza una de estas enumeraciones como tipo de un campo.
+* La relación `usuarios -- clientes` indica además que `clienteId` (en `usuarios`) y `usuarioId` (en `clientes`) son campos `UNIQUE`, lo que garantiza que la relación sea realmente uno a uno (ver `ESQUEMA_NOSQL.md`, sección "Índices únicos").
 
 De esta forma, el diagrama permite distinguir visualmente entre:
 
@@ -186,7 +187,7 @@ classDiagram
     %% REFERENCIAS MEDIANTE OBJECTID
     %% =====================================================
 
-    usuarios "0..1" -- "0..1" clientes : clienteId / usuarioId
+    usuarios "0..1" -- "0..1" clientes : clienteId / usuarioId (ambos UNIQUE)
 
     clientes "1" <-- "0..*" pagos : clienteId
 
