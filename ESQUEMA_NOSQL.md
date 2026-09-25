@@ -111,7 +111,10 @@ clientes
 ├── telefono
 ├── email
 ├── direccion
-├── contactoEmergencia
+├── contactoEmergencia (opcional)
+│   ├── nombre
+│   ├── telefono
+│   └── relacion
 ├── usuarioId (opcional)
 ├── activo
 ├── fechaCreacion
@@ -155,7 +158,7 @@ clientes
 | `telefono` | String | Número de teléfono. |
 | `email` | String | Correo electrónico. |
 | `direccion` | String | Domicilio. |
-| `contactoEmergencia` | Object | Información de contacto de emergencia. |
+| `contactoEmergencia` | Object (opcional) | Datos de contacto de emergencia: `nombre`, `telefono` y `relacion` (vínculo con el cliente, por ejemplo "madre" o "pareja"). |
 | `usuarioId` | ObjectId / null | Referencia a su cuenta de usuario, si posee una. |
 | `rutinas` | Array de objetos | Historial de rutinas asignadas al cliente (ver abajo). |
 | `historiaClinica` | Object (opcional) | Información clínica básica. No todo cliente la tiene cargada: solo existe una vez que el cliente la completa por primera vez (por eso se modela como `0..1` en el diagrama UML, no como un campo obligatorio). |

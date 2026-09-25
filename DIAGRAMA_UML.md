@@ -63,7 +63,6 @@ classDiagram
         +String telefono
         +String email
         +String direccion
-        +Object contactoEmergencia
         +ObjectId usuarioId
         +Boolean activo
         +Date fechaCreacion
@@ -146,6 +145,13 @@ classDiagram
         +Date fechaActualizacion
     }
 
+    class ContactoEmergencia {
+        <<embedded>>
+        +String nombre
+        +String telefono
+        +String relacion
+    }
+
 
     %% =====================================================
     %% ENUMERACIONES / VALORES POSIBLES
@@ -179,6 +185,8 @@ classDiagram
     clientes "1" *-- "0..12" Rutina : rutinas[]
 
     clientes "1" *-- "0..1" HistoriaClinica : historiaClinica
+
+    clientes "1" *-- "0..1" ContactoEmergencia : contactoEmergencia
 
     Rutina "1" *-- "1..*" EjercicioRutina : ejercicios[]
 
