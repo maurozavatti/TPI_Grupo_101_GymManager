@@ -136,7 +136,7 @@ clientes
 │       ├── orden
 │       └── observaciones
 │
-└── historiaClinica
+└── historiaClinica (opcional)
     ├── antecedentes
     ├── lesiones
     ├── observaciones
@@ -158,7 +158,7 @@ clientes
 | `contactoEmergencia` | Object | Información de contacto de emergencia. |
 | `usuarioId` | ObjectId / null | Referencia a su cuenta de usuario, si posee una. |
 | `rutinas` | Array de objetos | Historial de rutinas asignadas al cliente (ver abajo). |
-| `historiaClinica` | Object | Información clínica básica. |
+| `historiaClinica` | Object (opcional) | Información clínica básica. No todo cliente la tiene cargada: solo existe una vez que el cliente la completa por primera vez (por eso se modela como `0..1` en el diagrama UML, no como un campo obligatorio). |
 | `activo` | Boolean | Indica si el cliente está habilitado (baja lógica). |
 | `fechaCreacion` | Date | Fecha de alta del cliente. |
 | `fechaModificacion` | Date | Fecha de la última modificación de sus datos. |
@@ -241,7 +241,9 @@ La historia clínica básica también se almacenará dentro del documento del cl
 
 Su objetivo será registrar información mínima necesaria para el funcionamiento del MVP, como antecedentes, lesiones y observaciones.
 
-El acceso a esta información estará restringido según el rol del usuario.
+Es un campo **opcional** (cardinalidad `0..1`): no se exige al cliente completarla para poder registrarse, sino que se carga la primera vez que él mismo decide hacerlo. Un cliente sin historia clínica cargada simplemente no tiene ese campo en su documento.
+
+El acceso a esta información estará restringido según el rol del usuario
 
 ---
 
