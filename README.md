@@ -1,7 +1,7 @@
 # Gym Manager — Sistema de Gestión para Gimnasio
 
 > **Trabajo Final Integrador — Tecnicatura Universitaria en Programación**
-> **Estado:** Propuesta inicial — Etapa 1 (Propuesta y relevamiento)
+> **Estado:** Etapa 2 (Diseño y Módulos) — correcciones del tutor aplicadas, pendiente de aprobación final
 > **Nombre:** Gym Manager
 
 ---
