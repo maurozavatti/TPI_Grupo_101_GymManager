@@ -32,6 +32,8 @@ Gestiona el acceso al sistema. Existen tres roles: `ADMIN`, `ENTRENADOR` y `USUA
 **Funcionalidades principales:**
 - Registro e inicio de sesión.
 - Validación de credenciales.
+- Recuperación de contraseña (por ejemplo, mediante un enlace enviado por correo).
+- Cambio de contraseña por parte del propio usuario.
 - Control de acceso a funcionalidades según el rol.
 - Baja lógica de cuentas (`activo`, `fechaBaja`).
 
