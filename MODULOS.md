@@ -85,10 +85,10 @@ Gestiona la información básica de salud del cliente.
 
 **Colecciones / subdocumentos:** `clientes.historiaClinica`.
 
-**Funcionalidades principales:**
-- Carga inicial de antecedentes al registrarse (clientes con cuenta).
-- Actualización de lesiones si el cliente sufre una nueva.
-- Acceso restringido: solo Administrador y Entrenador pueden consultarla, no es visible para otros clientes.
+**Funcionalidades principales y permisos:**
+- **Crea y modifica:** el propio Cliente (con cuenta) — carga los antecedentes iniciales cuando decide hacerlo (es opcional, no obligatoria al registrarse) y actualiza la información si sufre una lesión nueva.
+- **Solo consulta:** Administrador y Entrenador pueden ver la historia clínica de un cliente, pero no pueden editarla ni cargarla en su nombre.
+- **Sin acceso:** el resto de los clientes no puede ver la historia clínica de otro cliente.
 
 ---
 
