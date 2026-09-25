@@ -69,6 +69,7 @@ La aplicación usará una base de datos NoSQL (MongoDB) para ejercicios, usuario
 6. **Historia clínica del cliente:** carga inicial al registrarse (antecedentes, lesiones previas) y actualización posterior si sufre una lesión nueva.
 7. **Turnero básico:** el administrador/entrenador define turnos (día, horario, cupo) y asigna clientes; el cliente con cuenta consulta su turno asignado.
 8. Registro y consulta básica de pagos: **inscripción inicial** y **cuota periódica**, con fechas de vencimiento.
+9. **Dashboard y reportes básicos**: consulta de cantidad de clientes activos, cuotas vencidas y próximas a vencer, ocupación de turnos e ingresos mensuales.
 
 **Fuera de alcance del MVP** (ver Sección 7 — roadmap):
 
@@ -77,7 +78,7 @@ La aplicación usará una base de datos NoSQL (MongoDB) para ejercicios, usuario
 - Catálogo de ejercicios propio por gimnasio (más allá del catálogo genérico único del MVP).
 - Investigación e integración de IA de entrenamiento.
 - Control de acceso por molinete con llavero NFC.
-- Login con Google, carga/generación de comprobantes, historial detallado de pagos, alertas automáticas, estadísticas y reportes.
+- Login con Google, carga/generación de comprobantes, historial detallado de pagos, alertas automáticas, estadísticas y reportes avanzados.
 
 ### Criterios de éxito del MVP
 
@@ -91,7 +92,9 @@ La aplicación usará una base de datos NoSQL (MongoDB) para ejercicios, usuario
 
 ## 6. Funcionalidades futuras del MVP (mismo gimnasio, condicionadas al tiempo disponible)
 
-Se incorporarán **solo si el avance del MVP y los tiempos disponibles lo permiten**: login con Google, carga y generación de comprobantes, historial detallado de pagos, alertas de vencimiento, estadísticas y reportes, y otras funcionalidades detectadas durante el relevamiento.
+Se incorporarán **solo si el avance del MVP y los tiempos disponibles lo permiten**: login con Google, carga y generación de comprobantes, historial detallado de pagos, notificaciones automáticas de vencimiento y otras funcionalidades detectadas durante el relevamiento.
+
+El dashboard, los reportes básicos y la identificación de cuotas vencidas o próximas a vencer forman parte del alcance actual del MVP.
 
 ---
 
@@ -136,7 +139,11 @@ El sistema tendrá un catálogo propio de ejercicios (nombre, descripción, y lo
 
 ## 11. Gestión de historia clínica
 
-Al registrarse, el cliente con cuenta podrá cargar información básica de salud: antecedentes y lesiones previas relevantes para el entrenamiento. Si posteriormente sufre una lesión, podrá actualizar esa información. Esta información será visible únicamente para el administrador y los entrenadores (no es pública ni la ven otros clientes), dado que se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
+El cliente con su cuenta de usuario podrá cargar información básica de salud de manera opcional: antecedentes y lesiones previas relevantes para el entrenamiento. Si posteriormente sufre una lesión, podrá actualizar esa información.
+
+En el caso de clientes sin cuenta, el administrador o los entrenadores también podrán cargar y actualizar esta información en nombre del cliente, cuando sea necesario.
+
+La información será visible únicamente para el administrador, los entrenadores y el propio cliente si tiene un usuario asociado a su cuenta (no es pública ni la ven otros clientes), dado que se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
 
 ---
 
