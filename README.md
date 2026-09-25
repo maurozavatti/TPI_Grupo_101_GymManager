@@ -66,7 +66,7 @@ La aplicación usará una base de datos NoSQL (MongoDB) para ejercicios, usuario
 3. Catálogo de ejercicios genérico (alta, modificación y baja lógica).
 4. Creación y asignación de rutinas por parte de los entrenadores.
 5. Consulta de rutina y ejercicios desde el perfil del cliente; impresión para clientes sin cuenta.
-6. **Historia clínica del cliente:** carga inicial al registrarse (antecedentes, lesiones previas) y actualización posterior si sufre una lesión nueva.
+6. **Historia clínica del cliente:** carga opcional de antecedentes y lesiones previas por parte del cliente con cuenta o, cuando corresponda, por el administrador/entrenador, con posibilidad de actualizar la información posteriormente.
 7. **Turnero básico:** el administrador/entrenador define turnos (día, horario, cupo) y asigna clientes; el cliente con cuenta consulta su turno asignado.
 8. Registro y consulta básica de pagos: **inscripción inicial** y **cuota periódica**, con fechas de vencimiento.
 9. **Dashboard y reportes básicos**: consulta de cantidad de clientes activos, cuotas vencidas y próximas a vencer, ocupación de turnos e ingresos mensuales.
@@ -85,7 +85,7 @@ La aplicación usará una base de datos NoSQL (MongoDB) para ejercicios, usuario
 - Un entrenador puede crear una rutina completa usando solo el catálogo cargado en el sistema, sin recurrir al Excel.
 - El administrador puede identificar, para cualquier cliente, si tiene pagos vencidos.
 - Un cliente registrado puede ver su rutina, sus ejercicios y su turno asignado desde el celular.
-- Un cliente puede cargar su historia clínica al registrarse y actualizarla si reporta una lesión.
+- Un cliente puede cargar su historia clínica cuando decida hacerlo y actualizarla si reporta una lesión.
 - El sistema funciona correctamente tanto para clientes con cuenta como sin cuenta.
 
 ---
@@ -115,7 +115,7 @@ La priorización y el modelo de negocio de estas funcionalidades (qué es gratis
 
 ## 8. Clientes sin cuenta
 
-El sistema no obligará a ningún cliente a registrarse. El personal podrá cargar un cliente solo con sus datos identificatorios, asignarle una rutina y un turno (imprimibles) y registrar sus pagos, sin necesidad de una cuenta de usuario. La carga de historia clínica está pensada para clientes con cuenta, dado que involucra datos sensibles que el propio cliente debe poder gestionar; para clientes sin cuenta, el personal podrá registrar únicamente observaciones básicas si el cliente las provee de forma presencial. Si más adelante el cliente decide registrarse, su información podrá asociarse a la cuenta sin duplicar datos.
+El sistema no obligará a ningún cliente a registrarse. El personal podrá cargar un cliente solo con sus datos identificatorios, asignarle una rutina y un turno (imprimibles), registrar sus pagos y, cuando sea necesario, cargar o actualizar su historia clínica básica en nombre del cliente, sin necesidad de una cuenta de usuario. Si más adelante el cliente decide registrarse, su información podrá asociarse a la cuenta sin duplicar datos.
 
 ---
 
