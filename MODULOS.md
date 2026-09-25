@@ -110,7 +110,7 @@ Gestiona los horarios de clase y la asignación de clientes a cada uno.
 
 ## 7. Pagos
 
-Registra y hace seguimiento de los pagos de los clientes.
+Permite administrar los pagos realizados por los clientes.
 
 **Colecciones:** `pagos`, con referencia a `clientes`.
 
