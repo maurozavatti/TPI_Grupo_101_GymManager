@@ -115,7 +115,7 @@ La priorización y el modelo de negocio de estas funcionalidades (qué es gratis
 
 ## 8. Clientes sin cuenta
 
-El sistema no obligará a ningún cliente a registrarse. El personal podrá cargar un cliente solo con sus datos identificatorios, asignarle una rutina y un turno (imprimibles), registrar sus pagos y, cuando sea necesario, cargar o actualizar su historia clínica básica en nombre del cliente, sin necesidad de una cuenta de usuario. Si más adelante el cliente decide registrarse, su información podrá asociarse a la cuenta sin duplicar datos.
+El sistema no obligará a ningún cliente a registrarse. El personal podrá cargar un cliente solo con sus datos identificatorios, asignarle una rutina y un turno (imprimibles), y registrar sus pagos, sin necesidad de una cuenta de usuario. La historia clínica queda reservada a clientes con cuenta, ya que solo el propio cliente puede cargarla y actualizarla (ver Sección 11). Si más adelante el cliente decide registrarse, su información podrá asociarse a la cuenta sin duplicar datos.
 
 ---
 
@@ -141,9 +141,9 @@ El sistema tendrá un catálogo propio de ejercicios (nombre, descripción, y lo
 
 El cliente con su cuenta de usuario podrá cargar información básica de salud de manera opcional: antecedentes y lesiones previas relevantes para el entrenamiento. Si posteriormente sufre una lesión, podrá actualizar esa información.
 
-En el caso de clientes sin cuenta, el administrador o los entrenadores también podrán cargar y actualizar esta información en nombre del cliente, cuando sea necesario.
+Esta funcionalidad está reservada a clientes con cuenta, ya que solo el propio cliente puede cargar y modificar su historia clínica. El administrador y los entrenadores pueden consultarla, pero no cargarla ni editarla en su nombre. Para clientes sin cuenta, no se registra historia clínica en el MVP.
 
-La información será visible únicamente para el administrador, los entrenadores y el propio cliente si tiene un usuario asociado a su cuenta (no es pública ni la ven otros clientes), dado que se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
+La información será visible únicamente para el administrador, los entrenadores y el propio cliente (no es pública ni la ven otros clientes), dado que se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
 
 ---
 
@@ -236,3 +236,4 @@ Como el proyecto apunta a funcionar para gimnasios en general y no solo para el 
 **Equipo:** Fernando Joaquín Aguillón Basabilbaso · Emanuel Aaron Brahim Pollini · Mauro Alberto Zavatti
 **Tutor:** Gerardo Adrian Herrera Molas
 **Repositorio:** https://github.com/maurozavatti/TPI_Grupo_101_GymManager.git
+**Estructura del repositorio:** `/frontend` (aplicación web), `/backend` (API REST), `/database` (scripts de creación de la base de datos) y `/docs` (diseño de base de datos, módulos y diagramas).
