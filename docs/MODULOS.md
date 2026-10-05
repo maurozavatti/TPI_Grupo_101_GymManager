@@ -32,7 +32,7 @@ Gestiona el acceso al sistema. Existen tres roles: `ADMIN`, `ENTRENADOR` y `USUA
 **Funcionalidades principales:**
 - Registro e inicio de sesión.
 - Validación de credenciales.
-- Recuperación de contraseña (por ejemplo, mediante un enlace enviado por correo).
+- Recuperación de contraseña.
 - Cambio de contraseña por parte del propio usuario.
 - Control de acceso a funcionalidades según el rol.
 - Baja lógica de cuentas (`activo`, `fechaBaja`).
@@ -118,7 +118,7 @@ Permite administrar los pagos realizados por los clientes.
 - Registro de inscripción inicial y cuotas periódicas.
 - Registro de fecha de pago y fecha de vencimiento.
 - Detección de cuotas vencidas: actualización del `estado` a `VENCIDO` cuando se supera la `fechaVencimiento` sin registrarse un nuevo pago.
-- Alertas de vencimiento próximo (por ejemplo, cuotas que vencen en los próximos días), para que el administrador pueda avisar al cliente antes de que se corte el servicio.
+- Consulta de cuotas próximas a vencer desde el dashboard, para que el administrador pueda avisar al cliente antes de que se corte el servicio.
 - Renovación de membresía: registro de la cuota siguiente al vencer la anterior, manteniendo la continuidad del historial de pagos del cliente.
 - Consulta del estado de pago por cliente (`PAGADO`, `PENDIENTE`, `VENCIDO`).
 
