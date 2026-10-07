@@ -143,7 +143,7 @@ El cliente con cuenta de usuario podrá cargar información básica de salud de 
 
 El administrador y los entrenadores también pueden crear y modificar la historia clínica de un cliente, incluso cuando este no tiene una cuenta de usuario. En modo consulta, el administrador, los entrenadores y el propio cliente pueden ver la información, pero no editarla ni cargar datos en nombre de otro. El resto de los clientes no tiene acceso a la historia clínica de otros clientes.
 
-La información se mantiene restringida a estos roles porque se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
+La información se mantiene restringida a estos roles porque se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria. El diseño detallado del control de acceso a esta información está documentado en `docs/SEGURIDAD.md`.
 
 ---
 
@@ -236,4 +236,4 @@ Como el proyecto apunta a funcionar para gimnasios en general y no solo para el 
 **Equipo:** Fernando Joaquín Aguillón Basabilbaso · Emanuel Aaron Brahim Pollini · Mauro Alberto Zavatti
 **Tutor:** Gerardo Adrian Herrera Molas
 **Repositorio:** https://github.com/maurozavatti/TPI_Grupo_101_GymManager.git
-**Estructura del repositorio:** `/frontend` (aplicación web), `/backend` (API REST), `/database` (scripts de creación de la base de datos) y `/docs` (diseño de base de datos, módulos y diagramas).
+**Estructura del repositorio:** `/frontend` (aplicación web), `/backend` (API REST), `/database` (scripts de creación de la base de datos) y `/docs` (diseño de base de datos, módulos, diagramas, casos de uso, reglas de negocio y seguridad).
