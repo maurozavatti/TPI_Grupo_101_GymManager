@@ -1,152 +1,158 @@
-# Diagramas de secuencia — Gym Manager
+# Diagramas de Secuencia — Gym Manager
 
-Los diagramas de secuencia representan las interacciones previstas entre los actores, el frontend, la API REST, los servicios de negocio y MongoDB.
+## 1. Carga y consulta de historia clínica
 
-Se basan en la arquitectura documentada del proyecto: frontend web, backend Java con Spring Boot y persistencia mediante MongoDB.
+**Casos de uso:** CU-09 y CU-10.
 
-## 1. Consulta de historia clínica
-
-**Referencias:** CU-10, RN-05 y RN-06.  
-**Documentos relacionados:** `SEGURIDAD.md` y `ARQUITECTURA.md`.
+El diagrama representa el recorrido desde la solicitud del usuario hasta la autorización y el acceso a los datos. Los nombres de los componentes son conceptuales y deberán adaptarse a las clases y controladores que se implementen.
 
 ```text
 sequenceDiagram
-    actor Usuario as Usuario autenticado
-    participant FE as Frontend
-    participant API as API REST / Controller
-    participant SEC as Seguridad JWT
-    participant SRV as Servicio de historia clínica
+    actor U as Usuario
+    participant F as Frontend
+    participant S as Spring Security
+    participant C as Controlador de historia clínica
+    participant P as Servicio de historia clínica
     participant DB as MongoDB
 
-    Usuario->>FE: Solicita consultar una historia clínica
-    FE->>API: Solicitud GET con clienteId y JWT
-    API->>SEC: Validar token, identidad y rol
-
-    alt Token ausente, inválido o vencido
-        SEC-->>API: Autenticación rechazada
-        API-->>FE: Respuesta de acceso no autenticado
-        FE-->>Usuario: Solicitar inicio de sesión
-    else Token válido
-        SEC-->>API: Identidad y rol autenticados
-        API->>SEC: Verificar autorización
-
-        alt Rol ADMIN o ENTRENADOR con permiso
-            SEC-->>API: Acceso autorizado
-        else Rol USUARIO
-            SEC->>SRV: Resolver cliente vinculado a la cuenta
-            SRV-->>SEC: Identificador del cliente propio
-
-            alt El cliente solicitado es el propio
-                SEC-->>API: Acceso autorizado
-            else El cliente solicitado es otro
-                SEC-->>API: Acceso denegado
-                API-->>FE: Respuesta de autorización denegada
-                FE-->>Usuario: Informar falta de permisos
+    U->>F: Solicitar carga o consulta
+    F->>S: Enviar solicitud autenticada
+    S->>S: Validar token y rol
+    alt Token inválido o ausente
+        S-->>F: Rechazar acceso
+        F-->>U: Mostrar error de autenticación
+    else Usuario autenticado
+        S->>C: Autorizar solicitud
+        C->>P: Solicitar operación sobre cliente objetivo
+        P->>P: Validar rol y titularidad del registro
+        alt Usuario sin permisos
+            P-->>C: Acceso denegado
+            C-->>F: Respuesta de error
+            F-->>U: Mostrar acceso denegado
+        else Usuario autorizado
+            alt Cargar o actualizar historia
+                P->>DB: Guardar historiaClinica y fecha de actualización
+                DB-->>P: Confirmación
+                P-->>C: Operación completada
+            else Consultar historia
+                P->>DB: Consultar historia del cliente autorizado
+                DB-->>P: Datos clínicos
+                P-->>C: Resultado de consulta
             end
-        end
-
-        opt Operación autorizada
-            API->>SRV: Consultar historia clínica del cliente
-            SRV->>DB: Buscar cliente e historiaClinica embebida
-            DB-->>SRV: Documento del cliente
-
-            alt Existe historia clínica
-                SRV-->>API: Datos de historia clínica
-                API-->>FE: Respuesta con datos autorizados
-                FE-->>Usuario: Mostrar historia clínica
-            else No existe historia clínica
-                SRV-->>API: Sin historia clínica registrada
-                API-->>FE: Resultado sin historia clínica
-                FE-->>Usuario: Informar que no hay datos registrados
-            end
+            C-->>F: Respuesta de la operación
+            F-->>U: Mostrar resultado
         end
     end
 ```
 
-### Consideraciones de seguridad
+**Consideraciones:**
 
-- El frontend envía el token de autenticación, pero la autorización efectiva corresponde al backend.
-- El backend debe obtener la identidad del usuario desde el contexto autenticado.
-- Para el rol `USUARIO`, debe comprobarse que el `clienteId` solicitado coincida con el cliente vinculado a esa cuenta.
-- La historia clínica está embebida en el documento de `clientes`, según el esquema documentado. Por lo tanto, el diagrama no introduce una colección independiente para las historias clínicas.
-- Los detalles de las respuestas HTTP deben ajustarse a la convención de errores que se defina al implementar la API.
+- La autenticación no reemplaza la validación de titularidad de la historia clínica.
+- El administrador y el entrenador pueden operar sobre clientes autorizados por las reglas del proyecto.
+- Un cliente con cuenta solo puede acceder a su propia historia clínica.
+- La historia clínica es opcional, de acuerdo con RN-05.
 
-## 2. Asignación de una rutina
+## 2. Asignación de rutina
 
-**Referencias:** CU-07, RN-03 y RN-04.  
-**Módulo:** Rutinas.
+**Caso de uso:** CU-07 — Asignar rutina a cliente.
+
+El flujo contempla las validaciones previas, la desactivación de la rutina anterior y la aplicación del límite de historial.
 
 ```text
 sequenceDiagram
-    actor Entrenador
-    participant FE as Frontend
-    participant API as API REST / Controller
-    participant SEC as Seguridad
-    participant SRV as Servicio de rutinas
+    actor T as Entrenador
+    participant F as Frontend
+    participant C as Controlador de rutinas
+    participant S as Servicio de rutinas
     participant DB as MongoDB
 
-    Entrenador->>FE: Completa los datos de la rutina
-    FE->>API: Solicitud de asignación con JWT
-    API->>SEC: Validar identidad y permisos
+    T->>F: Seleccionar cliente y ejercicios
+    F->>C: Solicitar asignación de rutina
+    C->>S: asignarRutina(clienteId, ejercicios)
+    S->>DB: Consultar cliente y estado
+    DB-->>S: Datos del cliente
 
-    alt El usuario no tiene permisos
-        SEC-->>API: Acceso denegado
-        API-->>FE: Respuesta de autorización denegada
-        FE-->>Entrenador: Informar falta de permisos
-    else El usuario tiene permisos
-        SEC-->>API: Operación autorizada
-        API->>SRV: Solicitar asignación de rutina
-        SRV->>SRV: Validar datos y reglas de negocio
-        SRV->>DB: Consultar el documento del cliente
-        DB-->>SRV: Datos del cliente y sus rutinas
+    alt Cliente inexistente o inactivo
+        S-->>C: Rechazar asignación
+        C-->>F: Error de validación
+        F-->>T: Mostrar error
+    else Cliente válido
+        S->>DB: Verificar existencia de ejercicios
+        DB-->>S: Resultado de validación
 
-        SRV->>SRV: Desactivar la rutina activa anterior, si existe
+        alt Ejercicios inválidos
+            S-->>C: Rechazar asignación
+            C-->>F: Error de validación
+            F-->>T: Mostrar error
+        else Ejercicios válidos
+            S->>DB: Consultar rutinas del cliente
+            DB-->>S: Rutinas actuales
 
-        alt El historial ya tiene 12 rutinas
-            SRV->>SRV: Identificar la rutina inactiva más antigua
-
-            alt Existe una rutina inactiva elegible
-                SRV->>SRV: Retirar la rutina inactiva más antigua
-            else No existe una rutina inactiva elegible
-                SRV-->>API: No se puede cumplir la regla del historial
-                API-->>FE: Informar error de negocio
-                FE-->>Entrenador: Informar que no se pudo asignar la rutina
+            opt Existe una rutina activa
+                S->>DB: Marcar rutina anterior como inactiva
+                S->>DB: Registrar fecha de baja
             end
-        end
 
-        opt Las validaciones permiten continuar
-            SRV->>SRV: Agregar la nueva rutina como activa
-            SRV->>DB: Guardar los cambios del cliente
-
-            alt Guardado correcto
-                DB-->>SRV: Confirmación de persistencia
-                SRV-->>API: Asignación realizada
-                API-->>FE: Respuesta exitosa
-                FE-->>Entrenador: Confirmar la asignación
-            else Error de persistencia
-                DB-->>SRV: Error al guardar
-                SRV-->>API: Operación no confirmada
-                API-->>FE: Informar fallo
-                FE-->>Entrenador: Informar que no se confirmó la asignación
+            opt Se alcanzó el límite de 12 rutinas
+                S->>DB: Eliminar la rutina inactiva más antigua
             end
+
+            S->>DB: Guardar nueva rutina activa
+            DB-->>S: Confirmación
+            S-->>C: Asignación completada
+            C-->>F: Resultado exitoso
+            F-->>T: Mostrar rutina asignada
         end
     end
 ```
 
-### Consideraciones de implementación
+**Consideraciones:**
 
-La desactivación de la rutina anterior, la eventual eliminación de una rutina inactiva y el agregado de la nueva rutina deben diseñarse para evitar estados inconsistentes.
+- La operación debe garantizar que no queden dos rutinas activas para el mismo cliente.
+- Solo se elimina físicamente la rutina inactiva más antigua cuando se alcanzó el límite de 12.
+- Los nombres de métodos y componentes son ilustrativos; no implican que esas clases ya estén implementadas.
 
-La estrategia técnica para garantizar la atomicidad de la operación deberá definirse durante la implementación. El diagrama no presupone que esa solución ya esté programada.
+## 3. Detección de cuotas vencidas
 
-## 3. Relación con la arquitectura
+**Caso de uso:** CU-14 — Detectar cuotas vencidas.
 
-En ambos diagramas se conserva la separación de responsabilidades:
+Este diagrama representa un proceso automático que se ejecuta periódicamente, sin necesidad de que el administrador inicie manualmente la evaluación.
 
-- **Frontend:** presenta la interfaz y envía las solicitudes.
-- **API REST / Controller:** recibe las solicitudes y devuelve las respuestas.
-- **Seguridad:** valida la autenticación y los permisos.
-- **Servicio de negocio:** aplica las reglas del sistema.
-- **MongoDB:** almacena y devuelve los documentos.
+```text
+sequenceDiagram
+    participant CRON as Programador periódico
+    participant S as Servicio de pagos
+    participant DB as MongoDB
+    actor A as Administrador
+    participant F as Frontend
+    participant C as Controlador de pagos
 
-Esta organización mantiene la coherencia con `ARQUITECTURA.md` y no supone que el frontend tenga acceso directo a la base de datos.
+    CRON->>S: Ejecutar evaluación de vencimientos
+    S->>DB: Obtener cuotas que deben evaluarse
+    DB-->>S: Cuotas registradas
+
+    loop Por cada cuota
+        S->>S: Evaluar vencimiento y estado de pago
+        alt Venció y continúa impaga
+            S->>DB: Actualizar estado a VENCIDO
+            DB-->>S: Confirmar actualización
+        else No corresponde marcarla vencida
+            S->>S: Mantener el estado correspondiente
+        end
+    end
+
+    A->>F: Consultar cuotas vencidas
+    F->>C: Solicitar listado de cuotas vencidas
+    C->>S: Consultar cuotas vencidas
+    S->>DB: Buscar obligaciones con estado VENCIDO
+    DB-->>S: Resultado de la consulta
+    S-->>C: Listado de cuotas vencidas
+    C-->>F: Respuesta con resultados
+    F-->>A: Mostrar cuotas vencidas
+```
+
+**Consideraciones:**
+
+- El proceso periódico debe ejecutarse con una frecuencia que se defina durante la implementación.
+- El sistema no debe marcar como vencida una obligación que ya fue pagada.
+- Los indicadores de próximos vencimientos del dashboard son una consulta distinta, correspondiente a CU-15 y RN-13.

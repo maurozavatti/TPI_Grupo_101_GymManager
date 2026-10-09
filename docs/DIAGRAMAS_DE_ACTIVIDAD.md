@@ -1,103 +1,91 @@
-# Diagramas de actividad — Gym Manager
+# Diagramas de Actividad — Gym Manager
 
-Los siguientes diagramas representan flujos previstos para el MVP y se basan en los casos de uso y las reglas de negocio documentados en el proyecto.
+## 1. Asignación de rutina a un cliente
 
-## 1. Asignación de una rutina a un cliente
+**Caso de uso:** CU-07 — Asignar rutina a cliente.
 
-**Referencias:** CU-07, RN-03 y RN-04.  
-**Módulo:** Rutinas.
+**Actor principal:** Entrenador.
+
+El diagrama representa las validaciones del cliente, la vigencia de la rutina anterior y el límite de rutinas conservadas.
 
 ```text
 flowchart TD
-    A([Inicio]) --> B[El entrenador selecciona al cliente]
-    B --> C[Configura la nueva rutina]
-    C --> D{¿Los datos son válidos?}
-
-    D -- No --> E[Informar errores y permitir correcciones]
-    E --> C
-
-    D -- Sí --> F[Consultar las rutinas actuales del cliente]
-    F --> G[Desactivar la rutina activa anterior, si existe]
-    G --> H{¿El historial alcanzó el máximo de 12 rutinas?}
-
-    H -- No --> K[Agregar la nueva rutina]
-    H -- Sí --> I[Identificar la rutina inactiva más antigua]
-    I --> J{¿Existe una rutina inactiva para retirar?}
-
-    J -- Sí --> L[Eliminar físicamente la rutina inactiva más antigua]
-    L --> K
-
-    J -- No --> M[Detener la operación e informar la inconsistencia]
-    M --> Z([Fin])
-
-    K --> N[Marcar la nueva rutina como activa]
-    N --> O[Guardar los cambios del cliente]
-    O --> P{¿Se guardaron correctamente los cambios?}
-
-    P -- No --> Q[Informar que no se pudo confirmar la asignación]
-    P -- Sí --> R[Confirmar la asignación de la rutina]
-
-    Q --> Z
-    R --> Z
+    A([Inicio]) --> B[El entrenador solicita asignar una rutina]
+    B --> C{¿El cliente existe y está activo?}
+    C -- No --> D[Rechazar la operación]
+    C -- Sí --> E{¿Los ejercicios necesarios existen?}
+    E -- No --> D
+    E -- Sí --> F[Consultar las rutinas del cliente]
+    F --> G{¿Existe una rutina activa?}
+    G -- Sí --> H[Marcar la rutina anterior como inactiva]
+    H --> I[Registrar la fecha de baja]
+    G -- No --> J{¿Se alcanzó el límite de 12 rutinas?}
+    I --> J
+    J -- Sí --> K[Eliminar la rutina inactiva más antigua]
+    J -- No --> L[Preparar la nueva rutina]
+    K --> L
+    L --> M[Guardar la nueva rutina activa]
+    M --> N[Verificar que exista una sola rutina activa]
+    N --> O([Fin])
+    D --> O
 ```
 
-### Reglas que deben respetarse
+**Resultado esperado:** el cliente queda con una nueva rutina activa y se conserva el historial dentro del límite establecido por RN-04.
 
-- El cliente debe tener como máximo una rutina activa.
-- El historial admite hasta 12 rutinas.
-- Si es necesario liberar espacio, se elimina la rutina inactiva más antigua.
-- La rutina activa nunca debe eliminarse mediante la regla de límite del historial.
-- Si no existe una rutina inactiva que pueda retirarse, la operación debe detenerse para no incumplir las reglas del sistema.
+La rutina activa nunca debe eliminarse como parte de la limpieza del historial.
 
-## 2. Consulta de la historia clínica
+## 2. Carga y consulta de historia clínica
 
-**Referencias:** CU-09, CU-10, RN-05 y RN-06.  
-**Documentos relacionados:** `SEGURIDAD.md` y `ARQUITECTURA.md`.  
-**Módulo:** Historia clínica.
+**Casos de uso:** CU-09 — Cargar historia clínica; CU-10 — Consultar historia clínica.
+
+**Actores:** cliente con cuenta, administrador y entrenador.
+
+El acceso depende del rol del usuario y, cuando actúa un cliente, de que la historia corresponda a su propio registro.
 
 ```text
 flowchart TD
-    A([Inicio]) --> B[El usuario solicita consultar una historia clínica]
-    B --> C{¿Existe autenticación válida?}
-
+    A([Inicio]) --> B[El usuario solicita cargar o consultar una historia clínica]
+    B --> C{¿Está autenticado cuando corresponde?}
     C -- No --> D[Rechazar el acceso]
-    C -- Sí --> E[Obtener la identidad y el rol autenticados]
-
-    E --> F{¿El rol es ADMIN o ENTRENADOR?}
-
-    F -- Sí --> G[Verificar los permisos del rol]
-    G --> H{¿La operación está permitida?}
+    C -- Sí --> E[Identificar rol y cliente objetivo]
+    E --> F{¿Es administrador o entrenador?}
+    F -- Sí --> G[Validar que el cliente objetivo exista]
+    F -- No --> H{¿Es el cliente titular de la historia?}
     H -- No --> D
-    H -- Sí --> K[Buscar la historia clínica del cliente solicitado]
-
-    F -- No --> I{¿El rol es USUARIO?}
-    I -- No --> D
-    I -- Sí --> J[Resolver el cliente asociado a la cuenta autenticada]
-
-    J --> L{¿El cliente solicitado es el propio?}
-    L -- No --> D
-    L -- Sí --> K
-
-    K --> M{¿Existe una historia clínica registrada?}
-    M -- No --> N[Informar que no hay historia clínica registrada]
-    M -- Sí --> O[Devolver los datos autorizados]
-
-    O --> P([Fin])
-    N --> P
-    D --> Q[Informar que el acceso no está autorizado]
-    Q --> P
+    H -- Sí --> I[Autorizar acceso a su propia historia]
+    G --> J{¿La operación es cargar o actualizar?}
+    I --> J
+    J -- Sí --> K[Validar y guardar los datos clínicos]
+    J -- No --> L[Consultar los datos clínicos autorizados]
+    K --> M[Registrar la fecha de actualización]
+    M --> N([Fin])
+    L --> N
 ```
 
-### Reglas que deben respetarse
+**Resultado esperado:** solo los actores autorizados pueden consultar o modificar la historia clínica. Un cliente no puede acceder a la historia de otro cliente.
 
-- La autorización debe realizarse en el backend.
-- El rol `USUARIO` solo puede consultar la historia clínica correspondiente a su propio cliente.
-- Los roles `ADMIN` y `ENTRENADOR` pueden acceder según los permisos definidos en la documentación.
-- La historia clínica es opcional. Si no existe, el sistema debe informar esa situación.
-- No alcanza con ocultar opciones en el frontend: el backend debe verificar los permisos en cada operación protegida.
+## 3. Detección automática de cuotas vencidas
 
-## 3. Alcance de los diagramas
+**Caso de uso:** CU-14 — Detectar cuotas vencidas.
 
-Los diagramas describen el comportamiento esperado del sistema. No representan código implementado ni reemplazan las reglas de negocio y los casos de uso.
+**Actor del proceso:** sistema. El administrador consulta los resultados.
 
-Si posteriormente se modifica una regla relacionada con rutinas o historia clínica, deberán revisarse estos diagramas para mantener la coherencia documental.
+El proceso periódico actualiza el estado de las cuotas; no debe confundirse con el indicador de próximos vencimientos del dashboard, contemplado en CU-15 y RN-13.
+
+```text
+flowchart TD
+    A([Inicio del proceso periódico]) --> B[Obtener las cuotas registradas]
+    B --> C[Evaluar cada cuota]
+    C --> D{¿La fecha de vencimiento ya pasó?}
+    D -- No --> H{¿Quedan cuotas por evaluar?}
+    D -- Sí --> E{¿La obligación sigue impaga?}
+    E -- No --> H
+    E -- Sí --> F[Actualizar estado a VENCIDO]
+    F --> H
+    H -- Sí --> C
+    H -- No --> I[Finalizar el proceso]
+    I --> J[El administrador puede consultar las cuotas vencidas]
+    J --> K([Fin])
+```
+
+**Resultado esperado:** las obligaciones vencidas y todavía impagas se identifican y actualizan para su consulta por el administrador, de acuerdo con RN-11.

@@ -1,63 +1,85 @@
-# Matriz de trazabilidad — Gym Manager
+# Matriz de Trazabilidad — Gym Manager
 
 ## 1. Objetivo
 
-La matriz de trazabilidad relaciona los casos de uso, las reglas de negocio, los módulos del sistema y las verificaciones previstas para el MVP de Gym Manager.
+La matriz de trazabilidad relaciona los requisitos funcionales y no funcionales del sistema Gym Manager con los casos de uso, las reglas de negocio y las verificaciones previstas.
 
-Se utiliza para comprobar que las funcionalidades documentadas tengan una regla o necesidad asociada y que puedan verificarse mediante pruebas durante la futura implementación.
+Su objetivo es comprobar que las funcionalidades definidas para el proyecto estén contempladas en el diseño y que puedan verificarse durante las pruebas.
 
-Esta matriz mantiene como referencia la documentación vigente del proyecto, especialmente `CASOS_DE_USO.md`, `REGLAS_DE_NEGOCIO.md`, `MODULOS.md`, `SEGURIDAD.md` y `ARQUITECTURA.md`.
+## 2. Trazabilidad de requisitos funcionales
 
-**Nota:** las verificaciones indicadas son propuestas de prueba. No implican que el sistema ya esté implementado ni que las pruebas hayan sido ejecutadas.
-
-## 2. Matriz de trazabilidad funcional
-
-| ID | Requisito funcional | Caso de uso relacionado | Regla de negocio relacionada | Módulo | Verificación prevista |
-|---|---|---|---|---|---|
-| RF-01 | Permitir el inicio de sesión mediante credenciales y reconocer el rol del usuario autenticado. | CU-01 | RN-06, RN-12 | Autenticación y roles | VER-01: comprobar que las credenciales válidas permitan acceder y que las inválidas sean rechazadas. |
-| RF-02 | Permitir solicitar la recuperación de contraseña mediante un mecanismo de un solo uso y con vencimiento. | CU-02 | Reglas de seguridad de `SEGURIDAD.md` | Autenticación y roles | VER-02: comprobar que un token vencido o utilizado no permita completar la recuperación. |
-| RF-03 | Permitir cambiar la contraseña verificando la contraseña actual. | CU-03 | Reglas de seguridad de `SEGURIDAD.md` | Autenticación y roles | VER-03: comprobar que una contraseña actual incorrecta impida el cambio. |
-| RF-04 | Registrar clientes y evitar la duplicación de DNI. | CU-04 | RN-01, RN-02, RN-12 | Clientes | VER-04: registrar un DNI nuevo y comprobar que un DNI duplicado sea rechazado. |
-| RF-05 | Dar de baja lógica a un cliente sin eliminar físicamente su registro. | CU-05 | RN-01 | Clientes | VER-05: comprobar que el cliente quede inactivo y que el registro permanezca almacenado. |
-| RF-06 | Registrar ejercicios utilizando un código único. | CU-06 | RN-01, RN-12 | Ejercicios | VER-06: comprobar que se acepte un código nuevo y se rechace uno duplicado. |
-| RF-07 | Asignar rutinas respetando la existencia de una sola rutina activa por cliente y el límite de historial establecido. | CU-07 | RN-03, RN-04 | Rutinas | VER-07: comprobar que la rutina anterior quede inactiva, la nueva quede activa y, cuando corresponda, se elimine la rutina inactiva más antigua. |
-| RF-08 | Permitir que los clientes con cuenta consulten su rutina vigente. Los clientes sin cuenta son atendidos por el personal del gimnasio según el alcance documentado. | CU-08 | RN-03, RN-06 | Rutinas | VER-08: comprobar que el cliente consulte su propia rutina y no pueda acceder a la de otro cliente. |
-| RF-09 | Registrar y consultar la historia clínica básica respetando los permisos por rol y la titularidad del cliente. | CU-09, CU-10 | RN-05, RN-06 | Historia clínica | VER-09: comprobar los permisos de administración y entrenamiento, así como la restricción de acceso del cliente a su propia historia. |
-| RF-10 | Crear turnos de recurrencia semanal. | CU-11 | RN-07 | Turnos | VER-10: comprobar que el turno se defina por día de la semana y horarios, sin tratarlo como una cita de fecha única. |
-| RF-11 | Asignar clientes a turnos sin superar la capacidad configurada. | CU-12 | RN-08 | Turnos | VER-11: comprobar que se permita una asignación dentro de la capacidad y se rechace una que la supere. |
-| RF-12 | Registrar pagos conservando el usuario que realizó el registro. | CU-13 | RN-09, RN-10 | Pagos | VER-12: comprobar la persistencia del importe y del identificador del usuario registrante. |
-| RF-13 | Reflejar los pagos vencidos según su fecha de vencimiento y permitir consultar los vencimientos. | CU-14 | RN-11, RN-13 | Pagos | VER-13: comprobar que un pago impago vencido se identifique como vencido y que los próximos vencimientos se presenten como indicadores internos. |
-| RF-14 | Mostrar indicadores generales de la actividad del gimnasio. | CU-15 | RN-11, RN-13 y reglas de los módulos correspondientes | Dashboard y reportes | VER-14: comprobar la visualización de clientes activos, cuotas vencidas y próximas, ocupación de turnos e ingresos mensuales. |
-
-## 3. Matriz de trazabilidad no funcional y de seguridad
-
-| ID | Requisito o restricción | Documento de referencia | Elementos afectados | Verificación prevista |
+| ID | Requisito funcional | Casos de uso relacionados | Reglas de negocio relacionadas | Verificación prevista |
 |---|---|---|---|---|
-| RNF-01 | Las operaciones protegidas deben requerir autenticación y aplicar los permisos correspondientes al rol. | `SEGURIDAD.md`, `ARQUITECTURA.md` | API y módulos protegidos | VER-15: comprobar que una petición no autenticada sea rechazada y que un rol sin permisos no pueda ejecutar la operación. |
-| RNF-02 | El acceso del cliente a sus recursos debe verificar la titularidad, además del rol. | `SEGURIDAD.md`, RN-06 | Rutinas e historia clínica | VER-16: comprobar que un cliente no pueda acceder a los datos de otro modificando el identificador enviado en la petición. |
-| RNF-03 | La historia clínica debe tratarse como información sensible y contar con acceso restringido. | `SEGURIDAD.md`, RN-05, RN-06 | Historia clínica | VER-17: comprobar los permisos por rol y titularidad en las operaciones relacionadas con la historia clínica. |
-| RNF-04 | Las contraseñas no deben almacenarse en texto plano. El diseño contempla un mecanismo seguro de hash y restricciones para los tokens de recuperación. | `SEGURIDAD.md` | Autenticación y roles | VER-18: comprobar que no se almacene la contraseña original y que los tokens respeten las restricciones documentadas. |
-| RNF-05 | La comunicación entre el frontend y el backend debe protegerse mediante HTTPS en el entorno desplegado. | `ARQUITECTURA.md`, `SEGURIDAD.md` | Frontend y API REST | VER-19: comprobar que los servicios publicados utilicen HTTPS. |
-| RNF-06 | La arquitectura debe mantener la separación entre interfaz, lógica de negocio y persistencia. | `ARQUITECTURA.md` | Todo el sistema | VER-20: comprobar que el frontend consuma la API REST y que el acceso a MongoDB se realice desde el backend. |
+| RF-01 | El sistema debe permitir iniciar sesión mediante credenciales válidas y reconocer el rol del usuario. | CU-01 | RN-01, RN-12 | CP-01 |
+| RF-02 | El sistema debe permitir recuperar y cambiar contraseñas de manera segura. | CU-02, CU-03 | RN-01 | CP-02 |
+| RF-03 | El administrador debe poder dar de alta y dar de baja clientes, conservando sus registros históricos. | CU-04, CU-05 | RN-01, RN-02, RN-12 | CP-03 |
+| RF-04 | El administrador debe poder gestionar el catálogo de ejercicios, respetando la unicidad del código. | CU-06 | RN-01, RN-12 | CP-04 |
+| RF-05 | El entrenador debe poder asignar rutinas a los clientes, respetando las restricciones de vigencia y conservación del historial. | CU-07 | RN-03, RN-04 | CP-05 |
+| RF-06 | El sistema debe permitir consultar la rutina vigente de un cliente según su modalidad de acceso. | CU-08 | RN-03, RN-04 | CP-06 |
+| RF-07 | El sistema debe permitir cargar o actualizar la historia clínica de un cliente con los permisos correspondientes. | CU-09 | RN-05, RN-06 | CP-07 |
+| RF-08 | El sistema debe permitir consultar la historia clínica únicamente a usuarios autorizados. | CU-10 | RN-05, RN-06 | CP-08 |
+| RF-09 | El administrador o entrenador debe poder crear turnos semanales recurrentes. | CU-11 | RN-07 | CP-09 |
+| RF-10 | El sistema debe permitir asignar clientes a turnos activos sin superar su capacidad. | CU-12 | RN-07, RN-08 | CP-10 |
+| RF-11 | El administrador debe poder registrar pagos de inscripción y cuotas, incluyendo el monto y las fechas correspondientes. | CU-13 | RN-09, RN-10 | CP-11 |
+| RF-12 | El sistema debe detectar cuotas vencidas y actualizar su estado según las condiciones definidas. | CU-14 | RN-11 | CP-12 |
+| RF-13 | El sistema debe mostrar un dashboard con indicadores de clientes, pagos, vencimientos y ocupación de turnos. | CU-15 | RN-11, RN-13 | CP-13 |
+| RF-14 | El sistema debe mantener la relación opcional entre las cuentas de usuario y los registros de clientes, evitando asociaciones duplicadas. | CU-04, CU-09 | RN-02 | CP-14 |
 
-## 4. Reglas transversales del sistema
+## 3. Trazabilidad de requisitos no funcionales
 
-Las siguientes reglas deben conservarse en los casos de uso, diagramas e implementación:
+| ID | Requisito no funcional | Relación con el diseño | Verificación prevista |
+|---|---|---|---|
+| RNF-01 | Seguridad de autenticación y autorización. | CU-01, CU-02, CU-03, CU-09, CU-10; documento `SEGURIDAD.md`. | CP-15 |
+| RNF-02 | Protección de contraseñas mediante almacenamiento de hashes, nunca en texto plano. | CU-01, CU-02, CU-03; documento `SEGURIDAD.md`. | CP-16 |
+| RNF-03 | Protección de los datos sensibles de la historia clínica mediante controles de acceso. | CU-09, CU-10; reglas RN-05 y RN-06. | CP-17 |
+| RNF-04 | Separación de responsabilidades entre frontend, backend y persistencia. | Arquitectura documentada en `ARQUITECTURA.md`. | CP-18 |
+| RNF-05 | Integridad de los datos mediante validaciones y restricciones de unicidad. | RN-02, RN-08, RN-12; documentos `ESQUEMA_NOSQL.md` y `SEGURIDAD.md`. | CP-19 |
+| RNF-06 | Comunicación entre frontend y backend mediante una API REST sobre HTTPS en el entorno desplegado. | Documento `ARQUITECTURA.md` y diagrama de despliegue. | CP-20 |
 
-- **Baja lógica:** usuarios, clientes y ejercicios se desactivan sin eliminar físicamente sus registros mediante una baja ordinaria (RN-01).
-- **Relación entre usuario y cliente:** la asociación es opcional y uno a uno cuando existe, respetando los índices únicos definidos (RN-02).
-- **Rutinas:** cada cliente puede tener una sola rutina activa y un historial de hasta 12 rutinas (RN-03 y RN-04).
-- **Límite del historial:** cuando se supera el máximo, se elimina la rutina inactiva más antigua. La rutina activa no debe eliminarse mediante esta regla (RN-04).
-- **Historia clínica:** es opcional y el acceso debe respetar los permisos establecidos (RN-05 y RN-06).
-- **Turnos:** son recurrentes semanalmente y las asignaciones no pueden superar su capacidad (RN-07 y RN-08).
-- **Pagos:** deben conservar el importe con precisión decimal adecuada y el identificador del usuario que los registró (RN-09 y RN-10).
-- **Vencimientos:** el estado debe actualizarse según las reglas de vencimiento documentadas (RN-11).
-- **Notificaciones:** los próximos vencimientos se muestran como indicadores en el sistema. No se incorporan notificaciones externas por correo electrónico, SMS o push al alcance del MVP (RN-13).
+## 4. Relación con las reglas de negocio
 
-## 5. Mantenimiento de la trazabilidad
+- **RN-01:** baja lógica de usuarios, clientes y ejercicios.
+- **RN-02:** relación opcional uno a uno entre usuario y cliente.
+- **RN-03:** un solo registro de rutina vigente por cliente.
+- **RN-04:** máximo de 12 rutinas conservadas; al agregar una nueva cuando se alcanzó el límite, se elimina físicamente la rutina inactiva más antigua.
+- **RN-05:** la historia clínica es opcional.
+- **RN-06:** restricciones de acceso a la historia clínica según el rol y la titularidad del registro.
+- **RN-07:** los turnos se organizan mediante una recurrencia semanal.
+- **RN-08:** no se permite superar la capacidad de un turno.
+- **RN-09:** el monto de los pagos se almacena utilizando Decimal128.
+- **RN-10:** se registra el identificador del usuario responsable de registrar el pago.
+- **RN-11:** una cuota pasa a estado VENCIDO cuando supera su fecha de vencimiento y no se registra un nuevo pago que corresponda a esa obligación.
+- **RN-12:** unicidad de los correos electrónicos, DNI y códigos de ejercicios.
+- **RN-13:** el dashboard puede mostrar indicadores de próximos vencimientos; no se incluyen notificaciones externas por correo electrónico ni notificaciones push en el MVP.
 
-Cuando se modifique un caso de uso o una regla de negocio, se deberá revisar la fila correspondiente de esta matriz y las verificaciones asociadas.
+## 5. Casos de prueba previstos
 
-También se deberán revisar los diagramas que representen el comportamiento modificado y los documentos de arquitectura, seguridad o módulos que resulten afectados.
+| ID | Comprobación |
+|---|---|
+| CP-01 | Rechazar credenciales inválidas y permitir el acceso con credenciales válidas. |
+| CP-02 | Validar el cambio de contraseña y rechazar tokens de recuperación vencidos o utilizados. |
+| CP-03 | Impedir DNI duplicados y comprobar que la baja lógica conserve el registro histórico. |
+| CP-04 | Rechazar códigos de ejercicio duplicados. |
+| CP-05 | Verificar que no haya más de una rutina activa y que se respete el límite de 12 rutinas. |
+| CP-06 | Mostrar la rutina vigente y respetar las modalidades de consulta definidas. |
+| CP-07 | Permitir la carga o actualización de la historia clínica únicamente a actores autorizados. |
+| CP-08 | Denegar el acceso a la historia clínica de otro cliente no autorizado. |
+| CP-09 | Crear turnos con día, horarios, capacidad y entrenador. |
+| CP-10 | Rechazar una asignación cuando el turno alcanzó su capacidad. |
+| CP-11 | Registrar pagos con monto, fechas, tipo y usuario responsable. |
+| CP-12 | Actualizar el estado de una cuota vencida y comprobar que una obligación pagada no se marque como vencida. |
+| CP-13 | Mostrar los indicadores del dashboard a partir de los datos registrados. |
+| CP-14 | Impedir que un usuario o cliente quede asociado a más de un registro de la entidad opuesta. |
+| CP-15 | Comprobar autenticación, roles y permisos de los endpoints. |
+| CP-16 | Comprobar que las contraseñas no se almacenen en texto plano. |
+| CP-17 | Comprobar que un cliente no pueda acceder a la historia clínica de otro cliente. |
+| CP-18 | Verificar que la comunicación y las responsabilidades respeten la arquitectura documentada. |
+| CP-19 | Comprobar las validaciones de datos y las restricciones de unicidad. |
+| CP-20 | Verificar la comunicación HTTPS entre frontend y backend en el entorno desplegado. |
 
-Los identificadores RF y RNF se utilizan en esta matriz para facilitar la lectura y la trazabilidad. Si el equipo incorpora una nomenclatura formal diferente en la documentación principal, deberán unificarse los identificadores para evitar duplicaciones.
+## 6. Observaciones
+
+1. La matriz establece relaciones de trazabilidad entre requisitos, casos de uso, reglas de negocio y pruebas previstas.
+2. Los casos de prueba son verificaciones planificadas; su inclusión en este documento no implica que ya se hayan ejecutado.
+3. La detección de cuotas vencidas de CU-14 y los indicadores de próximos vencimientos de CU-15 son funcionalidades diferentes. La primera actualiza estados de pagos según RN-11; la segunda presenta información en el dashboard según RN-13.
+4. La implementación concreta de la autenticación, el almacenamiento y el despliegue deberá ajustarse a los documentos de arquitectura y seguridad del proyecto.
