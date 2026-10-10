@@ -1,85 +1,144 @@
 # Matriz de Trazabilidad — Gym Manager
 
-## 1. Objetivo
+**Proyecto:** Gym Manager · Grupo 101  
+**Versión:** 2.0 — Propuesta para validación  
+**Convención:** esta matriz relaciona identificadores; no reproduce las descripciones completas de los RF, RNF ni reglas. Las definiciones oficiales se mantienen en sus documentos fuente.
 
-La matriz de trazabilidad relaciona los requisitos funcionales y no funcionales del sistema Gym Manager con los casos de uso, las reglas de negocio y las verificaciones previstas.
+## 1. Objetivo y documentos fuente
 
-Su objetivo es comprobar que las funcionalidades definidas para el proyecto estén contempladas en el diseño y que puedan verificarse durante las pruebas.
+La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de negocio y verificaciones. Para evitar duplicación, el texto de cada requisito se mantiene únicamente en su catálogo correspondiente.
 
-## 2. Trazabilidad de requisitos funcionales
-
-| ID | Requisito funcional | Casos de uso relacionados | Reglas de negocio relacionadas | Verificación prevista |
-|---|---|---|---|---|
-| RF-01 | El sistema debe permitir iniciar sesión mediante credenciales válidas y reconocer el rol del usuario. | CU-01 | RN-01, RN-12 | CP-01 |
-| RF-02 | El sistema debe permitir recuperar y cambiar contraseñas de manera segura. | CU-02, CU-03 | RN-01 | CP-02 |
-| RF-03 | El administrador debe poder dar de alta y dar de baja clientes, conservando sus registros históricos. | CU-04, CU-05 | RN-01, RN-02, RN-12 | CP-03 |
-| RF-04 | El administrador debe poder gestionar el catálogo de ejercicios, respetando la unicidad del código. | CU-06 | RN-01, RN-12 | CP-04 |
-| RF-05 | El entrenador debe poder asignar rutinas a los clientes, respetando las restricciones de vigencia y conservación del historial. | CU-07 | RN-03, RN-04 | CP-05 |
-| RF-06 | El sistema debe permitir consultar la rutina vigente de un cliente según su modalidad de acceso. | CU-08 | RN-03, RN-04 | CP-06 |
-| RF-07 | El sistema debe permitir cargar o actualizar la historia clínica de un cliente con los permisos correspondientes. | CU-09 | RN-05, RN-06 | CP-07 |
-| RF-08 | El sistema debe permitir consultar la historia clínica únicamente a usuarios autorizados. | CU-10 | RN-05, RN-06 | CP-08 |
-| RF-09 | El administrador o entrenador debe poder crear turnos semanales recurrentes. | CU-11 | RN-07 | CP-09 |
-| RF-10 | El sistema debe permitir asignar clientes a turnos activos sin superar su capacidad. | CU-12 | RN-07, RN-08 | CP-10 |
-| RF-11 | El administrador debe poder registrar pagos de inscripción y cuotas, incluyendo el monto y las fechas correspondientes. | CU-13 | RN-09, RN-10 | CP-11 |
-| RF-12 | El sistema debe detectar cuotas vencidas y actualizar su estado según las condiciones definidas. | CU-14 | RN-11 | CP-12 |
-| RF-13 | El sistema debe mostrar un dashboard con indicadores de clientes, pagos, vencimientos y ocupación de turnos. | CU-15 | RN-11, RN-13 | CP-13 |
-| RF-14 | El sistema debe mantener la relación opcional entre las cuentas de usuario y los registros de clientes, evitando asociaciones duplicadas. | CU-04, CU-09 | RN-02 | CP-14 |
-
-## 3. Trazabilidad de requisitos no funcionales
-
-| ID | Requisito no funcional | Relación con el diseño | Verificación prevista |
-|---|---|---|---|
-| RNF-01 | Seguridad de autenticación y autorización. | CU-01, CU-02, CU-03, CU-09, CU-10; documento `SEGURIDAD.md`. | CP-15 |
-| RNF-02 | Protección de contraseñas mediante almacenamiento de hashes, nunca en texto plano. | CU-01, CU-02, CU-03; documento `SEGURIDAD.md`. | CP-16 |
-| RNF-03 | Protección de los datos sensibles de la historia clínica mediante controles de acceso. | CU-09, CU-10; reglas RN-05 y RN-06. | CP-17 |
-| RNF-04 | Separación de responsabilidades entre frontend, backend y persistencia. | Arquitectura documentada en `ARQUITECTURA.md`. | CP-18 |
-| RNF-05 | Integridad de los datos mediante validaciones y restricciones de unicidad. | RN-02, RN-08, RN-12; documentos `ESQUEMA_NOSQL.md` y `SEGURIDAD.md`. | CP-19 |
-| RNF-06 | Comunicación entre frontend y backend mediante una API REST sobre HTTPS en el entorno desplegado. | Documento `ARQUITECTURA.md` y diagrama de despliegue. | CP-20 |
-
-## 4. Relación con las reglas de negocio
-
-- **RN-01:** baja lógica de usuarios, clientes y ejercicios.
-- **RN-02:** relación opcional uno a uno entre usuario y cliente.
-- **RN-03:** un solo registro de rutina vigente por cliente.
-- **RN-04:** máximo de 12 rutinas conservadas; al agregar una nueva cuando se alcanzó el límite, se elimina físicamente la rutina inactiva más antigua.
-- **RN-05:** la historia clínica es opcional.
-- **RN-06:** restricciones de acceso a la historia clínica según el rol y la titularidad del registro.
-- **RN-07:** los turnos se organizan mediante una recurrencia semanal.
-- **RN-08:** no se permite superar la capacidad de un turno.
-- **RN-09:** el monto de los pagos se almacena utilizando Decimal128.
-- **RN-10:** se registra el identificador del usuario responsable de registrar el pago.
-- **RN-11:** una cuota pasa a estado VENCIDO cuando supera su fecha de vencimiento y no se registra un nuevo pago que corresponda a esa obligación.
-- **RN-12:** unicidad de los correos electrónicos, DNI y códigos de ejercicios.
-- **RN-13:** el dashboard puede mostrar indicadores de próximos vencimientos; no se incluyen notificaciones externas por correo electrónico ni notificaciones push en el MVP.
-
-## 5. Casos de prueba previstos
-
-| ID | Comprobación |
+| Elemento | Fuente oficial |
 |---|---|
-| CP-01 | Rechazar credenciales inválidas y permitir el acceso con credenciales válidas. |
-| CP-02 | Validar el cambio de contraseña y rechazar tokens de recuperación vencidos o utilizados. |
-| CP-03 | Impedir DNI duplicados y comprobar que la baja lógica conserve el registro histórico. |
-| CP-04 | Rechazar códigos de ejercicio duplicados. |
-| CP-05 | Verificar que no haya más de una rutina activa y que se respete el límite de 12 rutinas. |
-| CP-06 | Mostrar la rutina vigente y respetar las modalidades de consulta definidas. |
-| CP-07 | Permitir la carga o actualización de la historia clínica únicamente a actores autorizados. |
-| CP-08 | Denegar el acceso a la historia clínica de otro cliente no autorizado. |
-| CP-09 | Crear turnos con día, horarios, capacidad y entrenador. |
-| CP-10 | Rechazar una asignación cuando el turno alcanzó su capacidad. |
-| CP-11 | Registrar pagos con monto, fechas, tipo y usuario responsable. |
-| CP-12 | Actualizar el estado de una cuota vencida y comprobar que una obligación pagada no se marque como vencida. |
-| CP-13 | Mostrar los indicadores del dashboard a partir de los datos registrados. |
-| CP-14 | Impedir que un usuario o cliente quede asociado a más de un registro de la entidad opuesta. |
-| CP-15 | Comprobar autenticación, roles y permisos de los endpoints. |
-| CP-16 | Comprobar que las contraseñas no se almacenen en texto plano. |
-| CP-17 | Comprobar que un cliente no pueda acceder a la historia clínica de otro cliente. |
-| CP-18 | Verificar que la comunicación y las responsabilidades respeten la arquitectura documentada. |
-| CP-19 | Comprobar las validaciones de datos y las restricciones de unicidad. |
-| CP-20 | Verificar la comunicación HTTPS entre frontend y backend en el entorno desplegado. |
+| `RF-XXX` | `REQUERIMIENTOS_FUNCIONALES.md` |
+| `RNF-XXX` | `REQUERIMIENTOS_NO_FUNCIONALES.md` |
+| `CU-XX` | `CASOS_DE_USO.md` |
+| `RN-XX` | `REGLAS_DE_NEGOCIO.md` |
+| Diseño de controles de seguridad | `SEGURIDAD.md` |
+| Diseño y arquitectura | `DIAGRAMA_UML.md`, `ESQUEMA_NOSQL.md`, `ARQUITECTURA.md` |
 
-## 6. Observaciones
+**Importante:** una relación indicada en la matriz identifica la cobertura documental prevista; no demuestra por sí misma que la función esté implementada ni que la prueba haya sido ejecutada.
 
-1. La matriz establece relaciones de trazabilidad entre requisitos, casos de uso, reglas de negocio y pruebas previstas.
-2. Los casos de prueba son verificaciones planificadas; su inclusión en este documento no implica que ya se hayan ejecutado.
-3. La detección de cuotas vencidas de CU-14 y los indicadores de próximos vencimientos de CU-15 son funcionalidades diferentes. La primera actualiza estados de pagos según RN-11; la segunda presenta información en el dashboard según RN-13.
-4. La implementación concreta de la autenticación, el almacenamiento y el despliegue deberá ajustarse a los documentos de arquitectura y seguridad del proyecto.
+## 2. Trazabilidad de requerimientos funcionales
+
+| Identificador | Caso(s) de uso | Regla(s) de negocio | Verificación |
+|---|---|---|---|
+| RF-001 | CU-01 | — | CP-01 |
+| RF-002 | CU-01 | — | CP-01 |
+| RF-003 | CU-01 | — | CP-02 |
+| RF-004 | CU-01 | — | CP-01 |
+| RF-005 | CU-03 | — | CP-03 |
+| RF-006 | CU-04 (cobertura parcial; alta/vinculación requiere aclaración) | RN-02 | CP-04 |
+| RF-007 | CU-04 | RN-02, RN-12 | CP-04 |
+| RF-008 | Pendiente de ampliar CU | RN-01 | CP-05 |
+| RF-009 | Pendiente de ampliar CU | — | CP-05 |
+| RF-010 | CU-05 | RN-01 | CP-05 |
+| RF-011 | Pendiente de ampliar CU | — | CP-05 |
+| RF-012 | CU-06 | RN-12 | CP-06 |
+| RF-013 | Pendiente de ampliar CU | RN-12 | CP-06 |
+| RF-014 | Pendiente de ampliar CU | RN-12 | CP-06 |
+| RF-015 | Pendiente de ampliar CU | RN-01, RN-12 | CP-06 |
+| RF-016 | CU-07 | RN-03, RN-04 | CP-07, CP-08 |
+| RF-017 | CU-07 | — | CP-07 |
+| RF-018 | CU-08 | RN-03 | CP-09 |
+| RF-019 | CU-07 | RN-03 | CP-07 |
+| RF-020 | CU-07 | RN-04 | CP-08 |
+| RF-021 | CU-08 (flujo alternativo) | — | CP-09 |
+| RF-022 | CU-09 | RN-05, RN-06 | CP-10 |
+| RF-023 | CU-09 | RN-05, RN-06 | CP-10 |
+| RF-024 | CU-10 | RN-05, RN-06 | CP-11 |
+| RF-025 | CU-10 | RN-06 | CP-11, CP-12 |
+| RF-026 | CU-11 | RN-07 | CP-13 |
+| RF-027 | CU-11, CU-12 (consulta del cliente pendiente de detalle) | RN-07 | CP-13 |
+| RF-028 | CU-12 | RN-08 | CP-14 |
+| RF-029 | CU-12 | RN-08 | CP-14 |
+| RF-030 | Pendiente de ampliar CU | RN-08 | CP-14 |
+| RF-031 | CU-13 | RN-09, RN-10 | CP-15 |
+| RF-032 | CU-13 | RN-09 | CP-15 |
+| RF-033 | CU-13 | RN-10 | CP-15 |
+| RF-034 | CU-13, CU-14 | — | CP-16 |
+| RF-035 | CU-14 | RN-11 | CP-16 |
+| RF-036 | CU-15 | RN-13 | CP-17 |
+| RF-037 | CU-15 | — | CP-17 |
+| RF-038 | CU-15 | RN-11 | CP-17 |
+| RF-039 | CU-15 | RN-13 | CP-17 |
+| RF-040 | CU-15 | — | CP-17 |
+| RF-041 | CU-15 | — | CP-17 |
+
+## 3. Trazabilidad de requerimientos no funcionales
+
+| Identificador | Caso(s) de uso | Regla(s) de negocio | Verificación |
+|---|---|---|---|
+| RNF-001 | CU-01, CU-03 | — | CP-18 |
+| RNF-002 | CU-01, CU-09, CU-10, CU-13 | RN-06 | CP-02, CP-12 |
+| RNF-003 | CU-01 | — | CP-19 |
+| RNF-004 | CU-09, CU-10 | RN-06 | CP-11, CP-12 |
+| RNF-005 | CU-09, CU-10 | RN-05, RN-06 | CP-12 |
+| RNF-006 | CU-09, CU-10, CU-12, CU-15 | RN-06 | CP-12 |
+| RNF-007 | Despliegue | — | CP-20 |
+| RNF-008 | Despliegue/configuración | — | CP-21 |
+| RNF-009 | Persistencia/configuración | RN-12 | CP-21 |
+| RNF-010 | CU-04, CU-06, CU-12 | RN-02, RN-12 | CP-22 |
+| RNF-011 | CU-13 | RN-09 | CP-23 |
+| RNF-012 | CU-07, CU-13, CU-14 | RN-03, RN-04, RN-11 | CP-07, CP-16 |
+| RNF-013 | Arquitectura | — | CP-24 |
+| RNF-014 | Arquitectura | — | CP-24 |
+| RNF-015 | Arquitectura | — | CP-25 |
+| RNF-016 | Despliegue/configuración | — | CP-21 |
+| RNF-017 | Todos los documentos | RN-01–RN-13 | CP-26 |
+| RNF-018 | CU-08, CU-15 | — | CP-27 |
+| RNF-019 | Casos con formularios | — | CP-28 |
+| RNF-020 | CU-01, CU-07, CU-13, CU-15 | — | CP-29 (umbral pendiente) |
+| RNF-021 | Despliegue | — | CP-30 (objetivo pendiente) |
+
+## 4. Catálogo único de verificaciones previstas
+
+La matriz referencia las pruebas mediante `CP-XX`. Sus descripciones se mantienen únicamente en esta sección para que no haya una segunda lista de pruebas en los catálogos de requisitos.
+
+| ID | Verificación prevista | Relación principal |
+|---|---|---|
+| CP-01 | Probar inicio de sesión correcto, credenciales incorrectas, cuenta inactiva y cierre de sesión. | RF-001, RF-002, RF-004 |
+| CP-02 | Intentar operaciones protegidas con cada rol y comprobar que el backend rechace permisos insuficientes. | RF-003, RNF-002 |
+| CP-03 | Cambiar la contraseña autenticado; comprobar que no se acepte una contraseña actual incorrecta. | RF-005 |
+| CP-04 | Registrar clientes con y sin cuenta y comprobar que la asociación usuario-cliente no se duplique. | RF-006, RF-007 |
+| CP-05 | Consultar, buscar, modificar y dar de baja un cliente; comprobar que la baja conserve el historial. | RF-008–RF-011 |
+| CP-06 | Ejecutar alta, consulta/búsqueda, modificación y baja lógica de ejercicios; probar un código duplicado. | RF-012–RF-015 |
+| CP-07 | Asignar una rutina con ejercicios válidos; comprobar que la nueva rutina quede activa y la anterior inactiva. | RF-016, RF-017, RF-019 |
+| CP-08 | Superar el límite de historial en un escenario controlado y comprobar que solo se elimina la rutina inactiva más antigua. | RF-020 |
+| CP-09 | Consultar la rutina vigente y generar la versión imprimible para un cliente sin cuenta. | RF-018, RF-021 |
+| CP-10 | Crear y actualizar historia clínica opcional con actores habilitados y comprobar fecha de actualización. | RF-022, RF-023 |
+| CP-11 | Probar lectura/modificación de historia propia y ajena con los distintos roles; denegar el acceso a otro cliente. | RF-024, RF-025 |
+| CP-12 | Comprobar que endpoints generales no devuelvan datos de historia clínica a solicitudes que no los requieren. | RF-025, RNF-004–RNF-006 |
+| CP-13 | Crear y consultar un turno semanal con día, horarios, entrenador y capacidad. | RF-026, RF-027 |
+| CP-14 | Asignar, retirar y consultar clientes de turnos; rechazar una asignación que exceda la capacidad. | RF-028–RF-030 |
+| CP-15 | Registrar inscripción/cuota y comprobar cliente, monto, fechas, estado y usuario que registró la operación. | RF-031–RF-033 |
+| CP-16 | Probar el proceso de vencimiento con pagos vencidos impagos y obligaciones ya pagadas; comprobar el estado final. | RF-034, RF-035 |
+| CP-17 | Comparar indicadores del dashboard con un conjunto de datos de prueba conocido. | RF-036–RF-041 |
+| CP-18 | Inspeccionar el almacenamiento para comprobar que no persistan contraseñas en texto plano. | RNF-001 |
+| CP-19 | Probar tokens válidos, expirados, inválidos y ausentes. | RNF-003 |
+| CP-20 | En el entorno desplegado, comprobar HTTPS y un certificado válido. | RNF-007 |
+| CP-21 | Revisar configuración, secretos, CORS y permisos de acceso a MongoDB para verificar que no haya credenciales en código fuente. | RNF-008, RNF-009, RNF-016 |
+| CP-22 | Ejecutar los scripts de índices y comprobar que email, DNI, código de ejercicio y relación uno-a-uno rechacen duplicados. | RNF-010 |
+| CP-23 | Comprobar que el monto se persista como `Decimal128` y que sus operaciones no sufran redondeo inesperado. | RNF-011 |
+| CP-24 | Revisar que frontend, backend, controladores, servicios, repositorios y persistencia mantengan las responsabilidades documentadas. | RNF-013, RNF-014 |
+| CP-25 | Inspeccionar solicitudes y respuestas de API para verificar REST/JSON y los contratos publicados. | RNF-015 |
+| CP-26 | Comparar identificadores y referencias entre RF, RNF, reglas, casos de uso, seguridad y matriz. | RNF-017 |
+| CP-27 | Probar las pantallas principales en tamaños de pantalla móvil y escritorio. | RNF-018 |
+| CP-28 | Probar validaciones y mensajes de error de formularios con datos válidos e inválidos. | RNF-019 |
+| CP-29 | Ejecutar mediciones de rendimiento cuando el equipo haya aprobado los umbrales y condiciones de carga. | RNF-020 |
+| CP-30 | Verificar disponibilidad y recuperación según los objetivos que el equipo defina tras seleccionar el hosting. | RNF-021 |
+
+## 5. Gaps de trazabilidad detectados
+
+Los siguientes puntos no deben ocultarse marcándolos como cumplidos; requieren una actualización posterior de los documentos:
+
+1. **Casos de uso por ampliar:** las operaciones de consulta/edición/búsqueda de clientes, modificación y baja de ejercicios, baja de asignación de un turno y ciertos flujos de cuenta no tienen un caso de uso específico completo en la versión actual. Se indica en la tabla como pendiente de ampliar.
+2. **Recuperación de contraseña:** `CU-02` y su historia de usuario siguen en el repositorio, pero la especificación actual del MVP la excluye. El equipo debe retirar esos elementos del alcance del MVP o aprobar explícitamente un cambio de alcance; no deben mantenerse como requisito vigente y excluido al mismo tiempo.
+3. **Permisos de ejercicios:** `MODULOS.md` y `CASOS_DE_USO.md` no asignan de manera idéntica los permisos del catálogo. Debe aprobarse una política única.
+4. **Pagos vencidos:** definir la relación entre vencimiento, estado impago y registro de una cuota posterior, de modo que el proceso periódico no marque incorrectamente una obligación ya saldada.
+5. **Permisos de pagos:** `MODULOS.md` y `CU-13` reservan el registro de pagos al Administrador, pero `RN-10` dice que `usuarioRegistroId` puede corresponder a `ADMIN` o `ENTRENADOR`. El equipo debe acordar una política única y alinear el RF y los casos de uso.
+6. **RNF-020 y RNF-021:** los umbrales cuantitativos de rendimiento, disponibilidad y recuperación no figuran definidos; las verificaciones correspondientes no pueden aprobarse hasta que se establezcan.
+
+## 6. Estado de ejecución
+
+Todas las entradas `CP-XX` de esta versión son **verificaciones previstas**. Debe agregarse el resultado de ejecución (pendiente/aprobada/rechazada), fecha, responsable y evidencia cuando se realicen las pruebas. No se considera que una prueba esté aprobada por estar documentada.
