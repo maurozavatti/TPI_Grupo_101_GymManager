@@ -7,7 +7,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "build": "tsc",
-    "start": "node --env-file=.env dist/server.js",
+    "start": "node --env-file-if-exists=.env dist/server.js",
     "check:db": "npm run build && node --env-file=.env dist/check-connection.js"
   },
   "devDependencies": {
