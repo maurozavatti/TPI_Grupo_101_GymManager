@@ -4,5 +4,9 @@
   "private": true,
   "description": "API REST de GymManager desarrollada con Node.js y TypeScript.",
   "type": "module",
-  "scripts": {}
+  "scripts": {},
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
 }
