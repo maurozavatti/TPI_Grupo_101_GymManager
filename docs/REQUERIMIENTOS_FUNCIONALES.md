@@ -60,12 +60,12 @@ Un cliente puede existir sin una cuenta de usuario. La relación entre una cuent
 
 | ID | Requerimiento | Prioridad |
 |---|---|---|
-| RF-012 | El sistema deberá permitir a los actores autorizados registrar ejercicios en el catálogo genérico mediante los campos definidos en el modelo de datos. | Alta |
-| RF-013 | El sistema deberá permitir consultar el catálogo y buscar o filtrar ejercicios por los criterios disponibles, por ejemplo, grupo muscular. | Alta |
-| RF-014 | El sistema deberá permitir modificar los datos de un ejercicio existente a los actores autorizados. | Alta |
-| RF-015 | El sistema deberá permitir dar de baja lógicamente un ejercicio, conservando el registro. | Alta |
+| RF-012 | El sistema deberá permitir al Administrador registrar ejercicios en el catálogo genérico, de forma individual o mediante la importación de un archivo Excel. | Alta |
+| RF-013 | El sistema deberá permitir al Administrador y al Entrenador consultar el catálogo y buscar o filtrar ejercicios por los criterios disponibles, por ejemplo, grupo muscular. | Alta |
+| RF-014 | El sistema deberá permitir al Administrador modificar los datos de un ejercicio existente, de forma individual o mediante la importación de un archivo Excel. | Alta |
+| RF-015 | El sistema deberá permitir al Administrador dar de baja lógicamente un ejercicio, conservando el registro. | Alta |
 
-**Pendiente de decisión:** `MODULOS.md` menciona Administrador y Entrenador como actores del catálogo, mientras que el caso de uso de alta asigna la operación al Administrador. Debe acordarse y mantenerse la misma política de permisos en todos los documentos.
+El Entrenador puede consultar el catálogo, pero no crear, modificar ni dar de baja ejercicios.
 
 ### 5.4 Gestión de rutinas
 
@@ -97,9 +97,9 @@ No forman parte del MVP los adjuntos, estudios, recetas, certificados, imágenes
 | RF-027 | El sistema deberá permitir consultar los turnos disponibles, su ocupación y los clientes asignados; el cliente con cuenta podrá consultar su propio turno asignado. | Alta |
 | RF-028 | El sistema deberá permitir al Administrador o Entrenador asignar un cliente existente a un turno activo. | Alta |
 | RF-029 | El sistema deberá rechazar una asignación cuando el turno haya alcanzado su capacidad máxima. | Alta |
-| RF-030 | El sistema deberá permitir retirar a un cliente de un turno a los actores autorizados. | Media |
+| RF-030 | El sistema deberá permitir al Administrador y al Entrenador retirar a un cliente de un turno. | Media |
 
-Los turnos del MVP representan franjas recurrentes semanales. No se incluyen clases especiales ni reservas puntuales con fecha específica.
+Los turnos del MVP representan franjas recurrentes semanales. No se incluyen clases especiales ni reservas puntuales con fecha específica. La cancelación completa de un turno, la reasignación automática de clientes a otro turno y la detección de solapamiento de horarios de un mismo entrenador quedan fuera de este MVP (ver RN-14).
 
 ### 5.7 Gestión de pagos
 
