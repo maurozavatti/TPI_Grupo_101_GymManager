@@ -54,7 +54,7 @@ Un cliente puede existir sin una cuenta de usuario. La relación entre una cuent
 | RF-008 | El sistema deberá permitir al personal autorizado consultar el listado de clientes y los datos de un cliente seleccionado. | Alta |
 | RF-009 | El sistema deberá permitir al Administrador modificar los datos personales y de contacto de un cliente. | Alta |
 | RF-010 | El sistema deberá permitir al Administrador dar de baja lógicamente a un cliente, conservando el registro y su historial asociado. | Alta |
-| RF-011 | El sistema deberá permitir buscar o filtrar clientes mediante criterios disponibles en la interfaz. Los campos de búsqueda deberán ser definidos por el equipo. | Media |
+| RF-011 | El sistema deberá permitir buscar o filtrar clientes por nombre, apellido o DNI. | Media |
 
 ### 5.3 Catálogo de ejercicios
 

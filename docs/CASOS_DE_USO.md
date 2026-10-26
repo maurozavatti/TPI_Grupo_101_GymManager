@@ -68,6 +68,27 @@ Este documento detalla los casos de uso principales del sistema, organizados por
   2. El sistema marca `activo: false` y completa `fechaBaja`, sin eliminar el documento.
 - **Postcondición:** El cliente queda inhabilitado pero su historial (rutinas, pagos, turnos) se conserva.
 
+### CU-16: Modificar un cliente
+
+- **Actor:** Administrador.
+- **Precondición:** El cliente existe.
+- **Flujo principal:**
+  1. El administrador selecciona el cliente y edita sus datos identificatorios y de contacto.
+  2. Si se modifica el DNI, el sistema valida que no pertenezca a otro cliente activo.
+  3. El sistema actualiza el documento y su `fechaModificacion`.
+- **Flujo alternativo:** Si el nuevo DNI ya pertenece a otro cliente, el sistema rechaza la modificación.
+- **Postcondición:** Los datos del cliente quedan actualizados.
+
+### CU-20: Consultar el listado de clientes
+
+- **Actor:** Administrador, Entrenador.
+- **Precondición:** El actor está autenticado.
+- **Flujo principal:**
+  1. El actor solicita el listado de clientes.
+  2. El sistema muestra los clientes activos, con la posibilidad de buscar o filtrar por nombre, apellido o DNI.
+  3. El actor selecciona un cliente para ver su detalle completo.
+- **Postcondición:** El actor visualiza el listado y puede acceder al detalle de cada cliente.
+
 ---
 
 ## Módulo 3 — Catálogo de Ejercicios
@@ -82,6 +103,35 @@ Este documento detalla los casos de uso principales del sistema, organizados por
   3. El sistema crea el documento en `ejercicios`.
 - **Flujo alternativo:** Si el `codigo` ya existe, el sistema rechaza el alta.
 - **Postcondición:** El ejercicio queda disponible para que los entrenadores lo usen en rutinas.
+
+### CU-17: Modificar un ejercicio
+
+- **Actor:** Administrador.
+- **Precondición:** El ejercicio existe.
+- **Flujo principal:**
+  1. El administrador selecciona el ejercicio y edita nombre, descripción, grupo muscular o `codigo`.
+  2. Si se modifica el `codigo`, el sistema valida que no esté repetido.
+  3. El sistema actualiza el documento en `ejercicios`.
+- **Flujo alternativo (carga masiva):** El administrador puede importar un archivo Excel con varios ejercicios, respetando una plantilla con las columnas `código`, `nombre`, `grupo muscular` y `descripción` (en ese orden, una fila por ejercicio). El sistema valida cada fila (columnas obligatorias `código` y `nombre`, `código` único) y crea o actualiza los ejercicios correspondientes, informando los errores encontrados fila por fila.
+- **Postcondición:** El catálogo queda actualizado.
+
+### CU-18: Dar de baja un ejercicio
+
+- **Actor:** Administrador.
+- **Precondición:** El ejercicio existe y está activo.
+- **Flujo principal:**
+  1. El administrador selecciona el ejercicio y confirma la baja.
+  2. El sistema marca `activo: false` y completa `fechaBaja`, sin eliminar el documento.
+- **Postcondición:** El ejercicio deja de estar disponible para nuevas rutinas; las rutinas existentes que ya lo incluían conservan la referencia.
+
+### CU-21: Consultar el catálogo de ejercicios
+
+- **Actor:** Administrador, Entrenador.
+- **Precondición:** El actor está autenticado.
+- **Flujo principal:**
+  1. El actor solicita el catálogo de ejercicios.
+  2. El sistema muestra los ejercicios activos, con la posibilidad de buscar o filtrar por nombre o grupo muscular.
+- **Postcondición:** El actor visualiza el catálogo disponible para armar rutinas.
 
 ---
 
@@ -155,6 +205,16 @@ Este documento detalla los casos de uso principales del sistema, organizados por
   3. El sistema agrega el `clienteId` al arreglo `clientes[]` del turno.
 - **Flujo alternativo:** Si el turno ya alcanzó el cupo máximo, el sistema rechaza la asignación.
 - **Postcondición:** El cliente queda anotado en el turno.
+
+### CU-19: Retirar un cliente de un turno
+
+- **Actor:** Administrador, Entrenador.
+- **Precondición:** El cliente está asignado al turno.
+- **Flujo principal:**
+  1. El actor selecciona el turno y el cliente asignado, y confirma el retiro.
+  2. El sistema quita el `clienteId` del arreglo `clientes[]` del turno, liberando un lugar en el cupo.
+- **Postcondición:** El cliente deja de estar asignado a ese turno. Su historial de pagos e historia clínica no se ve afectado.
+- **Nota:** la cancelación completa de un turno, la reasignación automática de clientes a otro turno y la detección de solapamiento de horarios para un mismo entrenador no forman parte de este MVP; quedan documentadas como funcionalidad a futuro (ver `REGLAS_DE_NEGOCIO.md`).
 
 ---
 
