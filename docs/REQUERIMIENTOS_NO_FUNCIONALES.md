@@ -57,8 +57,8 @@ Los requisitos de esta versión se basan en la arquitectura y las decisiones doc
 |---|---|---|---|
 | RNF-018 | Acceso móvil | Las funciones previstas para clientes deberán poder utilizarse desde un navegador móvil, en particular la consulta de rutina y turno desde el perfil. | Pruebas de interfaz en tamaños de pantalla móviles y escritorio. |
 | RNF-019 | Usabilidad | Los formularios deberán identificar los campos requeridos y comunicar errores de validación sin depender únicamente del color. | Pruebas manuales de formularios y revisión de mensajes de error. |
-| RNF-020 | Rendimiento | El equipo deberá establecer un umbral cuantitativo de tiempo de respuesta para las operaciones principales y el dashboard antes de la aceptación del MVP. El valor objetivo no aparece definido en la documentación actual y queda pendiente de aprobación. | Una vez acordado el umbral, ejecutar mediciones repetibles sobre los casos de prueba seleccionados. |
-| RNF-021 | Disponibilidad | El equipo deberá definir el objetivo de disponibilidad y las expectativas de recuperación del sistema una vez seleccionados el hosting y el entorno de despliegue. Estos objetivos no están fijados en la documentación actual. | Una vez definidos, verificar mediante el plan de despliegue y las pruebas operativas correspondientes. |
+| RNF-020 | Rendimiento | Las operaciones principales (inicio de sesión, consulta de rutina, consulta de turno, registro de pago) deberán responder en menos de 2 segundos bajo condiciones normales de uso, con hasta 20 usuarios concurrentes. | Medir tiempos de respuesta de los casos de prueba seleccionados bajo la carga simulada definida. |
+| RNF-021 | Disponibilidad | El sistema deberá estar disponible al menos el 95% del tiempo durante el período de evaluación académica, permitiendo ventanas de mantenimiento programado fuera del horario habitual de uso del gimnasio. No se define un plan de recuperación ante desastres (RTO/RPO), dado el alcance académico del proyecto. | Verificar mediante el registro de disponibilidad del hosting elegido durante el período de evaluación. |
 
 ## 4. Pendientes para aprobación
 
@@ -72,7 +72,7 @@ Antes de aprobar definitivamente el documento, el equipo debe resolver al menos:
 4. Dominios, CORS, TLS y políticas de acceso de MongoDB en el despliegue real.
 5. Dispositivos/navegadores mínimos que se utilizarán para verificar la interfaz móvil.
 
-Los requisitos RNF-020 y RNF-021 permanecen expresamente pendientes de cuantificación y no deben presentarse como objetivos medidos o ya cumplidos.
+Los requisitos RNF-020 y RNF-021 incorporan valores objetivo propuestos por el equipo para esta entrega. No deben presentarse como objetivos ya medidos o verificados hasta que se ejecuten las pruebas correspondientes en el entorno desplegado.
 
 ## 5. Relación con otros documentos
 
