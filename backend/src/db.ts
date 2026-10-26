@@ -18,3 +18,8 @@ export async function conectarDB() {
 
   return cliente.db(nombreBase)
 }
+
+// Cerramos la conexion cuando terminamos una prueba o detenemos el backend.
+export async function cerrarConexionDB() {
+  await cliente.close()
+}
