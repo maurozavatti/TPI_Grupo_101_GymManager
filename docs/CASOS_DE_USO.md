@@ -193,6 +193,7 @@ Este documento detalla los casos de uso principales del sistema, organizados por
 - **Flujo principal:**
   1. El actor define día (recurrente semanal), horario de inicio y fin, cupo máximo y entrenador responsable.
   2. El sistema crea el documento en `turnos` con `activo: true`.
+- **Flujo alternativo:** Si el actor es Entrenador y el entrenador responsable no es él mismo, el sistema rechaza la operación (RN-16).
 - **Postcondición:** El turno queda disponible para asignar clientes.
 
 ### CU-12: Asignar un cliente a un turno
@@ -204,6 +205,7 @@ Este documento detalla los casos de uso principales del sistema, organizados por
   2. El sistema valida que la cantidad de clientes asignados sea menor a `capacidad`.
   3. El sistema agrega el `clienteId` al arreglo `clientes[]` del turno.
 - **Flujo alternativo:** Si el turno ya alcanzó el cupo máximo, el sistema rechaza la asignación.
+- **Flujo alternativo:** Si el actor es Entrenador y el turno no es suyo, el sistema rechaza la operación (RN-16).
 - **Postcondición:** El cliente queda anotado en el turno.
 
 ### CU-19: Retirar un cliente de un turno
@@ -213,6 +215,7 @@ Este documento detalla los casos de uso principales del sistema, organizados por
 - **Flujo principal:**
   1. El actor selecciona el turno y el cliente asignado, y confirma el retiro.
   2. El sistema quita el `clienteId` del arreglo `clientes[]` del turno, liberando un lugar en el cupo.
+- **Flujo alternativo:** Si el actor es Entrenador y el turno no es suyo, el sistema rechaza la operación (RN-16).
 - **Postcondición:** El cliente deja de estar asignado a ese turno. Su historial de pagos e historia clínica no se ve afectado.
 - **Nota:** la cancelación completa de un turno, la reasignación automática de clientes a otro turno y la detección de solapamiento de horarios para un mismo entrenador no forman parte de este MVP; quedan documentadas como funcionalidad a futuro (ver `REGLAS_DE_NEGOCIO.md`).
 

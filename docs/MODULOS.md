@@ -98,12 +98,12 @@ Gestiona la información básica de salud del cliente.
 
 Gestiona los horarios de clase y la asignación de clientes a cada uno.
 
-**Colecciones:** `turnos`, con referencias a `clientes` y `usuarios` (entrenador).
+**Colecciones:** `turnos`, con referencias a `clientes` y `usuarios` (entrenador). La configuración general de la agenda (franjas horarias de apertura, cupo por defecto y los días de trabajo asignados a cada entrenador) se guarda en `configuracion`.
 
-**Funcionalidades principales:**
-- Alta de turnos (día, horario, cupo máximo).
-- Asignación de un entrenador responsable.
-- Asignación y baja de clientes a un turno, respetando el cupo.
+**Funcionalidades principales y permisos:**
+- **Alta, modificación y baja de turnos:** el Entrenador solo puede crear, modificar o dar de baja turnos propios (donde él es el entrenador responsable); no puede tocar los turnos de otro entrenador. El Administrador puede operar sobre los turnos de cualquier entrenador.
+- **Franjas horarias de apertura y cupo general:** son configuración global, exclusiva del Administrador. Un Entrenador puede generar o ajustar sus propios días de trabajo dentro de esas franjas, pero no puede cambiar el horario de apertura general ni el cupo por defecto.
+- Asignación y baja de clientes a un turno, respetando el cupo; el Entrenador solo gestiona clientes en sus propios turnos.
 - Consulta del turno asignado desde el perfil del cliente.
 
 ---
