@@ -2,6 +2,7 @@
 **/.env
 **/.env.*
 !**/.env.example
+!**/.env.ejemplo
 
 # Frontend
 **/node_modules/
