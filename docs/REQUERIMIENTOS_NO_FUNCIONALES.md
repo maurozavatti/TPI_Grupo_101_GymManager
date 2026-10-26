@@ -11,7 +11,7 @@ Este documento especifica restricciones y atributos de calidad del sistema Gym M
 
 ## 2. Alcance y convenciones
 
-Los requisitos de esta versión se basan en la arquitectura y las decisiones documentadas: frontend web, backend Java/Spring Boot, API REST y persistencia MongoDB. Cuando los documentos existentes no definen una métrica o un objetivo cuantitativo, se lo indica como pendiente de aprobación; no se da por acordado un umbral arbitrario.
+Los requisitos de esta versión se basan en la arquitectura y las decisiones documentadas: frontend web, backend Node.js (servidor http nativo, sin frameworks externos), API REST y persistencia MongoDB mediante el driver oficial. Cuando los documentos existentes no definen una métrica o un objetivo cuantitativo, se lo indica como pendiente de aprobación; no se da por acordado un umbral arbitrario.
 
 - **Verificable:** puede revisarse por inspección, configuración o prueba.
 - **Pendiente de cuantificar:** el equipo debe definir el valor objetivo antes de la aceptación final.
@@ -23,7 +23,7 @@ Los requisitos de esta versión se basan en la arquitectura y las decisiones doc
 
 | ID | Categoría | Requerimiento no funcional | Verificación |
 |---|---|---|---|
-| RNF-001 | Autenticación | Las contraseñas no deberán almacenarse en texto plano; deberán persistirse como hashes generados con un mecanismo de hashing seguro y salt. `SEGURIDAD.md` propone BCrypt mediante Spring Security. | Inspeccionar el mecanismo usado y comprobar que el dato persistido no es la contraseña original. |
+| RNF-001 | Autenticación | Las contraseñas no deberán almacenarse en texto plano; deberán persistirse como hashes generados con un mecanismo de hashing seguro y salt. `SEGURIDAD.md` propone la librería `bcryptjs`. | Inspeccionar el mecanismo usado y comprobar que el dato persistido no es la contraseña original. |
 | RNF-002 | Autorización | Los permisos deberán validarse en el backend para cada endpoint protegido; ocultar controles en la interfaz no se considerará suficiente. | Probar peticiones directas a endpoints con roles permitidos y no permitidos. |
 | RNF-003 | Sesión | Los tokens de autenticación deberán tener vencimiento y el backend deberá rechazar tokens expirados o inválidos. | Pruebas de token válido, vencido, malformado y ausente. |
 | RNF-004 | Privacidad | El acceso a la historia clínica deberá comprobar tanto el rol del actor como la titularidad del registro cuando actúe un cliente. | Intentar consultar o modificar la historia propia y la de otro cliente con distintos roles. |

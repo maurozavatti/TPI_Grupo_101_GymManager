@@ -8,17 +8,17 @@ Este documento detalla cómo el sistema protege el acceso a la información, con
 
 ## 1. Autenticación
 
-- El sistema usa **Spring Security + JWT** (ver `README.md`, Sección 12).
-- Las contraseñas nunca se almacenan en texto plano: se guarda `passwordHash`, un hash generado con un algoritmo de hashing seguro con salt (por ejemplo, BCrypt), que es el estándar provisto por Spring Security.
-- Al iniciar sesión, el sistema valida las credenciales y emite un token JWT con el `_id` del usuario y su `rol` (`ADMIN`, `ENTRENADOR` o `USUARIO`). Ese token se envía en cada request posterior para identificar al usuario, sin necesidad de volver a enviar la contraseña.
-- Los tokens tienen un tiempo de expiración, para limitar el impacto si un token se filtra.
-- Toda la comunicación entre frontend y backend se realiza sobre **HTTPS**, evitando que las credenciales o los datos sensibles viajen sin cifrar.
+- El sistema usa **sesiones del lado del servidor**: al iniciar sesión, el backend genera un token aleatorio, guarda su hash en la colección `sesiones` (junto con el usuario y la fecha de expiración) y lo envía al navegador como una cookie `HttpOnly` (ver `README.md`, Sección 12). El navegador no puede leer ni manipular el token desde JavaScript.
+- Las contraseñas nunca se almacenan en texto plano: se guarda `passwordHash`, un hash generado con la librería `bcryptjs`.
+- En cada request, el backend busca el hash del token recibido en `sesiones`; si existe, no está vencido y el usuario sigue activo, identifica al usuario y su `rol` (`ADMIN`, `ENTRENADOR` o `USUARIO`) a partir de ese registro, sin necesidad de volver a enviar la contraseña.
+- Las sesiones tienen un tiempo de expiración y, a diferencia de un token sin estado, se pueden invalidar explícitamente al cerrar sesión (se elimina el documento correspondiente en `sesiones`).
+- Toda la comunicación entre frontend y backend se realiza sobre **HTTPS**, evitando que las credenciales, la cookie de sesión o los datos sensibles viajen sin cifrar.
 
 ---
 
 ## 2. Autorización
 
-La autorización se aplica a nivel de **endpoint** del backend (no solo ocultando opciones en el frontend, ya que eso no evita que alguien llame directamente a la API). Cada endpoint declara qué rol o roles pueden invocarlo, usando las anotaciones de Spring Security (por ejemplo, `@PreAuthorize`) para verificar el rol presente en el JWT antes de ejecutar la lógica.
+La autorización se aplica a nivel de **endpoint** del backend (no solo ocultando opciones en el frontend, ya que eso no evita que alguien llame directamente a la API). Cada controlador verifica, antes de ejecutar su lógica, el rol del usuario identificado a partir de su sesión activa (por ejemplo, exigiendo `ADMIN` o `ENTRENADOR` según la operación).
 
 Para los endpoints vinculados a un cliente específico (por ejemplo, consultar su propia rutina o su propia historia clínica), además del rol se valida que el `clienteId` del recurso solicitado corresponda al `clienteId` asociado al usuario autenticado — así un Cliente no puede consultar los datos de otro cliente simplemente cambiando un identificador en la URL.
 
