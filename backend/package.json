@@ -1,0 +1,8 @@
+{
+  "name": "gymmanager-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST de GymManager desarrollada con Node.js y TypeScript.",
+  "type": "module",
+  "scripts": {}
+}
