@@ -35,9 +35,9 @@ Existen soluciones comerciales de gestión de gimnasios. GymManager no busca com
 
 | Actor | Responsabilidades principales |
 |---|---|
-| **Administrador / Dueño** | Gestiona clientes, entrenadores y ejercicios; registra y consulta pagos; define turnos; administra historia clínica de los clientes. |
-| **Entrenador** | Consulta el catálogo de ejercicios; crea, asigna y modifica rutinas; asigna clientes a turnos (clientes con y sin cuenta). |
-| **Cliente** | Inicia sesión, consulta su perfil, su rutina y sus ejercicios asignados, ve su turno, carga y actualiza su historia clínica. No modifica su rutina ni su turno. |
+| **Administrador / Dueño** | Gestiona clientes (alta, modificación y baja); administra el catálogo de ejercicios (alta, modificación y baja, incluida la carga masiva por Excel); registra y consulta pagos (operación exclusiva de este rol); crea turnos y asigna o retira clientes de ellos; crea, modifica y consulta la historia clínica de cualquier cliente. |
+| **Entrenador** | Consulta el catálogo de ejercicios, sin poder modificarlo; crea, asigna y modifica rutinas; crea turnos y asigna o retira clientes de ellos; crea, modifica y consulta la historia clínica de cualquier cliente; no tiene acceso al módulo de Pagos. |
+| **Cliente** | Inicia sesión, consulta su perfil, su rutina y sus ejercicios asignados, ve su turno, carga y actualiza su propia historia clínica. No modifica su rutina ni su turno, y no accede a datos de otros clientes. |
 
 **Sobre el rol de Súper Admin:** el equipo del proyecto va a operar como administrador general de la plataforma, pero ese rol solo tiene sentido cuando existe más de un gimnasio usando el sistema (multi-tenant). Como el MVP del TFI está acotado a un único gimnasio, **el rol de Administrador/Dueño ya cubre esa función para esta entrega** — no se implementa un actor "Súper Admin" separado todavía. Ese rol queda documentado como parte de la visión a futuro (Sección 7), cuando exista más de un gimnasio y haya que gestionar altas y suscripciones entre ellos.
 
@@ -121,7 +121,7 @@ El sistema no obligará a ningún cliente a registrarse. El personal podrá carg
 
 ## 9. Gestión de ejercicios
 
-El sistema tendrá un catálogo propio de ejercicios (nombre, descripción, y los campos que surjan del relevamiento), administrable con baja lógica para conservar el historial.
+El sistema tendrá un catálogo propio de ejercicios (nombre, descripción, y los campos que surjan del relevamiento). El alta, la modificación y la baja lógica son exclusivas del Administrador, incluyendo la posibilidad de cargar o actualizar ejercicios en lote mediante la importación de un archivo Excel. El Entrenador puede consultar el catálogo, pero no modificarlo.
 
 > **Nota sobre el catálogo:** el gimnasio utiliza una metodología de entrenamiento contratada a un profesional externo, a la que el equipo no tiene acceso ni derecho de uso. Por eso, el MVP se construirá con un **catálogo de ejercicios genérico** (de uso común y libre), único y compartido. La posibilidad de que cada gimnasio cargue su propio catálogo queda para la fase multi-tenant (Sección 7).
 
@@ -131,9 +131,9 @@ El sistema tendrá un catálogo propio de ejercicios (nombre, descripción, y lo
 
 **Rutinas:** el entrenador selecciona ejercicios del catálogo y los asocia a un cliente, indicando series, repeticiones, peso, orden y observaciones. La estructura definitiva se ajustará luego del relevamiento (ver Sección 14).
 
-**Turnos:** el administrador o entrenador define turnos (día, horario, cupo máximo) y asigna clientes a ellos. El cliente con cuenta consulta su turno asignado desde su perfil. La estructura definitiva (por ejemplo, si los turnos son por clase grupal, por entrenador, o ambos) se define en el relevamiento.
+**Turnos:** el administrador o entrenador define turnos (día, horario, cupo máximo), asigna clientes a ellos y puede retirarlos de un turno. La cancelación completa de un turno, la reasignación automática de clientes entre turnos y la detección de solapamiento de horarios de un mismo entrenador quedan fuera del alcance de este MVP y se consideran funcionalidad a futuro (ver `docs/REGLAS_DE_NEGOCIO.md`).
 
-**Pagos:** el administrador podrá registrar, como mínimo, la **inscripción inicial** (pago único al ingresar) y la **cuota periódica**, con fecha de pago y de próximo vencimiento, y consultar qué clientes están al día o vencidos.
+**Pagos:** el administrador podrá registrar, como mínimo, la **inscripción inicial** (pago único al ingresar) y la **cuota periódica**, con fecha de pago y de próximo vencimiento, y consultar qué clientes están al día o vencidos. Esta es una operación exclusiva del Administrador; el Entrenador no gestiona pagos.
 
 ---
 
@@ -143,7 +143,9 @@ El cliente con cuenta de usuario podrá cargar información básica de salud de 
 
 El administrador y los entrenadores también pueden crear y modificar la historia clínica de un cliente, incluso cuando este no tiene una cuenta de usuario. En modo consulta, el administrador, los entrenadores y el propio cliente pueden ver la información, pero no editarla ni cargar datos en nombre de otro. El resto de los clientes no tiene acceso a la historia clínica de otros clientes.
 
-La información se mantiene restringida a estos roles porque se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria. El diseño detallado del control de acceso a esta información está documentado en `docs/SEGURIDAD.md`.
+La información se mantiene restringida a estos roles porque se trata de datos sensibles. El detalle de los campos a relevar (por ejemplo, si se permite adjuntar documentación médica) se define en la Etapa 2, priorizando pedir solo la información mínima necesaria.
+
+**Auditoría:** al igual que en los pagos (donde se registra `usuarioRegistroId`), cada carga o modificación de la historia clínica registrará el `usuarioModificacionId` del actor que la realizó, además de la fecha de actualización (`fechaActualizacion`). Esto permite auditar no solo cuándo se modificó un registro clínico, sino quién lo hizo, dado lo sensible de esta información. El diseño detallado del control de acceso a esta información está documentado en `docs/SEGURIDAD.md`.
 
 ---
 
@@ -152,19 +154,19 @@ La información se mantiene restringida a estos roles porque se trata de datos s
 | Capa | Tecnología | Justificación |
 |---|---|---|
 | **Frontend** | HTML, CSS, TypeScript, Vite | Conocidas por el equipo; Vite agiliza el desarrollo. Requiere Node.js solo como entorno de build, no como backend de la aplicación. |
-| **Backend** | Java + Spring Boot | Es la tecnología con la que el equipo tiene más experiencia acumulada durante la carrera. Encaja con el escenario "entornos empresariales, seguridad de tipado" y evita sumar una segunda tecnología de servidor (Node.js) sin necesidad real. |
+| **Backend** | Node.js + Express | Permite usar un único lenguaje (TypeScript/JavaScript) entre frontend y backend, reduce la curva de aprendizaje para el equipo y tiene amplio soporte de librerías para MongoDB, JWT y hashing de contraseñas. |
 | **Base de datos** | MongoDB (NoSQL) | El equipo ya la conoce y la maneja con comodidad. El modelo de documentos se adapta bien a ejercicios, rutinas y turnos (estructura flexible). *Ver aclaración sobre pagos abajo.* |
 | **Control de versiones** | GitHub | Repositorio único, requisito del TFI. |
 | **Despliegue** | A definir — ver recomendación abajo | Prioriza costo cero/bajo y facilidad de configuración. |
 
-**Sobre la elección de MongoDB:** la razón principal y honesta es que el equipo ya la domina, no que el proyecto la necesite técnicamente. El módulo de **pagos** es el que más se beneficiaría de un modelo relacional (relaciones cliente–pago–vencimiento e integridad transaccional). Como mitigación, se prestará especial atención al diseño del esquema de pagos en MongoDB durante la etapa de diseño de base de datos. La **historia clínica**, al ser información sensible, se diseñará como una colección con acceso restringido (no expuesta en los mismos endpoints públicos que el resto del perfil).
+**Sobre la elección de MongoDB:** la razón principal y honesta es que el equipo ya la domina, no que el proyecto la necesite técnicamente. El módulo de **pagos** es el que más se beneficiaría de un modelo relacional (relaciones cliente–pago–vencimiento e integridad transaccional). Como mitigación, se prestará especial atención al diseño del esquema de pagos en MongoDB durante la etapa de diseño de base de datos. La La **historia clínica**, al ser información sensible, se diseñará como una colección con acceso restringido (no expuesta en los mismos endpoints públicos que el resto del perfil).
 
-**Herramientas adicionales a definir en la Etapa 2:** Spring Data MongoDB (persistencia), Spring Security + JWT (autenticación/roles), y documentación de API (OpenAPI/Swagger).
+**Herramientas adicionales a definir en la Etapa 2:** Mongoose (ODM para MongoDB), `jsonwebtoken` (autenticación) y `bcrypt` (hash de contraseñas) para roles, y documentación de API (OpenAPI/Swagger).
 
 **Hosting sugerido** (gratuito o de bajo costo):
 
 - **Frontend:** Vercel o Netlify (build estático de Vite).
-- **Backend:** Render o Google Cloud Run (contenedor Docker con la app Spring Boot).
+- **Backend:** Render, Railway o Google Cloud Run (contenedor Docker con la app Node.js/Express).
 - **Base de datos:** MongoDB Atlas (tier gratuito M0).
 
 ---

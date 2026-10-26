@@ -14,7 +14,7 @@ Cada módulo agrupa una responsabilidad concreta del sistema, las colecciones (o
 |---|---|---|---|
 | 1 | Autenticación y Roles | `usuarios`, `clientes` (campos de cuenta) | Administrador, Entrenador, Cliente con cuenta |
 | 2 | Gestión de Clientes | `clientes` | Administrador |
-| 3 | Catálogo de Ejercicios | `ejercicios` | Administrador, Entrenador |
+| 3 | Catálogo de Ejercicios | `ejercicios` | Administrador (alta, modificación, baja); Entrenador (solo consulta) |
 | 4 | Rutinas | `clientes.rutinas[]`, `ejercicios` | Entrenador, Cliente |
 | 5 | Historia Clínica | `clientes.historiaClinica` | Cliente, Administrador, Entrenador |
 | 6 | Turnos | `turnos`, `clientes`, `usuarios` | Administrador, Entrenador, Cliente |
@@ -59,10 +59,10 @@ Administra el catálogo genérico de ejercicios que los entrenadores usan para a
 
 **Colecciones:** `ejercicios`.
 
-**Funcionalidades principales:**
-- Alta, modificación y baja lógica de ejercicios.
+**Funcionalidades principales y permisos:**
+- **Alta, modificación y baja lógica:** exclusivas del Administrador. Además de la carga individual, el Administrador puede cargar o actualizar ejercicios en lote mediante la importación de un archivo Excel.
+- **Consulta y búsqueda** (por ejemplo, por grupo muscular): disponible para Administrador y Entrenador. El Entrenador no puede crear, modificar ni dar de baja ejercicios.
 - Identificación de cada ejercicio por `codigo` (además del `_id` de Mongo).
-- Búsqueda y filtrado (por ejemplo, por grupo muscular).
 
 ---
 

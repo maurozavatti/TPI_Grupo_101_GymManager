@@ -43,7 +43,7 @@ La historia clínica (`clientes.historiaClinica`) es el dato más sensible del s
 
 ## 4. Trazabilidad
 
-Las acciones sobre datos sensibles quedan parcialmente trazadas mediante los campos de auditoría ya definidos en el esquema: `fechaCreacion`, `fechaModificacion` y, en el caso de `historiaClinica`, `fechaActualizacion`. Para una trazabilidad más completa (quién hizo cada cambio, no solo cuándo), se evaluará agregar un campo `usuarioModificacionId` en `historiaClinica` durante la etapa de desarrollo, siguiendo el mismo criterio ya aplicado en `pagos.usuarioRegistroId`.
+Las acciones sobre datos sensibles quedan trazadas mediante los campos de auditoría definidos en el esquema: `fechaCreacion`, `fechaModificacion` y, en el caso de `historiaClinica`, `fechaActualizacion`. Siguiendo el mismo criterio ya aplicado en `pagos.usuarioRegistroId`, se incorporará un campo `usuarioModificacionId` en `historiaClinica`, que registra qué actor (Cliente titular, Administrador o Entrenador) realizó la última carga o modificación. De esta forma queda trazado no solo cuándo se modificó un registro clínico, sino también quién lo hizo.
 
 ---
 
