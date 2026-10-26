@@ -5,12 +5,15 @@
   "description": "API REST de GymManager desarrollada con Node.js y TypeScript.",
   "type": "module",
   "scripts": {
-  "check": "tsc --noEmit",
-  "build": "tsc",
-  "start": "node dist/server.js"
+    "check": "tsc --noEmit",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "mongodb": "^7.7.0"
   }
 }
