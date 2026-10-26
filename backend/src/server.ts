@@ -3,13 +3,23 @@ import { conectarDB, cerrarConexionDB } from './db.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
-const servidor = createServer((_peticion, respuesta) => {
-  respuesta.writeHead(200, {
+const servidor = createServer((peticion, respuesta) => {
+  // Esta ruta permite comprobar desde el frontend que el backend funciona.
+  if (peticion.method === 'GET' && peticion.url === '/api/salud') {
+    respuesta.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+    })
+    respuesta.end(JSON.stringify({
+      mensaje: 'Backend de GymManager funcionando',
+    }))
+    return
+  }
+  // Si la ruta no existe, devolvemos un error 404.
+  respuesta.writeHead(404, {
     'Content-Type': 'application/json; charset=utf-8',
   })
-
   respuesta.end(JSON.stringify({
-    mensaje: 'Backend de GymManager funcionando',
+    mensaje: 'Ruta no encontrada',
   }))
 })
 
