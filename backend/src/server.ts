@@ -1,26 +1,42 @@
 import { createServer } from 'node:http'
 import { conectarDB, cerrarConexionDB } from './db.ts'
+import { servirWeb } from './servicios/archivos.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
-const servidor = createServer((peticion, respuesta) => {
-  // Esta ruta permite comprobar desde el frontend que el backend funciona.
-  if (peticion.method === 'GET' && peticion.url === '/api/salud') {
+const servidor = createServer(async (peticion, respuesta) => {
+  // Obtenemos la ruta sin los parametros de consulta.
+  const ruta = new URL(
+    peticion.url ?? '/',
+    'http://localhost',
+  ).pathname
+
+  // Respondemos las rutas de la API antes de buscar archivos.
+  if (peticion.method === 'GET' && ruta === '/api/salud') {
     respuesta.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
     })
+
     respuesta.end(JSON.stringify({
       mensaje: 'Backend de GymManager funcionando',
     }))
     return
   }
-  // Si la ruta no existe, devolvemos un error 404.
-  respuesta.writeHead(404, {
-    'Content-Type': 'application/json; charset=utf-8',
-  })
-  respuesta.end(JSON.stringify({
-    mensaje: 'Ruta no encontrada',
-  }))
+
+  // Las rutas de API que todavia no existen devuelven un error.
+  if (ruta === '/api' || ruta.startsWith('/api/')) {
+    respuesta.writeHead(404, {
+      'Content-Type': 'application/json; charset=utf-8',
+    })
+
+    respuesta.end(JSON.stringify({
+      mensaje: 'Ruta no encontrada',
+    }))
+    return
+  }
+
+  // Para las demas rutas, entregamos los archivos de la web.
+  await servirWeb(peticion, respuesta)
 })
 
 try {
