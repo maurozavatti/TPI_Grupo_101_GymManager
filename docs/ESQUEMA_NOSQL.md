@@ -396,7 +396,7 @@ pagos
 | `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
 | `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
 | `observaciones` | String | Información adicional. |
-| `usuarioRegistroId` | ObjectId | Referencia al usuario (`ADMIN` o `ENTRENADOR`) que registró el pago, para poder auditar quién lo cargó. |
+| `usuarioRegistroId` | ObjectId | Referencia al usuario con rol `ADMIN` que registró el pago, para poder auditar quién lo cargó. La gestión de pagos es una operación exclusiva del Administrador; el Entrenador no tiene acceso a este módulo. |
 
 ### Ejemplo
 
