@@ -1,0 +1,21 @@
+{
+  "name": "gymmanager-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST de GymManager desarrollada con Node.js y TypeScript.",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc",
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "check:db": "npm run build && node --env-file=.env dist/check-connection.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "mongodb": "^7.7.0"
+  }
+}

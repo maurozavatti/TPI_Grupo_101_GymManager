@@ -1,0 +1,29 @@
+# Variables de entorno
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.ejemplo
+
+# Frontend
+**/node_modules/
+**/dist/
+
+# Backend Java
+**/target/
+**/.gradle/
+**/build/
+
+# Configuraciones del IDE
+.idea/
+.vscode/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos locales y configuración privada heredada
+**/atlas-local.properties
+*.tsbuildinfo
