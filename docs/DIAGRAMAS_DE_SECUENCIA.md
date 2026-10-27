@@ -10,7 +10,7 @@ El diagrama representa el recorrido desde la solicitud del usuario hasta la auto
 sequenceDiagram
     actor U as Usuario
     participant F as Frontend
-    participant S as Spring Security
+    participant S as Middleware de sesion
     participant C as Controlador de historia clínica
     participant P as Servicio de historia clínica
     participant DB as MongoDB

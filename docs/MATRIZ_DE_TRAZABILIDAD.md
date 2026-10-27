@@ -30,14 +30,14 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RF-005 | CU-03 | — | CP-03 |
 | RF-006 | CU-04 (cobertura parcial; alta/vinculación requiere aclaración) | RN-02 | CP-04 |
 | RF-007 | CU-04 | RN-02, RN-12 | CP-04 |
-| RF-008 | Pendiente de ampliar CU | RN-01 | CP-05 |
-| RF-009 | Pendiente de ampliar CU | — | CP-05 |
+| RF-008 | CU-20 | RN-01 | CP-05 |
+| RF-009 | CU-16 | — | CP-05 |
 | RF-010 | CU-05 | RN-01 | CP-05 |
-| RF-011 | Pendiente de ampliar CU | — | CP-05 |
+| RF-011 | CU-20 | — | CP-05 |
 | RF-012 | CU-06 | RN-12 | CP-06 |
-| RF-013 | Pendiente de ampliar CU | RN-12 | CP-06 |
-| RF-014 | Pendiente de ampliar CU | RN-12 | CP-06 |
-| RF-015 | Pendiente de ampliar CU | RN-01, RN-12 | CP-06 |
+| RF-013 | CU-21 | RN-12 | CP-06 |
+| RF-014 | CU-17 | RN-12, RN-15 | CP-06 |
+| RF-015 | CU-18 | RN-01 | CP-06 |
 | RF-016 | CU-07 | RN-03, RN-04 | CP-07, CP-08 |
 | RF-017 | CU-07 | — | CP-07 |
 | RF-018 | CU-08 | RN-03 | CP-09 |
@@ -52,7 +52,7 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RF-027 | CU-11, CU-12 (consulta del cliente pendiente de detalle) | RN-07 | CP-13 |
 | RF-028 | CU-12 | RN-08 | CP-14 |
 | RF-029 | CU-12 | RN-08 | CP-14 |
-| RF-030 | Pendiente de ampliar CU | RN-08 | CP-14 |
+| RF-030 | CU-19 | RN-08, RN-14 | CP-14 |
 | RF-031 | CU-13 | RN-09, RN-10 | CP-15 |
 | RF-032 | CU-13 | RN-09 | CP-15 |
 | RF-033 | CU-13 | RN-10 | CP-15 |

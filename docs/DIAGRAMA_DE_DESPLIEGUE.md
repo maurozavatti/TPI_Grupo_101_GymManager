@@ -18,10 +18,10 @@ flowchart TB
 
     subgraph HOSTING["Infraestructura de despliegue"]
         WEB["Servicio de hosting del frontend<br/>Proveedor por definir"]
-        API["Servidor de aplicaciones<br/>Java / Spring Boot"]
-        SEC["Spring Security<br/>Autenticación y autorización"]
+        API["Servidor de aplicaciones<br/>Node.js (http nativo)"]
+        SEC["Middleware de sesion<br/>Autenticación y autorización"]
         REST["API REST<br/>Controladores y servicios"]
-        DATA["Spring Data MongoDB"]
+        DATA["Driver mongodb<br/>(sin ODM)"]
     end
 
     subgraph PERSISTENCIA["Persistencia"]
@@ -43,10 +43,10 @@ flowchart TB
 | Navegador web | Permite al usuario utilizar el sistema. |
 | Hosting del frontend | Publica la aplicación web compilada. El proveedor queda pendiente de definición. |
 | Frontend | Presenta las pantallas y consume los endpoints de la API REST. |
-| Servidor Spring Boot | Ejecuta la lógica del backend y expone los servicios del sistema. |
-| Spring Security | Gestiona autenticación y autorización según la configuración implementada. |
+| Servidor Node.js (http nativo) | Ejecuta la lógica del backend y expone los servicios del sistema. |
+| Middleware de sesión | Gestiona autenticación y autorización según la configuración implementada. |
 | Controladores y servicios REST | Procesan solicitudes, validan reglas de negocio y coordinan las operaciones. |
-| Spring Data MongoDB | Facilita el acceso a los documentos almacenados. |
+| Driver mongodb (sin ODM) | Facilita el acceso a los documentos almacenados. |
 | MongoDB Atlas | Aloja la base de datos documental del sistema. |
 
 ## 4. Comunicaciones

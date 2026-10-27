@@ -14,7 +14,7 @@ Cada módulo agrupa una responsabilidad concreta del sistema, las colecciones (o
 |---|---|---|---|
 | 1 | Autenticación y Roles | `usuarios`, `clientes` (campos de cuenta) | Administrador, Entrenador, Cliente con cuenta |
 | 2 | Gestión de Clientes | `clientes` | Administrador |
-| 3 | Catálogo de Ejercicios | `ejercicios` | Administrador, Entrenador |
+| 3 | Catálogo de Ejercicios | `ejercicios` | Administrador (alta, modificación, baja); Entrenador (solo consulta) |
 | 4 | Rutinas | `clientes.rutinas[]`, `ejercicios` | Entrenador, Cliente |
 | 5 | Historia Clínica | `clientes.historiaClinica` | Cliente, Administrador, Entrenador |
 | 6 | Turnos | `turnos`, `clientes`, `usuarios` | Administrador, Entrenador, Cliente |
@@ -59,10 +59,10 @@ Administra el catálogo genérico de ejercicios que los entrenadores usan para a
 
 **Colecciones:** `ejercicios`.
 
-**Funcionalidades principales:**
-- Alta, modificación y baja lógica de ejercicios.
+**Funcionalidades principales y permisos:**
+- **Alta, modificación y baja lógica:** exclusivas del Administrador. Además de la carga individual, el Administrador puede cargar o actualizar ejercicios en lote mediante la importación de un archivo Excel.
+- **Consulta y búsqueda** (por ejemplo, por grupo muscular): disponible para Administrador y Entrenador. El Entrenador no puede crear, modificar ni dar de baja ejercicios.
 - Identificación de cada ejercicio por `codigo` (además del `_id` de Mongo).
-- Búsqueda y filtrado (por ejemplo, por grupo muscular).
 
 ---
 
@@ -98,12 +98,12 @@ Gestiona la información básica de salud del cliente.
 
 Gestiona los horarios de clase y la asignación de clientes a cada uno.
 
-**Colecciones:** `turnos`, con referencias a `clientes` y `usuarios` (entrenador).
+**Colecciones:** `turnos`, con referencias a `clientes` y `usuarios` (entrenador). La configuración general de la agenda (franjas horarias de apertura, cupo por defecto y los días de trabajo asignados a cada entrenador) se guarda en `configuracion`.
 
-**Funcionalidades principales:**
-- Alta de turnos (día, horario, cupo máximo).
-- Asignación de un entrenador responsable.
-- Asignación y baja de clientes a un turno, respetando el cupo.
+**Funcionalidades principales y permisos:**
+- **Alta, modificación y baja de turnos:** el Entrenador solo puede crear, modificar o dar de baja turnos propios (donde él es el entrenador responsable); no puede tocar los turnos de otro entrenador. El Administrador puede operar sobre los turnos de cualquier entrenador.
+- **Franjas horarias de apertura y cupo general:** son configuración global, exclusiva del Administrador. Un Entrenador puede generar o ajustar sus propios días de trabajo dentro de esas franjas, pero no puede cambiar el horario de apertura general ni el cupo por defecto.
+- Asignación y baja de clientes a un turno, respetando el cupo; el Entrenador solo gestiona clientes en sus propios turnos.
 - Consulta del turno asignado desde el perfil del cliente.
 
 ---
