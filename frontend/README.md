@@ -10,6 +10,8 @@ Esta carpeta contiene el frontend de **Gym Manager**, desarrollado con HTML, CSS
 
 La página inicial consulta `GET /api/salud` y muestra el resultado de la comunicación con el backend.
 
+La carpeta `src/autenticacion` contiene las páginas iniciales de login y registro, con enlaces para navegar entre ambas. Los colores, fuentes, espaciados y estilos generales de la web se definen en `src/style.css`.
+
 Las peticiones se envían a la API. El backend concentra el acceso a MongoDB Atlas y mantiene las credenciales de la base fuera del frontend.
 
 ---
@@ -128,22 +130,81 @@ La web queda disponible en `http://localhost:3000/`. El backend entrega los arch
 
 Después de modificar archivos del frontend, se debe volver a compilar para actualizar la versión que entrega el backend. Esta forma de ejecución también permite el despliegue conjunto en Render.
 
-La compilación incluye `index.html` y los recursos que utiliza.
+La configuración de Vite incluye `index.html` y detecta automáticamente todos los archivos `.html` de `src` y sus subcarpetas en cada compilación. Cada página incorpora los recursos que referencia, como CSS y módulos TypeScript. No es necesario mantener una lista manual de páginas.
+
+Las rutas de los HTML se conservan dentro de `dist`. Por ejemplo, `src/autenticacion/login/login.html` se genera como `dist/src/autenticacion/login/login.html`. El backend puede entregar esa página mediante `/src/autenticacion/login/login.html`.
+
+La detección automática incluye las páginas en la compilación; los enlaces de navegación se definen en sus HTML o en su código TypeScript. Agregar páginas dentro de `src` no requiere cambiar los comandos de compilación o arranque de Render.
 
 ---
 
 ## 8. Archivos principales
 
+```text
+frontend/
+├── index.html
+├── src/
+│   ├── main.ts
+│   ├── style.css
+│   └── autenticacion/
+│       ├── autenticacion.css
+│       ├── login/
+│       │   ├── login.html
+│       │   ├── login.css
+│       │   └── login.ts
+│       └── register/
+│           ├── register.html
+│           ├── register.css
+│           └── register.ts
+├── vite.config.ts
+├── tsconfig.json
+├── package.json
+├── package-lock.json
+├── .gitignore
+└── README.md
+```
+
 | Archivo | Objetivo |
 |---|---|
 | `index.html` | Define el documento inicial, el idioma español, el título y la carga de `src/main.ts`. |
 | `src/main.ts` | Consulta `/api/salud` y muestra el resultado de la comunicación con el backend. |
-| `src/style.css` | Define los estilos de la página inicial. |
-| `vite.config.ts` | Configura el reenvío de las peticiones `/api` al backend durante el desarrollo local. |
+| `src/style.css` | Define variables y estilos globales de colores, fondos, tipografía, espaciados, bordes y estados de los elementos. |
+| `src/autenticacion/login/login.html` | Muestra el título de inicio de sesión y el enlace hacia el registro. |
+| `src/autenticacion/register/register.html` | Muestra el título de creación de cuenta y el enlace hacia el login. |
+| `src/autenticacion/autenticacion.css` | Archivo de estilos compartidos de autenticación, creado sin contenido. |
+| `src/autenticacion/login/login.css` y `login.ts` | Archivos de estilos y comportamiento de la página de login, creados sin contenido. |
+| `src/autenticacion/register/register.css` y `register.ts` | Archivos de estilos y comportamiento de la página de registro, creados sin contenido. |
+| `vite.config.ts` | Reenvía las peticiones `/api` al backend durante el desarrollo local e incluye automáticamente `index.html` y los HTML de `src` al compilar. |
 | `tsconfig.json` | Configura la comprobación del código TypeScript del frontend. |
 | `package.json` | Declara las herramientas y los comandos del frontend. |
 | `package-lock.json` | Registra las versiones de las dependencias para reproducir la instalación. |
 | `.gitignore` | Excluye dependencias instaladas, archivos generados y otros archivos locales. |
+
+### 8.1 Páginas de autenticación
+
+Las páginas se pueden abrir desde Vite o desde el backend que entrega la compilación. Con el backend ejecutándose y el frontend compilado, las direcciones son:
+
+```text
+http://localhost:3000/src/autenticacion/login/login.html
+http://localhost:3000/src/autenticacion/register/register.html
+```
+
+Los enlaces relativos permiten pasar del login al registro y regresar. La página inicial `/` mantiene la comprobación de conexión con el backend.
+
+### 8.2 Estilos globales
+
+El archivo `src/style.css` centraliza las variables CSS en `:root`. Sus nombres están en español y se reutilizan mediante `var(...)`:
+
+```css
+color: var(--color-texto);
+background-color: var(--color-fondo);
+```
+
+Las variables agrupan colores principales, superficies, textos, bordes, estados, fuentes, tamaños, pesos, interlineados, espaciados, radios, sombra y transición. La base visual utiliza celeste como color principal, blanco para las superficies y un fondo crema claro.
+
+Además, el archivo establece el tamaño de caja, los estilos del contenido y los títulos, la fuente de los controles de formulario, el comportamiento de las imágenes, los elementos ocultos y el indicador de foco para navegar con teclado. Los botones deshabilitados utilizan el cursor `not-allowed`.
+
+Los estilos globales se aplican en las páginas que cargan el archivo. `src/main.ts` lo importa para la página inicial. Los HTML de login y registro contienen sus títulos y enlaces, sin cargar archivos CSS ni TypeScript.
 
 ---
 
@@ -154,7 +215,7 @@ Los siguientes comandos se ejecutan **dentro de `frontend`**:
 | Comando | Función |
 |---|---|
 | `npm run dev` | Inicia Vite con actualización automática y proxy hacia el backend. |
-| `npm run build` | Comprueba TypeScript y genera la web compilada en `dist`. |
+| `npm run build` | Comprueba TypeScript y genera en `dist` la página principal, los HTML detectados dentro de `src` y sus recursos asociados. |
 | `npm run preview` | Muestra una vista previa de la compilación. No inicia el backend ni utiliza el proxy de desarrollo configurado en este proyecto. |
 
 Para probar la web compilada con su API se utiliza el procedimiento de la Sección 7.
