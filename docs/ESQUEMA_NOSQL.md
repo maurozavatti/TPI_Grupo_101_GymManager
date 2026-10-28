@@ -319,6 +319,11 @@ turnos
 ├── capacidad
 ├── entrenadorId
 ├── clientes[]
+├── historialClientes[]
+│   ├── clienteId
+│   ├── accion
+│   ├── fecha
+│   └── usuarioId
 ├── activo
 └── observaciones
 ```
@@ -334,6 +339,7 @@ turnos
 | `capacidad` | Number | Cantidad máxima de clientes. |
 | `entrenadorId` | ObjectId | Entrenador responsable del turno. |
 | `clientes` | Array<ObjectId> | Clientes asignados al turno. |
+| `historialClientes` | Array de objetos | Registro de cada asignación o retiro de un cliente del turno (quién, cuándo y qué acción), análogo al historial de pagos. |
 | `activo` | Boolean | Indica si el turno está disponible. |
 | `observaciones` | String | Información adicional. |
 
