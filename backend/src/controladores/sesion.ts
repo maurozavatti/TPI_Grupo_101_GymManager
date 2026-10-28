@@ -1,10 +1,12 @@
-import type { IncomingMessage } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { ObjectId } from 'mongodb'
 import { conectarDB } from '../db.ts'
 import {
+  eliminarCookie,
   nombreCookieSesion,
   obtenerHashToken,
 } from '../servicios/autenticacion.ts'
+import { responder } from '../compartidos/http.ts'
 
 /* Estos son los roles admitidos por la aplicacion.*/
 export type RolUsuario = 'ADMIN' | 'ENTRENADOR' | 'USUARIO'
@@ -119,5 +121,34 @@ export async function obtenerUsuarioSesion(
     clienteId: usuario.clienteId instanceof ObjectId
       ? usuario.clienteId.toHexString()
       : null,
+  }
+}
+
+/* Esta funcion permite consultar la cuenta que tiene una sesion activa.
+ Si la sesion no es valida, elimina la cookie del navegador.
+ Los errores del servidor se informan sin exponer datos internos.*/
+export async function consultarSesion(
+  solicitud: IncomingMessage,
+  respuesta: ServerResponse,
+): Promise<void> {
+  try {
+    const usuario = await obtenerUsuarioSesion(solicitud)
+
+    if (!usuario) {
+      eliminarCookie(respuesta)
+
+      responder(respuesta, 401, {
+        mensaje: 'No hay una sesión iniciada.',
+      })
+      return
+    }
+
+    responder(respuesta, 200, {
+      usuario,
+    })
+  } catch {
+    responder(respuesta, 500, {
+      mensaje: 'No se pudo consultar la sesión. Intentá nuevamente.',
+    })
   }
 }

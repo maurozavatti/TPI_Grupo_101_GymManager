@@ -1,6 +1,7 @@
 import { createServer } from 'node:http'
 import { conectarDB, cerrarConexionDB } from './db.ts'
 import { servirWeb } from './servicios/archivos.ts'
+import { consultarSesion } from './controladores/sesion.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -20,6 +21,12 @@ const servidor = createServer(async (peticion, respuesta) => {
     respuesta.end(JSON.stringify({
       mensaje: 'Backend de GymManager funcionando',
     }))
+    return
+  }
+
+    // Consultamos si la peticion corresponde a una sesion activa.
+  if (peticion.method === 'GET' && ruta === '/api/sesion') {
+    await consultarSesion(peticion, respuesta)
     return
   }
 
