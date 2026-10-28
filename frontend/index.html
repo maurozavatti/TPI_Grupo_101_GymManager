@@ -5,8 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GymManager</title>
   </head>
+
   <body>
-    <div id="app"></div>
+    <main class="pagina-autenticacion">
+      <section
+        class="tarjeta-autenticacion"
+        aria-labelledby="titulo-inicio"
+      >
+        <h1 class="nombre-aplicacion">GymManager</h1>
+        <h2 id="titulo-inicio">Comprobando sesión</h2>
+
+        <div class="formulario-autenticacion">
+          <!-- Los datos se muestran despues de consultar la sesion. -->
+          <div id="datos-sesion" hidden>
+            <p id="nombre-usuario"></p>
+            <p id="correo-usuario"></p>
+            <p id="rol-usuario"></p>
+          </div>
+
+          <p
+            id="mensaje-inicio"
+            class="mensaje-formulario"
+            role="status"
+          >Esperá un momento...</p>
+
+          <button
+            id="boton-cerrar-sesion"
+            class="boton-autenticacion"
+            type="button"
+            hidden
+          >
+            Cerrar sesión
+          </button>
+
+          <button
+            id="boton-reintentar"
+            class="boton-autenticacion"
+            type="button"
+            hidden
+          >
+            Reintentar
+          </button>
+        </div>
+      </section>
+    </main>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

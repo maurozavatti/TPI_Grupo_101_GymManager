@@ -79,6 +79,7 @@ if (formulario && mensaje && boton) {
 
       mensaje.classList.add('mensaje-exito')
       mensaje.textContent = 'Cuenta creada correctamente.'
+      window.location.replace('/')
     } catch (error) {
       /* Conservamos los datos ingresados para poder corregirlos
        o volver a intentar si hubo un problema de conexion.*/

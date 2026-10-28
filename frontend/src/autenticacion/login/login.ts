@@ -78,6 +78,7 @@ if (formulario && mensaje && boton) {
 
       mensaje.classList.add('mensaje-exito')
       mensaje.textContent = 'Sesión iniciada correctamente.'
+      window.location.replace('/')
     } catch (error) {
       /* Conservamos los datos para corregirlos o volver
        a intentar si hubo un problema de conexion.*/
