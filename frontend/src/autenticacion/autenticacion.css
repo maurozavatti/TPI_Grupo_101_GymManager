@@ -163,3 +163,10 @@
 .mensaje-formulario.mensaje-error {
   color: var(--color-error);
 }
+
+/* Este es el color de los mensajes de operaciones exitosas.
+ Se utiliza la variable global para mantener el mismo criterio
+ en todas las pantallas de autenticacion.*/
+.mensaje-formulario.mensaje-exito {
+  color: var(--color-exito);
+}
