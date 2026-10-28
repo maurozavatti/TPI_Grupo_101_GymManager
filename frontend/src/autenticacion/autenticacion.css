@@ -148,3 +148,18 @@
     padding: var(--espacio-grande) var(--espacio-mediano);
   }
 }
+
+/* Estos estilos identifican los campos con datos incorrectos.
+ El TypeScript agrega aria-invalid cuando detecta un error.*/
+.campo-formulario input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.campo-formulario input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--color-error);
+}
+
+/* Este es el color de los mensajes de error del formulario.*/
+.mensaje-formulario.mensaje-error {
+  color: var(--color-error);
+}
