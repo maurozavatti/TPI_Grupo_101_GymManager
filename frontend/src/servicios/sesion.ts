@@ -77,3 +77,13 @@ export async function consultarSesion(): Promise<UsuarioSesion | null> {
     throw error
   }
 }
+
+/* Esta funcion solicita el cierre de la sesion actual.
+ El navegador procesa la eliminacion de la cookie.
+ La pagina que la utiliza decide adonde navegar despues.*/
+export async function cerrarSesion(): Promise<void> {
+  await solicitarAPI('/api/logout', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  })
+}

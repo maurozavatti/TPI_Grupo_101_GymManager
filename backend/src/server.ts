@@ -1,7 +1,7 @@
 import { createServer } from 'node:http'
 import { conectarDB, cerrarConexionDB } from './db.ts'
 import { servirWeb } from './servicios/archivos.ts'
-import { consultarSesion } from './controladores/sesion.ts'
+import { consultarSesion, cerrarSesion, } from './controladores/sesion.ts'
 import { registrarUsuario } from './controladores/register.ts'
 import { iniciarSesion } from './controladores/login.ts'
 
@@ -41,6 +41,12 @@ const servidor = createServer(async (peticion, respuesta) => {
     // Comprobamos las credenciales y creamos una nueva sesion.
   if (peticion.method === 'POST' && ruta === '/api/login') {
     await iniciarSesion(peticion, respuesta)
+    return
+  }
+
+    // Cerramos la sesion correspondiente a la cookie recibida.
+  if (peticion.method === 'POST' && ruta === '/api/logout') {
+    await cerrarSesion(peticion, respuesta)
     return
   }
   

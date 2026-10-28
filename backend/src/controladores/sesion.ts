@@ -6,7 +6,7 @@ import {
   nombreCookieSesion,
   obtenerHashToken,
 } from '../servicios/autenticacion.ts'
-import { responder } from '../compartidos/http.ts'
+import { ErrorHTTP, leerJSON, responder } from '../compartidos/http.ts'
 
 /* Estos son los roles admitidos por la aplicacion.*/
 export type RolUsuario = 'ADMIN' | 'ENTRENADOR' | 'USUARIO'
@@ -149,6 +149,52 @@ export async function consultarSesion(
   } catch {
     responder(respuesta, 500, {
       mensaje: 'No se pudo consultar la sesión. Intentá nuevamente.',
+    })
+  }
+}
+
+/* Esta funcion cierra la sesion del navegador que hace la peticion.
+ Elimina su registro en la base y despues elimina la cookie.
+ Tambien permite cerrar cuando ya no existe una sesion valida.*/
+export async function cerrarSesion(
+  solicitud: IncomingMessage,
+  respuesta: ServerResponse,
+): Promise<void> {
+  try {
+    /* Exigimos una peticion JSON, aunque el cuerpo sea {}.
+     El cierre se realiza mediante POST y no mediante un enlace GET.*/
+    await leerJSON(solicitud, 1024)
+
+    const token = obtenerTokenSesion(solicitud)
+
+    if (token) {
+      const db = await conectarDB()
+
+      /* Solo eliminamos la sesion correspondiente a esta cookie.
+       Las sesiones de otros navegadores permanecen activas.*/
+      await db.collection('sesiones').deleteOne({
+        tokenHash: obtenerHashToken(token),
+      })
+    }
+
+    eliminarCookie(respuesta)
+
+    responder(respuesta, 200, {
+      mensaje: 'Sesión cerrada correctamente.',
+    })
+  } catch (error) {
+    if (error instanceof ErrorHTTP) {
+      responder(respuesta, error.estado, {
+        mensaje: error.message,
+        campos: error.campos,
+      })
+      return
+    }
+
+    /* Si falla la eliminacion en la base, informamos el error
+     sin afirmar que la sesion se cerro correctamente.*/
+    responder(respuesta, 500, {
+      mensaje: 'No se pudo cerrar la sesión. Intentá nuevamente.',
     })
   }
 }
