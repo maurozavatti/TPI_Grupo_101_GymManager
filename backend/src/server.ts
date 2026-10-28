@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 import { conectarDB, cerrarConexionDB } from './db.ts'
 import { servirWeb } from './servicios/archivos.ts'
 import { consultarSesion } from './controladores/sesion.ts'
+import { registrarUsuario } from './controladores/register.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -27,6 +28,12 @@ const servidor = createServer(async (peticion, respuesta) => {
     // Consultamos si la peticion corresponde a una sesion activa.
   if (peticion.method === 'GET' && ruta === '/api/sesion') {
     await consultarSesion(peticion, respuesta)
+    return
+  }
+
+    // Registramos la cuenta y creamos su primera sesion.
+  if (peticion.method === 'POST' && ruta === '/api/register') {
+    await registrarUsuario(peticion, respuesta)
     return
   }
 
