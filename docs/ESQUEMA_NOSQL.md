@@ -4,7 +4,7 @@
 
 Para el desarrollo del sistema **Gym Manager** se utilizará una base de datos documental **MongoDB NoSQL**.
 
-El modelo estará compuesto por **cinco colecciones principales**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
+El modelo estará compuesto por **seis colecciones principales**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
 
 Las colecciones definidas son:
 
@@ -13,6 +13,7 @@ Las colecciones definidas son:
 - `ejercicios`
 - `turnos`
 - `pagos`
+- `configuracion`
 
 La información correspondiente a las **rutinas** y a la **historia clínica básica** se almacenará como documentos embebidos dentro de la colección `clientes`, evitando crear colecciones independientes para estos datos.
 
@@ -437,6 +438,42 @@ Para garantizar la integridad de los datos, se definen los siguientes índices �
 | `ejercicios` | `codigo` | Único | El código legible de cada ejercicio (por ejemplo `EJ-0001`) debe ser irrepetible dentro del catálogo. |
 
 Los índices únicos y `sparse` sobre `usuarios.clienteId` y `clientes.usuarioId` son, en conjunto, los que garantizan a nivel de base de datos que la relación entre `usuarios` y `clientes` sea efectivamente **uno a uno** (ver sección de relaciones más abajo), y no solo una convención documentada.
+
+---
+
+# 6. Colección `configuracion`
+
+Almacena parámetros globales del gimnasio, que no pertenecen a una entidad individual sino a la operación general del sistema. Es un documento único (singleton), identificado siempre con el mismo `_id` fijo.
+
+Para el MVP, esta colección guarda la configuración de la agenda de turnos: las franjas horarias en las que el gimnasio abre sus puertas, el cupo por defecto para turnos nuevos, y los días de trabajo que cada entrenador tiene asignados dentro de esas franjas.
+
+### Estructura
+
+```text
+configuracion
+│
+├── _id (fijo)
+├── franjas[]
+│   ├── inicio
+│   └── fin
+├── capacidad
+├── trabajos[]
+│   ├── entrenadorId
+│   └── dias[]
+└── fechaModificacion
+```
+
+### Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador fijo; solo existe un documento en esta colección. |
+| `franjas` | Array de objetos `{ inicio, fin }` | Franjas horarias en las que el gimnasio abre (por ejemplo, 09:00–12:00 y 16:00–21:00). Configuración exclusiva del Administrador (RN-17). |
+| `capacidad` | Number | Cupo por defecto que se aplica a los turnos generados automáticamente. Configuración exclusiva del Administrador (RN-17). |
+| `trabajos` | Array de objetos `{ entrenadorId, dias }` | Para cada entrenador, los días de la semana en los que dicta turnos dentro de las franjas de apertura. Cada entrenador solo puede modificar su propia entrada (RN-16, RN-17). |
+| `fechaModificacion` | Date | Fecha del último cambio a la configuración. |
+
+Si no existe un documento en esta colección, el sistema utiliza valores por defecto (una franja de 06:00 a 21:00 y cupo 5) hasta que el Administrador la configure por primera vez.
 
 ---
 

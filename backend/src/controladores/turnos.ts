@@ -1,13 +1,19 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Db } from 'mongodb';
+import type { AnyBulkWriteOperation, Db } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { conectarDB } from '../db.ts';
 import { obtenerUsuarioSesion } from './sesion.ts';
 import { ErrorHTTP as ErrorSolicitud, responder, leerJSON, texto as leerTexto, identificador, entero } from '../compartidos/http.ts';
 import { diasSemana, validarHorario } from '../compartidos/reglas.ts';
-import type { Turno } from '../compartidos/modelos.ts';
+import type { ConfiguracionAgenda, Turno } from '../compartidos/modelos.ts';
 
 type Personal = { id: string; rol: 'ADMIN' | 'ENTRENADOR' | 'USUARIO'; clienteId: string | null };
+
+const idConfiguracion = new ObjectId('000000000000000000000001');
+const configuracionInicial: ConfiguracionAgenda = { franjas: [{ inicio: '09:00', fin: '21:00' }], capacidad: 5, trabajos: [] };
+
+const minutos = (hora: string) => Number(hora.slice(0, 2)) * 60 + Number(hora.slice(3));
+const hora = (valor: number) => `${String(Math.floor(valor / 60)).padStart(2, '0')}:${String(valor % 60).padStart(2, '0')}`;
 
 // RN-16: un Entrenador solo administra los turnos donde el mismo es el entrenador responsable.
 function exigirTurnoPropio(personal: Personal, entrenadorId: ObjectId): void {
@@ -18,6 +24,23 @@ function exigirTurnoPropio(personal: Personal, entrenadorId: ObjectId): void {
 async function validarEntrenador(db: Db, entrenadorId: ObjectId): Promise<void> {
     const cuenta = await db.collection('usuarios').findOne({ _id: entrenadorId, rol: 'ENTRENADOR', activo: true });
     if (!cuenta) throw new ErrorSolicitud(400, 'Seleccioná un entrenador activo.', ['entrenadorId']);
+}
+
+// RN-14: no se permite superponer el horario de dos turnos activos de un mismo entrenador.
+async function sinSolapamientos(db: Db, dia: string, inicio: string, fin: string, entrenadorId: ObjectId, omitir?: ObjectId): Promise<void> {
+    const existentes = await db.collection<Turno>('turnos').find({ dia, entrenadorId, activo: true }).toArray();
+    if (existentes.some(t => !t._id.equals(omitir) && t.horaInicio < fin && t.horaFin > inicio)) {
+        throw new ErrorSolicitud(409, `Ya existe un turno de este entrenador el ${dia} entre ${inicio} y ${fin}. Revisá o desactivá el turno anterior.`);
+    }
+}
+
+async function consultarConfiguracion(db: Db): Promise<ConfiguracionAgenda> {
+    const guardada = await db.collection('configuracion').findOne({ _id: idConfiguracion });
+    return {
+        franjas: guardada?.franjas ?? configuracionInicial.franjas,
+        capacidad: guardada?.capacidad ?? configuracionInicial.capacidad,
+        trabajos: guardada?.trabajos ?? [],
+    };
 }
 
 async function listarTurnos(db: Db, respuesta: ServerResponse): Promise<void> {
@@ -35,6 +58,19 @@ async function listarTurnos(db: Db, respuesta: ServerResponse): Promise<void> {
             observaciones: turno.observaciones ?? '',
             ocupacion: (turno.clientes ?? []).length,
         })),
+    });
+}
+
+async function consultarConfiguracionEndpoint(db: Db, personal: Personal, respuesta: ServerResponse): Promise<void> {
+    const configuracion = await consultarConfiguracion(db);
+    responder(respuesta, 200, {
+        configuracion: {
+            ...configuracion,
+            // RN-16: un Entrenador solo ve sus propios dias de trabajo, no los del resto del plantel.
+            trabajos: personal.rol === 'ENTRENADOR'
+                ? configuracion.trabajos.filter(t => t.entrenadorId.toHexString() === personal.id)
+                : configuracion.trabajos,
+        },
     });
 }
 
@@ -60,11 +96,13 @@ async function crearOEditarTurno(db: Db, datos: Record<string, unknown>, esEdici
         exigirTurnoPropio(personal, existente.entrenadorId);
         if ((existente.clientes ?? []).length > capacidad)
             throw new ErrorSolicitud(409, 'El cupo no puede ser menor a la cantidad de clientes ya asignados.', ['capacidad']);
+        if (existente.activo) await sinSolapamientos(db, dia, horaInicio, horaFin, entrenadorId, id);
         await db.collection<Turno>('turnos').updateOne({ _id: id }, { $set: { dia, horaInicio, horaFin, capacidad, entrenadorId, observaciones } });
         responder(respuesta, 200, { mensaje: 'Turno actualizado correctamente.' });
         return;
     }
 
+    await sinSolapamientos(db, dia, horaInicio, horaFin, entrenadorId);
     await db.collection<Turno>('turnos').insertOne({
         dia, horaInicio, horaFin, capacidad, entrenadorId, observaciones,
         activo: true, clientes: [], historialClientes: [],
@@ -81,6 +119,8 @@ async function cambiarEstadoTurno(db: Db, datos: Record<string, unknown>, respue
     const turno = await db.collection<Turno>('turnos').findOne({ _id: new ObjectId(turnoId) });
     if (!turno) throw new ErrorSolicitud(404, 'El turno no existe.');
     exigirTurnoPropio(personal, turno.entrenadorId);
+
+    if (activo) await sinSolapamientos(db, turno.dia, turno.horaInicio, turno.horaFin, turno.entrenadorId, turno._id);
 
     await db.collection<Turno>('turnos').updateOne({ _id: turno._id }, { $set: { activo } });
     responder(respuesta, 200, { mensaje: activo ? 'Turno reactivado.' : 'Turno dado de baja.' });
@@ -101,6 +141,10 @@ async function asignarORetirarCliente(db: Db, datos: Record<string, unknown>, as
             throw new ErrorSolicitud(409, 'El turno ya alcanzó su cupo máximo.');
         const cliente = await db.collection('clientes').findOne({ _id: clienteId, activo: true });
         if (!cliente) throw new ErrorSolicitud(404, 'El cliente no existe o está inactivo.');
+        // RN-14: el cliente no puede quedar anotado a dos turnos superpuestos el mismo dia.
+        const otros = await db.collection<Turno>('turnos').find({ dia: turno.dia, clientes: clienteId, activo: true }).toArray();
+        if (otros.some(t => t.horaInicio < turno.horaFin && t.horaFin > turno.horaInicio))
+            throw new ErrorSolicitud(409, 'El cliente ya tiene otro turno en ese horario.');
     }
     else if (!(turno.clientes ?? []).some((id: ObjectId) => id.equals(clienteId))) {
         throw new ErrorSolicitud(409, 'El cliente no está asignado a este turno.');
@@ -111,6 +155,109 @@ async function asignarORetirarCliente(db: Db, datos: Record<string, unknown>, as
         $push: { historialClientes: { clienteId, accion: asignar ? 'ASIGNACION' : 'RETIRO', fecha: new Date(), usuarioId: new ObjectId(personal.id) } },
     });
     responder(respuesta, 200, { mensaje: asignar ? 'Cliente asignado al turno.' : 'Cliente retirado del turno.' });
+}
+
+// RN-14 + RN-17: genera en lote los turnos de una franja para los dias de trabajo de cada entrenador.
+async function generarAgenda(db: Db, datos: Record<string, unknown>, personal: Personal, respuesta: ServerResponse): Promise<void> {
+    const configuracion = await consultarConfiguracion(db);
+
+    const conservaApertura = Array.isArray(datos.franjas) && datos.franjas.length === configuracion.franjas.length
+        && datos.franjas.every((f: unknown, i: number) => typeof f === 'object' && f !== null
+            && (f as Record<string, unknown>).inicio === configuracion.franjas[i]!.inicio
+            && (f as Record<string, unknown>).fin === configuracion.franjas[i]!.fin);
+    // RN-17: las franjas de apertura y el cupo por defecto son exclusivas del Administrador.
+    if (personal.rol === 'ENTRENADOR' && (datos.capacidad !== configuracion.capacidad || !conservaApertura))
+        throw new ErrorSolicitud(403, 'Solo el Administrador puede cambiar los horarios de apertura y el cupo por defecto.');
+
+    const capacidad = entero(datos.capacidad, 'capacidad', 1, 100);
+    if (!Array.isArray(datos.franjas) || datos.franjas.length < 1 || datos.franjas.length > 4)
+        throw new ErrorSolicitud(400, 'Indicá entre una y cuatro franjas de apertura.');
+    const franjas = datos.franjas.map((valor: unknown) => {
+        if (!valor || typeof valor !== 'object') throw new ErrorSolicitud(400, 'Revisá las franjas de apertura.');
+        const campos = valor as Record<string, unknown>;
+        const inicio = leerTexto(campos, 'inicio', 5, true), fin = leerTexto(campos, 'fin', 5, true);
+        validarHorario(inicio, fin);
+        if ((minutos(fin) - minutos(inicio)) % 60 !== 0)
+            throw new ErrorSolicitud(400, 'Cada franja debe contener un número entero de horas.');
+        return { inicio, fin };
+    }).sort((a, b) => a.inicio.localeCompare(b.inicio));
+    if (franjas.some((f, i) => i > 0 && f.inicio < franjas[i - 1]!.fin))
+        throw new ErrorSolicitud(400, 'Las franjas de apertura no pueden superponerse.');
+
+    if (!Array.isArray(datos.trabajos) || !datos.trabajos.length || datos.trabajos.length > 50)
+        throw new ErrorSolicitud(400, 'Seleccioná los días de trabajo de al menos un entrenador.');
+    const trabajos = datos.trabajos.map((valor: unknown) => {
+        if (!valor || typeof valor !== 'object') throw new ErrorSolicitud(400, 'Revisá los días de cada entrenador.');
+        const campos = valor as Record<string, unknown>;
+        if (!Array.isArray(campos.dias) || !campos.dias.length || campos.dias.some((d: unknown) => typeof d !== 'string' || !diasSemana.includes(d)))
+            throw new ErrorSolicitud(400, 'Revisá los días de cada entrenador.');
+        return { entrenadorId: identificador(campos.entrenadorId), dias: [...new Set(campos.dias as string[])] };
+    });
+    if (new Set(trabajos.map(t => t.entrenadorId.toHexString())).size !== trabajos.length)
+        throw new ErrorSolicitud(400, 'Un entrenador aparece repetido.');
+    // RN-16: un Entrenador solo puede generar/modificar sus propios dias de trabajo.
+    if (personal.rol === 'ENTRENADOR' && (trabajos.length !== 1 || trabajos[0]!.entrenadorId.toHexString() !== personal.id))
+        throw new ErrorSolicitud(403, 'Solo podés generar los turnos de tu propia agenda.');
+    for (const trabajo of trabajos) await validarEntrenador(db, trabajo.entrenadorId);
+
+    const existentes = await db.collection<Turno>('turnos').find({}).toArray();
+    const operaciones: AnyBulkWriteOperation<Turno>[] = [];
+    let creados = 0, conservados = 0;
+
+    for (const trabajo of trabajos) {
+        for (const dia of trabajo.dias) {
+            for (const franja of franjas) {
+                for (let minuto = minutos(franja.inicio); minuto < minutos(franja.fin); minuto += 60) {
+                    const horaInicio = hora(minuto), horaFin = hora(minuto + 60);
+                    const existente = existentes.find(t => t.dia === dia && t.entrenadorId.equals(trabajo.entrenadorId) && t.horaInicio === horaInicio && t.horaFin === horaFin);
+                    if (existente && (existente.clientes?.length ?? 0) > capacidad)
+                        throw new ErrorSolicitud(409, `Hay un turno el ${dia} ${horaInicio}-${horaFin} con más clientes que el cupo indicado. No se generó la agenda.`);
+                    const solapado = existentes.some(t => t.activo && t.dia === dia && t.entrenadorId.equals(trabajo.entrenadorId)
+                        && !t._id.equals(existente?._id) && t.horaInicio < horaFin && t.horaFin > horaInicio);
+                    if (solapado)
+                        throw new ErrorSolicitud(409, `Hay un turno anterior superpuesto el ${dia} entre ${horaInicio} y ${horaFin}. Editalo o desactivalo antes de generar la agenda.`);
+                    if (existente) {
+                        operaciones.push({ updateOne: { filter: { _id: existente._id }, update: { $set: { capacidad, activo: true } } } });
+                        conservados++;
+                    }
+                    else {
+                        operaciones.push({ insertOne: { document: { dia, horaInicio, horaFin, capacidad, entrenadorId: trabajo.entrenadorId, observaciones: '', activo: true, clientes: [], historialClientes: [] } } });
+                        creados++;
+                    }
+                }
+            }
+        }
+    }
+
+    // NOTA: idealmente este bulkWrite y el update de configuracion de abajo deberian ir
+    // en la misma transaccion (ver aviso pendiente a Emanuel sobre ejecutarTransaccion en db.ts).
+    if (operaciones.length) await db.collection<Turno>('turnos').bulkWrite(operaciones);
+
+    const seleccionados = new Set(trabajos.map(t => t.entrenadorId.toHexString()));
+    const trabajosActualizados = [...configuracion.trabajos.filter(t => !seleccionados.has(t.entrenadorId.toHexString())), ...trabajos];
+    await db.collection('configuracion').updateOne({ _id: idConfiguracion }, {
+        $set: {
+            ...(personal.rol === 'ADMIN' ? { franjas, capacidad } : {}),
+            trabajos: trabajosActualizados,
+            fechaModificacion: new Date(),
+        },
+    }, { upsert: true });
+
+    responder(respuesta, 200, { mensaje: `Agenda generada: ${creados} turnos nuevos y ${conservados} conservados.` });
+}
+
+// RN-14: dar de baja o eliminar varios turnos a la vez, solo Administrador.
+async function operarEnLote(db: Db, datos: Record<string, unknown>, personal: Personal, respuesta: ServerResponse): Promise<void> {
+    if (personal.rol !== 'ADMIN') throw new ErrorSolicitud(403, 'Solo el Administrador puede operar turnos en lote.');
+    if (!Array.isArray(datos.ids) || !datos.ids.length || datos.ids.length > 2000 || typeof datos.eliminar !== 'boolean' || datos.confirmado !== true)
+        throw new ErrorSolicitud(400, 'Seleccioná turnos y confirmá la operación.');
+    const ids = [...new Map(datos.ids.map(valor => { const id = identificador(valor); return [id.toHexString(), id] as const; })).values()];
+    const coleccion = db.collection<Turno>('turnos');
+    if (await coleccion.countDocuments({ _id: { $in: ids } }) !== ids.length)
+        throw new ErrorSolicitud(409, 'La selección cambió. Actualizá la agenda.');
+    if (datos.eliminar) await coleccion.deleteMany({ _id: { $in: ids } });
+    else await coleccion.updateMany({ _id: { $in: ids } }, { $set: { activo: false } });
+    responder(respuesta, 200, { mensaje: `${ids.length} turnos ${datos.eliminar ? 'eliminados definitivamente' : 'dados de baja'}.` });
 }
 
 export function crearGestorTurnos(dependencias = {
@@ -130,6 +277,10 @@ export function crearGestorTurnos(dependencias = {
                 await listarTurnos(db, respuesta);
                 return;
             }
+            if (solicitud.method === 'GET' && ruta === '/api/turnos/configuracion') {
+                await consultarConfiguracionEndpoint(db, personal, respuesta);
+                return;
+            }
 
             if (solicitud.method !== 'POST') throw new ErrorSolicitud(405, 'Método no permitido.');
             const datos = await leerJSON(solicitud, 16384);
@@ -144,6 +295,14 @@ export function crearGestorTurnos(dependencias = {
             }
             if (ruta === '/api/turnos/asignar' || ruta === '/api/turnos/retirar') {
                 await asignarORetirarCliente(db, datos, ruta.endsWith('/asignar'), personal, respuesta);
+                return;
+            }
+            if (ruta === '/api/turnos/generar') {
+                await generarAgenda(db, datos, personal, respuesta);
+                return;
+            }
+            if (ruta === '/api/turnos/lote') {
+                await operarEnLote(db, datos, personal, respuesta);
                 return;
             }
 
