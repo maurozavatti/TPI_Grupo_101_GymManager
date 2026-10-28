@@ -1,0 +1,150 @@
+/* Estos son los estilos compartidos por las pantallas de
+ autenticacion. Los colores y las medidas se toman de las
+ variables definidas en style.css.*/
+.pagina-autenticacion {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--espacio-extra-grande) var(--espacio-mediano);
+}
+
+/* Este es el contenedor principal del formulario.
+ Aca se define el diseño de la tarjeta y su tamaño.*/
+.tarjeta-autenticacion {
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--espacio-extra-grande);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* Estos son los estilos del nombre de la aplicacion
+ y del titulo que identifica cada formulario.*/
+.nombre-aplicacion {
+  color: var(--color-principal);
+  text-align: center;
+  margin-bottom: var(--espacio-pequeno);
+}
+
+.tarjeta-autenticacion > h2 {
+  text-align: center;
+  margin-bottom: var(--espacio-extra-grande);
+}
+
+/* Este contenedor organiza los campos y las acciones
+ del formulario, manteniendo una separacion entre ellos.*/
+.formulario-autenticacion {
+  display: grid;
+  gap: var(--espacio-mediano);
+}
+
+/* Cada campo agrupa su etiqueta, el espacio para ingresar
+ los datos y su texto de ayuda cuando corresponda.*/
+.campo-formulario {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.campo-formulario label {
+  font-weight: var(--peso-medio);
+}
+
+/* Estos son los estilos de los campos donde se ingresan
+ los datos. Ocupan todo el ancho disponible de la tarjeta.*/
+.campo-formulario input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida);
+}
+
+/* El borde cambia de color al pasar el cursor o al
+ enfocar el campo mediante la navegacion con teclado.*/
+.campo-formulario input:hover {
+  border-color: var(--color-principal);
+}
+
+.campo-formulario input:focus-visible {
+  border-color: var(--color-foco);
+}
+
+/* Este es el estilo de los textos de ayuda que acompañan
+ a los campos, como el minimo de caracteres de la contraseña.*/
+.campo-formulario small {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+/* Este es el diseño del boton principal que comparten
+ las pantallas de login y registro.*/
+.boton-autenticacion {
+  width: 100%;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-secundario);
+  background-color: var(--color-principal);
+  border: 1px solid var(--color-principal);
+  border-radius: var(--radio-pequeno);
+  font-weight: var(--peso-negrita);
+  transition:
+    background-color var(--transicion-rapida),
+    border-color var(--transicion-rapida);
+}
+
+/* El boton cambia de color al pasar el cursor.
+ Cuando esta deshabilitado se muestra con menor opacidad.*/
+.boton-autenticacion:hover:not(:disabled) {
+  background-color: var(--color-principal-hover);
+  border-color: var(--color-principal-hover);
+}
+
+.boton-autenticacion:disabled {
+  opacity: 0.65;
+}
+
+/* Este es el espacio donde se muestran los mensajes
+ del formulario. Cuando esta vacio permanece oculto.*/
+.mensaje-formulario {
+  margin: 0;
+  font-size: var(--texto-pequeno);
+  overflow-wrap: anywhere;
+}
+
+.mensaje-formulario:empty {
+  display: none;
+}
+
+/* Estos son los estilos del texto y el enlace que permiten
+ pasar del login al registro y viceversa.*/
+.pie-autenticacion {
+  margin: var(--espacio-grande) 0 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+  text-align: center;
+}
+
+.pie-autenticacion a {
+  color: var(--color-principal);
+  font-weight: var(--peso-medio);
+  text-underline-offset: 0.2em;
+}
+
+.pie-autenticacion a:hover {
+  color: var(--color-principal-hover);
+}
+
+/* Estos ajustes adaptan el espacio de la tarjeta
+ a las pantallas pequeñas.*/
+@media (max-width: 480px) {
+  .tarjeta-autenticacion {
+    padding: var(--espacio-grande) var(--espacio-mediano);
+  }
+}
