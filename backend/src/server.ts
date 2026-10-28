@@ -3,6 +3,7 @@ import { conectarDB, cerrarConexionDB } from './db.ts'
 import { servirWeb } from './servicios/archivos.ts'
 import { consultarSesion } from './controladores/sesion.ts'
 import { registrarUsuario } from './controladores/register.ts'
+import { iniciarSesion } from './controladores/login.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -37,6 +38,12 @@ const servidor = createServer(async (peticion, respuesta) => {
     return
   }
 
+    // Comprobamos las credenciales y creamos una nueva sesion.
+  if (peticion.method === 'POST' && ruta === '/api/login') {
+    await iniciarSesion(peticion, respuesta)
+    return
+  }
+  
   // Las rutas de API que todavia no existen devuelven un error.
   if (ruta === '/api' || ruta.startsWith('/api/')) {
     respuesta.writeHead(404, {
