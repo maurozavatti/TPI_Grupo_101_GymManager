@@ -3,52 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GymManager</title>
+    <title>Mi cuenta — GymManager</title>
   </head>
 
   <body>
-    <main class="pagina-autenticacion">
-      <section
-        class="tarjeta-autenticacion"
-        aria-labelledby="titulo-inicio"
-      >
-        <h1 class="nombre-aplicacion">GymManager</h1>
-        <h2 id="titulo-inicio">Comprobando sesión</h2>
+    <p id="estado-panel" class="estado-panel" role="status">
+      Comprobando sesión...
+    </p>
 
-        <div class="formulario-autenticacion">
-          <!-- Los datos se muestran despues de consultar la sesion. -->
-          <div id="datos-sesion" hidden>
-            <p id="nombre-usuario"></p>
-            <p id="correo-usuario"></p>
-            <p id="rol-usuario"></p>
-          </div>
+    <!-- Cada pantalla define su contenido dentro de vista. -->
+    <section id="vista" hidden>
+      <article class="tarjeta-panel">
+        <h2>Datos de la cuenta</h2>
+        <dl>
+          <dt>Nombre</dt>
+          <dd id="nombre-usuario"></dd>
 
-          <p
-            id="mensaje-inicio"
-            class="mensaje-formulario"
-            role="status"
-          >Esperá un momento...</p>
+          <dt>Correo electrónico</dt>
+          <dd id="correo-usuario"></dd>
 
-          <button
-            id="boton-cerrar-sesion"
-            class="boton-autenticacion"
-            type="button"
-            hidden
-          >
-            Cerrar sesión
-          </button>
-
-          <button
-            id="boton-reintentar"
-            class="boton-autenticacion"
-            type="button"
-            hidden
-          >
-            Reintentar
-          </button>
-        </div>
-      </section>
-    </main>
+          <dt>Rol</dt>
+          <dd id="rol-usuario"></dd>
+        </dl>
+      </article>
+    </section>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
