@@ -3,10 +3,112 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registro — GymManager</title>
+    <title>Crear cuenta — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../autenticacion.css" />
   </head>
+
   <body>
-    <h1>Crear una cuenta</h1>
-    <a href="../login/login.html">Iniciar sesión</a>
+    <main class="pagina-autenticacion">
+      <section
+        class="tarjeta-autenticacion"
+        aria-labelledby="titulo-registro"
+      >
+        <h1 class="nombre-aplicacion">GymManager</h1>
+        <h2 id="titulo-registro">Crear cuenta</h2>
+
+        <!-- Datos necesarios para crear una cuenta de usuario. -->
+        <form
+          id="formulario-registro"
+          class="formulario-autenticacion"
+          method="post"
+        >
+          <div class="campo-formulario">
+            <label for="nombre">Nombre</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              autocomplete="given-name"
+              maxlength="100"
+              required
+            />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="apellido">Apellido</label>
+            <input
+              type="text"
+              id="apellido"
+              name="apellido"
+              autocomplete="family-name"
+              maxlength="100"
+              required
+            />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="correo">Correo electrónico</label>
+            <input
+              type="email"
+              id="correo"
+              name="correo"
+              autocomplete="email"
+              maxlength="254"
+              required
+            />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="contrasena">Contraseña</label>
+            <input
+              type="password"
+              id="contrasena"
+              name="contrasena"
+              autocomplete="new-password"
+              minlength="8"
+              aria-describedby="ayuda-contrasena"
+              required
+            />
+            <small id="ayuda-contrasena">
+              Usá al menos 8 caracteres.
+            </small>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="confirmacion-contrasena">
+              Confirmar contraseña
+            </label>
+            <input
+              type="password"
+              id="confirmacion-contrasena"
+              name="confirmacionContrasena"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+          </div>
+
+          <!-- Espacio para los mensajes que mostrara el TypeScript. -->
+          <p
+            id="mensaje-registro"
+            class="mensaje-formulario"
+            role="status"
+          ></p>
+
+          <button type="submit" class="boton-autenticacion">
+            Registrarse
+          </button>
+        </form>
+
+        <p class="pie-autenticacion">
+          ¿Ya tenés cuenta?
+          <a href="../login/login.html">Iniciá sesión</a>
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="./register.ts"></script>
   </body>
 </html>
