@@ -1,6 +1,7 @@
 import './style.css'
 import './autenticacion/autenticacion.css'
-import { consultarSesion, cerrarSesion } from './servicios/sesion.ts'
+import { cerrarSesion } from './servicios/sesion.ts'
+import { exigirAcceso } from './servicios/permisos.ts'
 
 /* Estos son los elementos de la pantalla inicial.*/
 const titulo = document.querySelector<HTMLHeadingElement>('#titulo-inicio')
@@ -42,10 +43,9 @@ const iniciarAplicacion = async (): Promise<void> => {
     botonReintentar.hidden = true
 
     try {
-      const usuario = await consultarSesion()
+      const usuario = await exigirAcceso()
 
       if (!usuario) {
-        window.location.replace(rutaLogin)
         return
       }
 
