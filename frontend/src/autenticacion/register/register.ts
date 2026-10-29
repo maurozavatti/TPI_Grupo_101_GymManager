@@ -1,5 +1,6 @@
 import { validarFormulario } from '../validaciones.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
+import { prepararAccesoAutenticacion } from '../acceso.ts'
 
 /* Estos son los elementos necesarios para controlar el registro
  y mostrar los mensajes que devuelve el backend.*/
@@ -15,7 +16,14 @@ const boton = formulario?.querySelector<HTMLButtonElement>(
   'button[type="submit"]',
 )
 
-if (formulario && mensaje && boton) {
+/* Comprobamos la sesion antes de preparar el formulario.*/
+const puedeMostrarFormulario = await prepararAccesoAutenticacion(
+  formulario,
+  mensaje,
+  boton,
+)
+
+if (formulario && mensaje && boton && puedeMostrarFormulario) {
   let seIntentoEnviar = false
   let enviando = false
 
