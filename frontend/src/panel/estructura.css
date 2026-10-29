@@ -1,0 +1,155 @@
+/* Distribucion compartida del panel y sus colores globales.*/
+.estructura-panel {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+}
+
+/* La barra lateral organiza la marca, el menu y la salida.*/
+.barra-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-grande);
+  padding: var(--espacio-grande);
+  background: var(--color-superficie);
+  border-right: 2px solid var(--color-principal-claro);
+}
+
+.marca-panel {
+  color: var(--color-principal);
+  font-size: var(--texto-subtitulo);
+  font-weight: var(--peso-negrita);
+  text-decoration: none;
+}
+
+.menu-panel {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.opcion-menu {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.opcion-menu:hover,
+.opcion-menu[aria-current="page"] {
+  color: var(--color-principal-hover);
+  border-color: var(--color-principal);
+  background: var(--color-principal-claro);
+}
+
+.opcion-menu[aria-current="page"] {
+  font-weight: var(--peso-negrita);
+}
+
+/* El encabezado muestra la pantalla y la cuenta autenticada.*/
+.zona-principal {
+  min-width: 0;
+}
+
+.encabezado-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  padding: var(--espacio-grande) var(--espacio-extra-grande);
+  background: var(--color-superficie);
+  border-bottom: 2px solid var(--color-principal-claro);
+}
+
+.encabezado-panel h1 {
+  font-size: var(--texto-subtitulo);
+  overflow-wrap: anywhere;
+}
+
+.cuenta-panel {
+  display: grid;
+  gap: var(--espacio-minimo);
+  overflow-wrap: anywhere;
+}
+
+.rol-panel {
+  color: var(--color-principal);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-negrita);
+}
+
+/* Clases reutilizables para el contenido de cada modulo.*/
+.contenido-panel {
+  padding: var(--espacio-extra-grande);
+}
+
+.tarjeta-panel {
+  padding: var(--espacio-grande);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-mediano);
+  box-shadow: var(--sombra-tarjeta);
+  overflow-wrap: anywhere;
+}
+
+.boton-panel {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-secundario);
+  background: var(--color-principal);
+  border: 1px solid var(--color-principal);
+  border-radius: var(--radio-pequeno);
+  font-weight: var(--peso-negrita);
+}
+
+.boton-panel:hover:not(:disabled) {
+  background: var(--color-principal-hover);
+}
+
+.boton-panel:disabled {
+  opacity: 0.65;
+}
+
+.cerrar-panel {
+  margin-top: auto;
+}
+
+.mensaje-panel,
+.estado-error {
+  color: var(--color-error);
+}
+
+.mensaje-panel:empty {
+  display: none;
+}
+
+.estado-panel {
+  margin: var(--espacio-extra-grande);
+}
+
+/* En el celular el menu pasa arriba con bordes y fondo celeste.*/
+@media (max-width: 800px) {
+  .estructura-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .barra-lateral {
+    border-right: 0;
+    border-bottom: 2px solid var(--color-principal);
+    background: var(--color-principal-claro);
+  }
+
+  .menu-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .opcion-menu {
+    background: var(--color-superficie);
+  }
+
+  .encabezado-panel,
+  .contenido-panel {
+    padding: var(--espacio-grande);
+  }
+}
