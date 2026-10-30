@@ -4,6 +4,9 @@ import { servirWeb } from './servicios/archivos.ts'
 import { consultarSesion, cerrarSesion, } from './controladores/sesion.ts'
 import { registrarUsuario } from './controladores/register.ts'
 import { iniciarSesion } from './controladores/login.ts'
+import { gestionarClientes } from './controladores/clientes.ts'
+import { gestionarTurnos } from './controladores/turnos.ts'
+import { gestionarPagos } from './controladores/pagos.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -47,6 +50,24 @@ const servidor = createServer(async (peticion, respuesta) => {
     // Cerramos la sesion correspondiente a la cookie recibida.
   if (peticion.method === 'POST' && ruta === '/api/logout') {
     await cerrarSesion(peticion, respuesta)
+    return
+  }
+  
+    // Delegamos las operaciones de clientes a su controlador.
+  if (ruta === '/api/clientes' || ruta.startsWith('/api/clientes/')) {
+    await gestionarClientes(peticion, respuesta)
+    return
+  }
+
+  // Delegamos las operaciones de turnos a su controlador.
+  if (ruta === '/api/turnos' || ruta.startsWith('/api/turnos/')) {
+    await gestionarTurnos(peticion, respuesta)
+    return
+  }
+
+  // Delegamos las operaciones de pagos a su controlador.
+  if (ruta === '/api/pagos' || ruta.startsWith('/api/pagos/')) {
+    await gestionarPagos(peticion, respuesta)
     return
   }
   
