@@ -4,9 +4,68 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar sesión — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../autenticacion.css" />
   </head>
+
   <body>
-    <h1>Iniciar sesión</h1>
-    <a href="../register/register.html">Crear una cuenta</a>
+    <main class="pagina-autenticacion">
+      <section
+        class="tarjeta-autenticacion"
+        aria-labelledby="titulo-login"
+      >
+        <h1 class="nombre-aplicacion">GymManager</h1>
+        <h2 id="titulo-login">Iniciar sesión</h2>
+
+        <!-- Estos son los datos necesarios para iniciar sesion. -->
+        <form
+          id="formulario-login"
+          class="formulario-autenticacion"
+          method="post"
+        >
+          <div class="campo-formulario">
+            <label for="correo">Correo electrónico</label>
+            <input
+              type="email"
+              id="correo"
+              name="correo"
+              autocomplete="username"
+              maxlength="254"
+              required
+            />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="contrasena">Contraseña</label>
+            <input
+              type="password"
+              id="contrasena"
+              name="contrasena"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <!-- Este es el espacio para los mensajes del formulario. -->
+          <p
+            id="mensaje-login"
+            class="mensaje-formulario"
+            role="status"
+          ></p>
+
+          <button type="submit" class="boton-autenticacion">
+            Ingresar
+          </button>
+        </form>
+
+        <p class="pie-autenticacion">
+          ¿No tenés cuenta?
+          <a href="../register/register.html">Registrate</a>
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="./login.ts"></script>
   </body>
 </html>

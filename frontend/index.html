@@ -3,10 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GymManager</title>
+    <title>Mi cuenta — GymManager</title>
   </head>
+
   <body>
-    <div id="app"></div>
+    <p id="estado-panel" class="estado-panel" role="status">
+      Comprobando sesión...
+    </p>
+
+    <!-- Cada pantalla define su contenido dentro de vista. -->
+    <section id="vista" hidden>
+      <article class="tarjeta-panel">
+        <h2>Datos de la cuenta</h2>
+        <dl>
+          <dt>Nombre</dt>
+          <dd id="nombre-usuario"></dd>
+
+          <dt>Correo electrónico</dt>
+          <dd id="correo-usuario"></dd>
+
+          <dt>Rol</dt>
+          <dd id="rol-usuario"></dd>
+        </dl>
+      </article>
+    </section>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

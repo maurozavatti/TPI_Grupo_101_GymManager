@@ -8,9 +8,11 @@
 
 Esta carpeta contiene el frontend de **Gym Manager**, desarrollado con HTML, CSS y TypeScript mediante Vite y su plantilla `vanilla-ts`.
 
-La página inicial consulta `GET /api/salud` y muestra el resultado de la comunicación con el backend.
+La página inicial consulta la sesión actual. Sin una sesión válida dirige al login; con una sesión válida muestra Mi cuenta dentro de la estructura compartida del panel y permite cerrar sesión.
 
-La carpeta `src/autenticacion` contiene las páginas iniciales de login y registro, con enlaces para navegar entre ambas. Los colores, fuentes, espaciados y estilos generales de la web se definen en `src/style.css`.
+La carpeta `src/autenticacion` contiene login y registro con formularios, validaciones, mensajes propios y comunicación con el backend. Sus enlaces permiten navegar entre ambas páginas cuando no hay sesión; si ya existe una sesión, dirigen al inicio autenticado. Los colores, fuentes, espaciados y estilos generales de la web se definen en `src/style.css`.
+
+La carpeta `src/servicios` centraliza la comunicación con la API, la consulta de sesiones y los permisos de navegación. `src/panel` contiene el encabezado, menú, cierre de sesión y estilos compartidos que pueden reutilizar las pantallas.
 
 Las peticiones se envían a la API. El backend concentra el acceso a MongoDB Atlas y mantiene las credenciales de la base fuera del frontend.
 
@@ -68,11 +70,9 @@ npm --prefix frontend run dev
 
 La dirección para abrir en el navegador es la que informa Vite en la terminal. Normalmente es `http://localhost:5173/`. Si ese puerto está ocupado, Vite puede elegir otro.
 
-Con ambos procesos funcionando, la página muestra:
+Con ambos procesos funcionando, abrir la raíz de la web muestra el login si no hay sesión o Mi cuenta si existe una sesión válida. El registro y el login correctos también dirigen a Mi cuenta.
 
-```text
-GymManager — Backend de GymManager funcionando
-```
+La comprobación directa del servidor se conserva en `http://localhost:5173/api/salud`, ajustando el puerto al informado por Vite. Devuelve el mensaje `Backend de GymManager funcionando`.
 
 Vite actualiza la página al modificar los archivos del frontend. Cada proceso se detiene con `Ctrl+C` en su terminal.
 
@@ -108,11 +108,27 @@ El proxy funciona con el servidor de desarrollo de Vite y reenvía las peticione
 
 La comunicación se puede comprobar con estas pruebas:
 
-1. Con el backend encendido, abrir la página del frontend y comprobar que muestra el mensaje de funcionamiento.
-2. Detener solamente el backend y recargar la página. Debe aparecer `GymManager — No se pudo conectar con el backend.`
-3. Iniciar nuevamente el backend y recargar para recuperar la respuesta correcta.
+1. Con el backend encendido, abrir `/api/salud` desde la dirección de Vite y comprobar que devuelve el mensaje de funcionamiento.
+2. Detener solamente el backend y abrir o recargar la raíz de la web. Debe informarse el problema de consulta; no se presenta como un ingreso o cierre de sesión exitoso.
+3. Iniciar nuevamente el backend y recargar para recuperar el funcionamiento.
 
 Esta prueba comprueba la comunicación HTTP entre ambos proyectos. Para probar específicamente el acceso a Atlas se ejecuta `npm --prefix backend run check:db` desde la raíz, con `backend/.env` completo.
+
+### 6.1 Pruebas de registro, login y sesión
+
+Con ambos servidores funcionando:
+
+1. Sin sesión, abrir la raíz y comprobar que dirige al login.
+2. Probar campos vacíos, correo inválido y contraseñas que no coincidan en el registro. Los campos incorrectos deben marcarse y mostrar mensajes propios.
+3. Registrar una cuenta de prueba. La operación guarda la cuenta en la base configurada, crea su sesión y dirige a Mi cuenta.
+4. Cerrar sesión e intentar registrar el mismo correo. Debe mostrar el error de duplicado y marcar el correo.
+5. Probar el login con credenciales incorrectas y con un correo inexistente. Ambos casos deben mostrar el mismo mensaje de credenciales incorrectas.
+6. Iniciar sesión correctamente, recargar Mi cuenta y comprobar que se conserva la sesión.
+7. Con sesión iniciada, abrir directamente login y registro. Deben volver al inicio autenticado.
+8. Cerrar sesión y volver a abrir la raíz. Debe dirigir al login.
+9. Achicar la ventana y comprobar que el menú pasa arriba del contenido y conserva la separación visual de sus opciones.
+
+Para consultar la sesión recibida por el navegador puede abrirse `/api/sesion` desde la misma dirección y navegador utilizados para ingresar. La sesión guardada por una prueba de PowerShell es independiente de la cookie del navegador.
 
 ---
 
@@ -146,15 +162,22 @@ frontend/
 ├── src/
 │   ├── main.ts
 │   ├── style.css
+│   ├── servicios/
+│   │   ├── api.ts
+│   │   ├── sesion.ts
+│   │   └── permisos.ts
+│   ├── panel/
+│   │   ├── estructura.ts
+│   │   └── estructura.css
 │   └── autenticacion/
+│       ├── acceso.ts
 │       ├── autenticacion.css
+│       ├── validaciones.ts
 │       ├── login/
 │       │   ├── login.html
-│       │   ├── login.css
 │       │   └── login.ts
 │       └── register/
 │           ├── register.html
-│           ├── register.css
 │           └── register.ts
 ├── vite.config.ts
 ├── tsconfig.json
@@ -166,14 +189,21 @@ frontend/
 
 | Archivo | Objetivo |
 |---|---|
-| `index.html` | Define el documento inicial, el idioma español, el título y la carga de `src/main.ts`. |
-| `src/main.ts` | Consulta `/api/salud` y muestra el resultado de la comunicación con el backend. |
+| `index.html` | Define el documento inicial en español, el estado de carga y el contenido de Mi cuenta dentro de `#vista`; carga `src/main.ts`. |
+| `src/main.ts` | Prepara Mi cuenta para los tres roles mediante la estructura compartida y completa nombre, correo y rol con los datos de sesión. |
 | `src/style.css` | Define variables y estilos globales de colores, fondos, tipografía, espaciados, bordes y estados de los elementos. |
-| `src/autenticacion/login/login.html` | Muestra el título de inicio de sesión y el enlace hacia el registro. |
-| `src/autenticacion/register/register.html` | Muestra el título de creación de cuenta y el enlace hacia el login. |
-| `src/autenticacion/autenticacion.css` | Archivo de estilos compartidos de autenticación, creado sin contenido. |
-| `src/autenticacion/login/login.css` y `login.ts` | Archivos de estilos y comportamiento de la página de login, creados sin contenido. |
-| `src/autenticacion/register/register.css` y `register.ts` | Archivos de estilos y comportamiento de la página de registro, creados sin contenido. |
+| `src/autenticacion/login/login.html` | Define correo, contraseña, mensajes, botón de ingreso y enlace hacia el registro. |
+| `src/autenticacion/login/login.ts` | Valida el formulario, envía las credenciales al backend, marca los errores y dirige al inicio después del ingreso correcto. |
+| `src/autenticacion/register/register.html` | Define nombre, apellido, correo, contraseña, confirmación, mensajes y enlace al login. |
+| `src/autenticacion/register/register.ts` | Valida y envía el registro, marca campos rechazados y dirige al inicio después de crear la cuenta y su sesión. |
+| `src/autenticacion/autenticacion.css` | Comparte tarjeta, campos, botones, mensajes de éxito y error, y adaptación a pantallas pequeñas. |
+| `src/autenticacion/validaciones.ts` | Comprueba los campos de ambos formularios y los marca mediante `aria-invalid`, con mensajes propios. |
+| `src/autenticacion/acceso.ts` | Consulta la sesión antes de habilitar login o registro y redirige si ya existe una sesión válida. |
+| `src/servicios/api.ts` | Centraliza las peticiones JSON, el envío de cookies y los errores HTTP mediante `solicitarAPI` y `ErrorAPI`. |
+| `src/servicios/sesion.ts` | Define los datos públicos de sesión, valida la respuesta del backend y permite consultar o cerrar la sesión actual. |
+| `src/servicios/permisos.ts` | Comprueba roles con `tieneRol` y exige sesión o roles permitidos mediante `exigirAcceso` antes de cargar una pantalla. |
+| `src/panel/estructura.ts` | Prepara sesión y permisos, encabezado, menú filtrado, cierre de sesión y contenido de cada pantalla dentro de la estructura compartida. |
+| `src/panel/estructura.css` | Define barra lateral, encabezado, tarjetas y botones comunes; adapta el menú a la parte superior en pantallas pequeñas. |
 | `vite.config.ts` | Reenvía las peticiones `/api` al backend durante el desarrollo local e incluye automáticamente `index.html` y los HTML de `src` al compilar. |
 | `tsconfig.json` | Configura la comprobación del código TypeScript del frontend. |
 | `package.json` | Declara las herramientas y los comandos del frontend. |
@@ -189,7 +219,11 @@ http://localhost:3000/src/autenticacion/login/login.html
 http://localhost:3000/src/autenticacion/register/register.html
 ```
 
-Los enlaces relativos permiten pasar del login al registro y regresar. La página inicial `/` mantiene la comprobación de conexión con el backend.
+Los enlaces relativos permiten pasar del login al registro y regresar cuando no hay sesión. Antes de habilitar cada formulario se consulta la sesión. Si ya existe una sesión válida, se dirige a `/`; el ingreso y el registro correctos también dirigen a esa raíz, donde se muestra Mi cuenta.
+
+Durante la consulta o el envío se bloquean los envíos repetidos y se muestra el estado de espera. Los errores conservan los datos del formulario para corregirlos y marcan los campos que indique el backend. El mensaje de éxito se muestra después de recibir una respuesta correcta del servidor.
+
+El navegador administra la cookie HttpOnly. El frontend no lee el token ni lo guarda en localStorage. El servicio de sesión devuelve `null` ante un `401`; los errores de conexión, de formato o del servidor se propagan para informar el problema, sin interpretarlos como una sesión cerrada.
 
 ### 8.2 Estilos globales
 
@@ -204,7 +238,51 @@ Las variables agrupan colores principales, superficies, textos, bordes, estados,
 
 Además, el archivo establece el tamaño de caja, los estilos del contenido y los títulos, la fuente de los controles de formulario, el comportamiento de las imágenes, los elementos ocultos y el indicador de foco para navegar con teclado. Los botones deshabilitados utilizan el cursor `not-allowed`.
 
-Los estilos globales se aplican en las páginas que cargan el archivo. `src/main.ts` lo importa para la página inicial. Los HTML de login y registro contienen sus títulos y enlaces, sin cargar archivos CSS ni TypeScript.
+Los estilos globales se aplican en las páginas que cargan el archivo. La estructura del panel importa `style.css` y `estructura.css`. Los HTML de login y registro cargan `style.css`, `autenticacion.css` y sus respectivos módulos TypeScript. Ambos formularios comparten los estilos de autenticación, por lo que no utilizan CSS individuales.
+
+Los mensajes y campos incorrectos usan `--color-error`; los mensajes de éxito usan `--color-exito`. Cada módulo puede agregar sus estilos propios reutilizando las variables globales.
+
+### 8.3 Sesiones y permisos de navegación
+
+`consultarSesion()` consulta `/api/sesion`, comprueba la estructura de los datos públicos y devuelve el usuario o `null` si no hay una sesión válida. `cerrarSesion()` envía un objeto JSON a `/api/logout`; el backend elimina el registro y el navegador procesa la eliminación de la cookie.
+
+`exigirAcceso()` exige una sesión antes de cargar una página. Si no hay sesión, dirige al login y devuelve `null`. Al recibir una lista de roles, como `exigirAcceso(['ADMIN'])`, comprueba además que la cuenta tenga uno de ellos; si no coincide, dirige a `/` y devuelve `null`. Los errores de consulta se propagan para informar el fallo. `tieneRol(usuario, rolesPermitidos)` permite decidir qué opciones mostrar.
+
+Estas funciones organizan la navegación del frontend. El backend sigue comprobando los permisos de cada operación; ocultar un botón o redirigir una página no reemplaza esa autorización.
+
+### 8.4 Estructura compartida del panel
+
+`prepararPanel(titulo, roles)` comprueba sesión y permisos, genera el encabezado y menú, conecta el cierre de sesión y mueve el contenido de `#vista` al diseño común. Por defecto admite `ADMIN` y `ENTRENADOR`. Devuelve el usuario autenticado o `null` si redirige o no puede preparar la pantalla. El código propio de cada módulo se ejecuta solamente cuando recibe un usuario.
+
+Cada pantalla define su contenido dentro de una sección inicialmente oculta:
+
+```html
+<p id="estado-panel" class="estado-panel" role="status">
+  Comprobando sesión...
+</p>
+
+<section id="vista" hidden>
+  <!-- Contenido propio de la pantalla. -->
+</section>
+```
+
+El HTML carga su módulo TypeScript con un script de tipo `module`. Desde una subcarpeta de `src/panel`, el módulo puede utilizar:
+
+```ts
+import { prepararPanel } from '../estructura.ts'
+
+const usuario = await prepararPanel('Titulo de la pantalla')
+
+if (usuario) {
+  // Carga de datos y eventos propios de la pantalla.
+}
+```
+
+Una página exclusiva de administrador utiliza `prepararPanel('Titulo', ['ADMIN'])`. Mi cuenta admite los tres roles. El componente incorpora los estilos globales y del panel, por lo que cada módulo solo necesita agregar su CSS particular cuando corresponda.
+
+El menú utiliza una lista común de opciones y filtra por rol. Además, detecta los HTML existentes dentro de `src` mediante Vite para evitar enlaces a páginas ausentes. Mi cuenta permanece disponible en `/`. Para incorporar un módulo al menú, su ruta debe coincidir con una opción definida en `opcionesMenu`; la detección de archivos se actualiza al ejecutar o recompilar el frontend.
+
+La opción actual se identifica mediante `aria-current="page"`. Los nombres y roles se incorporan como texto. Al volver a una página del panel desde el historial del navegador se vuelve a cargar para comprobar la sesión. En pantallas de hasta 800 px, el menú pasa a la parte superior con fondo celeste.
 
 ---
 

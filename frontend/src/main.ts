@@ -1,28 +1,18 @@
-import './style.css'
+import { prepararPanel } from './panel/estructura.ts'
 
-const app = document.querySelector<HTMLDivElement>('#app')
+/* Mi cuenta permite comprobar el acceso de los tres roles
+ utilizando la misma estructura que los demas modulos.*/
+const usuario = await prepararPanel(
+  'Mi cuenta',
+  ['ADMIN', 'ENTRENADOR', 'USUARIO'],
+)
 
-async function comprobarBackend() {
-  if (!app) return
+if (usuario) {
+  const nombre = document.querySelector<HTMLElement>('#nombre-usuario')
+  const correo = document.querySelector<HTMLElement>('#correo-usuario')
+  const rol = document.querySelector<HTMLElement>('#rol-usuario')
 
-  app.textContent = 'Conectando con el backend...'
-
-  try {
-    // Pedimos al backend su estado a traves del proxy de Vite.
-    const respuesta = await fetch('/api/salud')
-
-    // Si el backend devuelve un error, pasamos al catch.
-    if (!respuesta.ok) {
-      throw new Error('El backend devolvio un error')
-    }
-
-    // Convertimos la respuesta JSON y mostramos su mensaje.
-    const datos = await respuesta.json()
-
-    app.textContent = `GymManager — ${datos.mensaje}`
-  } catch {
-    app.textContent = 'GymManager — No se pudo conectar con el backend.'
-  }
+  if (nombre) nombre.textContent = `${usuario.nombre} ${usuario.apellido}`
+  if (correo) correo.textContent = usuario.email
+  if (rol) rol.textContent = usuario.rol
 }
-
-comprobarBackend()

@@ -1,6 +1,9 @@
 import { createServer } from 'node:http'
 import { conectarDB, cerrarConexionDB } from './db.ts'
 import { servirWeb } from './servicios/archivos.ts'
+import { consultarSesion, cerrarSesion, } from './controladores/sesion.ts'
+import { registrarUsuario } from './controladores/register.ts'
+import { iniciarSesion } from './controladores/login.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -23,6 +26,30 @@ const servidor = createServer(async (peticion, respuesta) => {
     return
   }
 
+    // Consultamos si la peticion corresponde a una sesion activa.
+  if (peticion.method === 'GET' && ruta === '/api/sesion') {
+    await consultarSesion(peticion, respuesta)
+    return
+  }
+
+    // Registramos la cuenta y creamos su primera sesion.
+  if (peticion.method === 'POST' && ruta === '/api/register') {
+    await registrarUsuario(peticion, respuesta)
+    return
+  }
+
+    // Comprobamos las credenciales y creamos una nueva sesion.
+  if (peticion.method === 'POST' && ruta === '/api/login') {
+    await iniciarSesion(peticion, respuesta)
+    return
+  }
+
+    // Cerramos la sesion correspondiente a la cookie recibida.
+  if (peticion.method === 'POST' && ruta === '/api/logout') {
+    await cerrarSesion(peticion, respuesta)
+    return
+  }
+  
   // Las rutas de API que todavia no existen devuelven un error.
   if (ruta === '/api' || ruta.startsWith('/api/')) {
     respuesta.writeHead(404, {
