@@ -542,7 +542,12 @@ if (usuario) {
     try {
       await solicitarAPI(esEdicion ? '/api/turnos/editar' : '/api/turnos', {
         method: 'POST',
-        body: JSON.stringify(Object.fromEntries(datos)),
+        body: JSON.stringify({
+          ...Object.fromEntries(datos),
+          /* FormData entrega todo como texto. El backend exige que
+           capacidad sea un numero (ver entero() en compartidos/http.ts). */
+          capacidad: Number(datos.get('capacidad')),
+        }),
       })
       ocultarFormularios()
       await cargarTurnos()
