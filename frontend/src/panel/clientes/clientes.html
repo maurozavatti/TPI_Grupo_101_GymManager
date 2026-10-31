@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clientes — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../estructura.css" />
+    <link rel="stylesheet" href="./clientes.css" />
+  </head>
+
+  <body>
+    <section id="vista" hidden>
+      <div class="cabecera-modulo">
+        <h2>Clientes</h2>
+        <button type="button" id="boton-nuevo-cliente" class="boton-panel">
+          Nuevo cliente
+        </button>
+      </div>
+
+      <p id="mensaje-clientes" class="mensaje-panel" role="status"></p>
+
+      <form id="formulario-cliente" class="tarjeta-panel formulario-cliente" hidden>
+        <h3 id="titulo-formulario-cliente">Nuevo cliente</h3>
+        <input type="hidden" id="cliente-id" name="clienteId" />
+
+        <div class="rejilla-campos">
+          <div class="campo-formulario">
+            <label for="cliente-nombre">Nombre</label>
+            <input type="text" id="cliente-nombre" name="nombre" maxlength="100" required />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-apellido">Apellido</label>
+            <input type="text" id="cliente-apellido" name="apellido" maxlength="100" required />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-dni">DNI</label>
+            <input type="text" id="cliente-dni" name="dni" maxlength="20" required />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-nacimiento">Fecha de nacimiento</label>
+            <input type="date" id="cliente-nacimiento" name="fechaNacimiento" />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-telefono">Teléfono</label>
+            <input type="text" id="cliente-telefono" name="telefono" maxlength="30" />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-email">Correo electrónico</label>
+            <input type="email" id="cliente-email" name="email" maxlength="254" />
+          </div>
+          <div class="campo-formulario campo-ancho">
+            <label for="cliente-direccion">Domicilio</label>
+            <input type="text" id="cliente-direccion" name="direccion" maxlength="300" />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-emergencia-nombre">Contacto de emergencia</label>
+            <input type="text" id="cliente-emergencia-nombre" name="emergenciaNombre" maxlength="100" />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-emergencia-telefono">Teléfono de emergencia</label>
+            <input type="text" id="cliente-emergencia-telefono" name="emergenciaTelefono" maxlength="30" />
+          </div>
+          <div class="campo-formulario">
+            <label for="cliente-emergencia-relacion">Relación</label>
+            <input type="text" id="cliente-emergencia-relacion" name="emergenciaRelacion" maxlength="100" />
+          </div>
+        </div>
+
+        <p id="mensaje-formulario-cliente" class="mensaje-formulario" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button type="submit" class="boton-panel">Guardar</button>
+          <button type="button" id="boton-cancelar-cliente" class="boton-secundario">Cancelar</button>
+        </div>
+      </form>
+
+      <form id="formulario-vincular" class="tarjeta-panel formulario-cliente" hidden>
+        <h3>Vincular cuenta</h3>
+        <input type="hidden" id="vincular-cliente-id" name="clienteId" />
+
+        <div class="campo-formulario">
+          <label for="vincular-correo">Correo de la cuenta</label>
+          <input type="email" id="vincular-correo" name="correoCuenta" maxlength="254" required />
+        </div>
+
+        <label class="campo-confirmacion">
+          <input type="checkbox" id="vincular-confirmado" name="confirmado" required />
+          Confirmo que verifiqué a quién pertenece esta cuenta.
+        </label>
+
+        <p id="mensaje-formulario-vincular" class="mensaje-formulario" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button type="submit" class="boton-panel">Vincular</button>
+          <button type="button" id="boton-cancelar-vincular" class="boton-secundario">Cancelar</button>
+        </div>
+      </form>
+
+      <div class="tarjeta-panel tabla-contenedor">
+        <table class="tabla-datos" id="tabla-clientes">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th>Cuenta</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla-clientes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <script type="module" src="./clientes.ts"></script>
+  </body>
+</html>

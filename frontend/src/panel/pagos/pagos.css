@@ -1,0 +1,162 @@
+/* Estilos propios de la pantalla de Pagos.
+ Reutilizan las variables y las clases compartidas del panel. */
+.cabecera-modulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  margin-bottom: var(--espacio-grande);
+}
+
+.campo-filtro {
+  max-width: 20rem;
+  margin-bottom: var(--espacio-grande);
+}
+
+.formulario-pago {
+  display: grid;
+  gap: var(--espacio-mediano);
+  margin-bottom: var(--espacio-grande);
+}
+
+.rejilla-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-mediano);
+}
+
+.campo-ancho {
+  grid-column: 1 / -1;
+}
+
+.campo-formulario {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.campo-formulario label {
+  font-weight: var(--peso-medio);
+}
+
+.campo-formulario input,
+.campo-formulario select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida);
+}
+
+.campo-formulario input:hover,
+.campo-formulario select:hover {
+  border-color: var(--color-principal);
+}
+
+.campo-formulario input:focus-visible,
+.campo-formulario select:focus-visible {
+  border-color: var(--color-foco);
+}
+
+.campo-formulario input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.campo-confirmacion label {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-pequeno);
+  font-weight: var(--peso-normal);
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: var(--espacio-mediano);
+  flex-wrap: wrap;
+}
+
+.boton-secundario {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.boton-secundario:hover:not(:disabled) {
+  border-color: var(--color-principal);
+  color: var(--color-principal-hover);
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-datos th,
+.tabla-datos td {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  text-align: left;
+  border-bottom: 1px solid var(--color-borde);
+  overflow-wrap: anywhere;
+}
+
+.tabla-datos th {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-negrita);
+  text-transform: uppercase;
+}
+
+.etiqueta-estado {
+  padding: 0.125rem var(--espacio-pequeno);
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-negrita);
+}
+
+.etiqueta-pagado {
+  color: var(--color-exito);
+  background: color-mix(in srgb, var(--color-exito) 12%, transparent);
+}
+
+.etiqueta-vencido {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+.etiqueta-pendiente {
+  color: var(--color-texto-secundario);
+  background: color-mix(in srgb, var(--color-texto-secundario) 14%, transparent);
+}
+
+.boton-fila {
+  padding: var(--espacio-minimo) var(--espacio-pequeno);
+  color: var(--color-principal);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-principal);
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.boton-fila:hover:not(:disabled) {
+  background: var(--color-principal-claro);
+}
+
+@media (max-width: 800px) {
+  .rejilla-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

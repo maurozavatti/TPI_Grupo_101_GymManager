@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turnos — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../estructura.css" />
+    <link rel="stylesheet" href="./turnos.css" />
+  </head>
+
+  <body>
+    <!-- La estructura del panel (menu, cabecera, cuenta) se agrega
+     por JavaScript. Este contenido se mueve dentro de ella. -->
+    <section id="vista" hidden>
+      <div class="cabecera-modulo">
+        <h2>Turnos</h2>
+        <div class="acciones-cabecera">
+          <button id="boton-generar-agenda" class="boton-secundario" type="button">
+            Generar agenda
+          </button>
+          <button id="boton-nuevo-turno" class="boton-panel" type="button">
+            Nuevo turno
+          </button>
+        </div>
+      </div>
+
+      <p id="mensaje-turnos" class="mensaje-panel" role="status"></p>
+
+      <!-- Nota sobre el entrenador, visible mientras no exista
+       un listado de cuentas de entrenador para elegir de una lista. -->
+      <p class="nota-modulo">
+        El entrenador se indica por su ID de cuenta hasta que el módulo de
+        Cuentas permita elegirlo de una lista.
+      </p>
+
+      <!-- Alta y edicion de un turno individual. -->
+      <form id="formulario-turno" class="tarjeta-panel formulario-turno" hidden>
+        <h3 id="titulo-formulario-turno">Nuevo turno</h3>
+        <input type="hidden" id="turnoId" name="turnoId" />
+
+        <div class="rejilla-campos">
+          <div class="campo-formulario">
+            <label for="dia">Día</label>
+            <select id="dia" name="dia" required></select>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="horaInicio">Hora de inicio</label>
+            <input type="time" id="horaInicio" name="horaInicio" required />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="horaFin">Hora de fin</label>
+            <input type="time" id="horaFin" name="horaFin" required />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="capacidad">Cupo</label>
+            <input type="number" id="capacidad" name="capacidad" min="1" max="100" required />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="entrenadorId">ID del entrenador</label>
+            <input type="text" id="entrenadorId" name="entrenadorId" maxlength="24" required />
+          </div>
+
+          <div class="campo-formulario campo-ancho">
+            <label for="observaciones">Observaciones</label>
+            <input type="text" id="observaciones" name="observaciones" maxlength="2000" />
+          </div>
+        </div>
+
+        <p id="mensaje-formulario-turno" class="mensaje-panel" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button type="submit" class="boton-panel">Guardar</button>
+          <button id="boton-cancelar-turno" class="boton-secundario" type="button">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <!-- Generacion automatica de la agenda a partir de franjas
+       de apertura y los dias de trabajo de cada entrenador. -->
+      <form id="formulario-generar" class="tarjeta-panel formulario-turno" hidden>
+        <h3>Generar agenda</h3>
+
+        <div class="campo-formulario">
+          <label for="capacidadAgenda">Cupo por defecto</label>
+          <input type="number" id="capacidadAgenda" name="capacidadAgenda" min="1" max="100" required />
+        </div>
+
+        <div class="bloque-franjas">
+          <div class="subtitulo-bloque">
+            <span>Franjas de apertura</span>
+            <button id="boton-agregar-franja" class="boton-fila" type="button">
+              Agregar franja
+            </button>
+          </div>
+          <div id="lista-franjas" class="lista-franjas"></div>
+        </div>
+
+        <div class="bloque-trabajos">
+          <div class="subtitulo-bloque">
+            <span>Días de trabajo por entrenador</span>
+            <button id="boton-agregar-trabajo" class="boton-fila" type="button">
+              Agregar entrenador
+            </button>
+          </div>
+          <div id="lista-trabajos" class="lista-trabajos"></div>
+        </div>
+
+        <p id="mensaje-formulario-generar" class="mensaje-panel" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button type="submit" class="boton-panel">Generar</button>
+          <button id="boton-cancelar-generar" class="boton-secundario" type="button">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <!-- Asignacion o retiro de un cliente en un turno puntual. -->
+      <form id="formulario-asignar" class="tarjeta-panel formulario-turno" hidden>
+        <h3>Gestionar clientes del turno</h3>
+        <input type="hidden" id="asignarTurnoId" name="turnoId" />
+
+        <div class="campo-formulario">
+          <label for="clienteAsignar">Cliente</label>
+          <select id="clienteAsignar" name="clienteId" required></select>
+        </div>
+
+        <p id="mensaje-formulario-asignar" class="mensaje-panel" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button id="boton-asignar-cliente" class="boton-panel" type="button">
+            Asignar
+          </button>
+          <button id="boton-retirar-cliente" class="boton-secundario" type="button">
+            Retirar
+          </button>
+          <button id="boton-cancelar-asignar" class="boton-secundario" type="button">
+            Cerrar
+          </button>
+        </div>
+      </form>
+
+      <div class="acciones-lote" id="acciones-lote" hidden>
+        <span id="contador-seleccion">0 turnos seleccionados</span>
+        <button id="boton-baja-lote" class="boton-fila" type="button">
+          Dar de baja seleccionados
+        </button>
+        <button id="boton-eliminar-lote" class="boton-fila" type="button">
+          Eliminar definitivamente
+        </button>
+      </div>
+
+      <div class="tabla-contenedor tarjeta-panel">
+        <table class="tabla-datos">
+          <thead>
+            <tr>
+              <th id="columna-seleccion" hidden></th>
+              <th>Día</th>
+              <th>Horario</th>
+              <th>Entrenador</th>
+              <th>Cupo</th>
+              <th>Ocupación</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla-turnos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <script type="module" src="./turnos.ts"></script>
+  </body>
+</html>
