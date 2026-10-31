@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inicio — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../estructura.css" />
+    <link rel="stylesheet" href="./inicio.css" />
+  </head>
+
+  <body>
+    <!-- La estructura del panel (menu, cabecera, cuenta) se agrega
+     por JavaScript. Este contenido se mueve dentro de ella. -->
+    <section id="vista" hidden>
+      <p id="saludo-inicio" class="saludo-inicio"></p>
+      <p id="mensaje-inicio" class="mensaje-panel" role="status"></p>
+
+      <!-- Tarjetas administrativas, solo visibles para el Administrador. -->
+      <div id="tarjetas-admin" class="rejilla-tarjetas" hidden>
+        <div class="tarjeta-panel tarjeta-metrica">
+          <span class="etiqueta-metrica">Clientes activos</span>
+          <span id="metrica-clientes" class="valor-metrica">—</span>
+        </div>
+        <div class="tarjeta-panel tarjeta-metrica">
+          <span class="etiqueta-metrica">Ocupación de turnos hoy</span>
+          <span id="metrica-ocupacion" class="valor-metrica">—</span>
+        </div>
+        <div class="tarjeta-panel tarjeta-metrica">
+          <span class="etiqueta-metrica">Ingresos del mes</span>
+          <span id="metrica-ingresos" class="valor-metrica">—</span>
+        </div>
+        <div class="tarjeta-panel tarjeta-metrica tarjeta-alerta">
+          <span class="etiqueta-metrica">Cuotas vencidas</span>
+          <span id="metrica-vencidas" class="valor-metrica">—</span>
+        </div>
+        <div class="tarjeta-panel tarjeta-metrica tarjeta-alerta">
+          <span class="etiqueta-metrica">Próximas a vencer (7 días)</span>
+          <span id="metrica-proximas" class="valor-metrica">—</span>
+        </div>
+      </div>
+
+      <!-- Turnos de hoy. Para el Entrenador son solo los propios. -->
+      <div class="tarjeta-panel bloque-turnos-hoy">
+        <h2 id="titulo-turnos-hoy">Turnos de hoy</h2>
+        <div class="tabla-contenedor">
+          <table class="tabla-datos">
+            <thead>
+              <tr>
+                <th>Horario</th>
+                <th>Ocupación</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-tabla-turnos-hoy"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="./inicio.ts"></script>
+  </body>
+</html>
