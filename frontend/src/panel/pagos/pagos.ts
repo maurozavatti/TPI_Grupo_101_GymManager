@@ -210,6 +210,9 @@ if (usuario) {
     const datos = new FormData(formularioPago)
     const cuerpo = {
       ...Object.fromEntries(datos),
+      /* FormData entrega todo como texto. El backend exige que
+       monto sea un numero (ver entero() en compartidos/http.ts). */
+      monto: Number(datos.get('monto')),
       pagado: datos.get('pagado') === 'on',
     }
 
