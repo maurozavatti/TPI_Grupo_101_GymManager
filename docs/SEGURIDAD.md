@@ -30,10 +30,10 @@ La historia clínica (`clientes.historiaClinica`) es el dato más sensible del s
 
 | Rol | Crear / Modificar | Consultar | Cómo se verifica |
 |---|---|---|---|
-| Cliente (titular) | Sí, solo la propia | Sí, solo la propia | El backend compara el `clienteId` del recurso contra el `clienteId` del JWT del usuario autenticado. |
-| Administrador | Sí, de cualquier cliente | Sí, de cualquier cliente | El endpoint exige rol `ADMIN` vía `@PreAuthorize`. |
-| Entrenador | Sí, de cualquier cliente | Sí, de cualquier cliente | El endpoint exige rol `ENTRENADOR` (o `ADMIN`) vía `@PreAuthorize`. |
-| Otro cliente (no titular) | No | No | El backend rechaza la petición (403) si el `clienteId` del JWT no coincide con el del recurso y el rol no es `ADMIN`/`ENTRENADOR`. |
+| Cliente (titular) | Sí, solo la propia | Sí, solo la propia | El backend obtiene el usuario autenticado a partir de la cookie de sesión (`obtenerUsuarioSesion`) y compara el `clienteId` del recurso contra el `clienteId` asociado a esa sesión. |
+| Administrador | Sí, de cualquier cliente | Sí, de cualquier cliente | El controlador del endpoint comprueba que el `rol` de la sesión sea `ADMIN` antes de ejecutar la operación. |
+| Entrenador | Sí, de cualquier cliente | Sí, de cualquier cliente | El controlador del endpoint comprueba que el `rol` de la sesión sea `ENTRENADOR` (o `ADMIN`) antes de ejecutar la operación. |
+| Otro cliente (no titular) | No | No | El backend rechaza la petición (403) si el `clienteId` de la sesión no coincide con el del recurso y el rol no es `ADMIN`/`ENTRENADOR`. |
 
 **Separación de endpoints:** los campos de `historiaClinica` no se exponen en los mismos endpoints públicos que el resto del perfil del cliente (por ejemplo, el endpoint que lista clientes para armar un turno no incluye `historiaClinica` en la respuesta). Se accede a través de un endpoint específico, con su propio control de autorización, para reducir el riesgo de exposición accidental de datos sensibles.
 
