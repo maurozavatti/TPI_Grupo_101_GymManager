@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagos — GymManager</title>
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../estructura.css" />
+    <link rel="stylesheet" href="./pagos.css" />
+  </head>
+
+  <body>
+    <!-- La estructura del panel (menu, cabecera, cuenta) se agrega
+     por JavaScript. Este contenido se mueve dentro de ella. -->
+    <section id="vista" hidden>
+      <div class="cabecera-modulo">
+        <h2>Pagos</h2>
+        <button id="boton-nuevo-pago" class="boton-panel" type="button">
+          Registrar pago
+        </button>
+      </div>
+
+      <p id="mensaje-pagos" class="mensaje-panel" role="status"></p>
+
+      <div class="campo-formulario campo-filtro">
+        <label for="filtroCliente">Filtrar por cliente</label>
+        <select id="filtroCliente" name="filtroCliente">
+          <option value="">Todos los clientes</option>
+        </select>
+      </div>
+
+      <!-- Alta de un pago o una cuota pendiente. -->
+      <form id="formulario-pago" class="tarjeta-panel formulario-pago" hidden>
+        <h3>Registrar pago</h3>
+
+        <div class="rejilla-campos">
+          <div class="campo-formulario campo-ancho">
+            <label for="clienteId">Cliente</label>
+            <select id="clienteId" name="clienteId" required></select>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo" required>
+              <option value="INSCRIPCION">Inscripción</option>
+              <option value="CUOTA">Cuota</option>
+            </select>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="monto">Monto</label>
+            <input type="number" id="monto" name="monto" min="1" max="100000000" required />
+          </div>
+
+          <div class="campo-formulario">
+            <label for="fechaVencimiento">Fecha de vencimiento</label>
+            <input type="date" id="fechaVencimiento" name="fechaVencimiento" />
+          </div>
+
+          <div class="campo-formulario campo-confirmacion">
+            <label for="pagado">
+              <input type="checkbox" id="pagado" name="pagado" />
+              Ya está pagado
+            </label>
+          </div>
+
+          <div class="campo-formulario campo-ancho">
+            <label for="observaciones">Observaciones</label>
+            <input type="text" id="observaciones" name="observaciones" maxlength="500" />
+          </div>
+        </div>
+
+        <p id="mensaje-formulario-pago" class="mensaje-panel" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button type="submit" class="boton-panel">Guardar</button>
+          <button id="boton-cancelar-pago" class="boton-secundario" type="button">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+      <div class="tabla-contenedor tarjeta-panel">
+        <table class="tabla-datos">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Fecha de pago</th>
+              <th>Vencimiento</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla-pagos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <script type="module" src="./pagos.ts"></script>
+  </body>
+</html>
