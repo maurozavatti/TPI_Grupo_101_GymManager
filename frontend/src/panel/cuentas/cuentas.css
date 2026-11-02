@@ -170,3 +170,21 @@
     width: 100%;
   }
 }
+
+/* Las acciones de una cuenta se acomodan sin quedar pegadas. */
+.acciones-cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-pequeno);
+}
+
+/* Cancelar tiene menos enfasis que la accion de guardar. */
+.boton-panel.boton-cancelar-cuenta {
+  color: var(--color-principal);
+  background: var(--color-superficie);
+}
+
+.boton-panel.boton-cancelar-cuenta:hover:not(:disabled) {
+  color: var(--color-principal-hover);
+  background: var(--color-principal-claro);
+}

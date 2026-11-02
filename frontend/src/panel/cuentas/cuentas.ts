@@ -88,8 +88,8 @@ function prepararCuentas(usuarioActualId: string): void {
   let intentoEnviar = false
   let versionListado = 0
 
-  /* Creamos las casillas de una cuenta con sus roles actuales.
-   Los nombres y correos siempre se incorporan como texto. */
+  /* El listado muestra los roles como texto.
+   Las casillas aparecen solamente al editar una cuenta. */
   function dibujarCuentas(cuentas: Cuenta[]): void {
     listado.replaceChildren()
 
@@ -117,14 +117,20 @@ function prepararCuentas(usuarioActualId: string): void {
       estado.textContent = cuenta.activo ? 'Activa' : 'Inactiva'
       celdaRoles.className = 'celda-roles'
 
+      const actuales = obtenerRoles(cuenta.rol)
+
+      const textoRoles = document.createElement('span')
+      textoRoles.textContent = actuales.join(' / ')
+
       const grupo = document.createElement('fieldset')
       grupo.className = 'roles-cuenta'
+      grupo.hidden = true
 
       const leyenda = document.createElement('legend')
       leyenda.textContent = 'Roles'
       grupo.append(leyenda)
 
-      const actuales = obtenerRoles(cuenta.rol)
+      const casillas: HTMLInputElement[] = []
 
       for (const rol of rolesDisponibles) {
         const etiqueta = document.createElement('label')
@@ -135,6 +141,7 @@ function prepararCuentas(usuarioActualId: string): void {
         casilla.value = rol
         casilla.checked = actuales.includes(rol)
 
+        casillas.push(casilla)
         etiqueta.append(casilla, document.createTextNode(rol))
         grupo.append(etiqueta)
       }
@@ -143,17 +150,77 @@ function prepararCuentas(usuarioActualId: string): void {
         grupo.removeAttribute('aria-invalid')
       })
 
+      const contenedorAcciones = document.createElement('div')
+      contenedorAcciones.className = 'acciones-cuenta'
+
+      const editar = document.createElement('button')
+      editar.type = 'button'
+      editar.className = 'boton-panel'
+      editar.textContent = 'Editar'
+      editar.setAttribute('aria-expanded', 'false')
+      editar.setAttribute(
+        'aria-label',
+        `Editar roles de ${cuenta.nombre} ${cuenta.apellido}`,
+      )
+
       const guardar = document.createElement('button')
       guardar.type = 'button'
       guardar.className = 'boton-panel'
       guardar.textContent = 'Guardar roles'
+      guardar.hidden = true
 
-      guardar.addEventListener('click', () => {
-        void guardarRoles(cuenta, grupo, guardar)
+      const cancelar = document.createElement('button')
+      cancelar.type = 'button'
+      cancelar.className = 'boton-panel boton-cancelar-cuenta'
+      cancelar.textContent = 'Cancelar'
+      cancelar.hidden = true
+
+      /* Cambiamos la vista sin guardar automaticamente.
+       Cancelar recupera los valores originales de la cuenta. */
+      function cambiarEdicion(editando: boolean): void {
+        casillas.forEach((casilla) => {
+          casilla.checked = actuales.includes(casilla.value as RolUsuario)
+        })
+
+        grupo.removeAttribute('aria-invalid')
+        grupo.hidden = !editando
+        textoRoles.hidden = editando
+
+        editar.hidden = editando
+        editar.setAttribute('aria-expanded', String(editando))
+        guardar.hidden = !editando
+        cancelar.hidden = !editando
+
+        if (editando) {
+          casillas[0]?.focus()
+        } else {
+          editar.focus()
+        }
+      }
+
+      editar.addEventListener('click', () => {
+        cambiarEdicion(true)
       })
 
-      celdaRoles.append(grupo)
-      acciones.append(guardar)
+      cancelar.addEventListener('click', () => {
+        cambiarEdicion(false)
+      })
+
+      guardar.addEventListener('click', async () => {
+        /* Evitamos cancelar mientras el servidor guarda el cambio. */
+        cancelar.disabled = true
+
+        try {
+          await guardarRoles(cuenta, grupo, guardar)
+        } finally {
+          cancelar.disabled = false
+        }
+      })
+
+      celdaRoles.append(textoRoles, grupo)
+      contenedorAcciones.append(editar, guardar, cancelar)
+      acciones.append(contenedorAcciones)
+
       fila.append(nombre, correo, celdaRoles, estado, acciones)
       listado.append(fila)
     }
