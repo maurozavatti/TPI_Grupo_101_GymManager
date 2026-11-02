@@ -389,3 +389,69 @@
     width: 100%;
   }
 }
+
+/* Las filas se desplazan dentro del cuadro.
+ Los filtros y los controles de pagina quedan fuera de ese scroll. */
+.contenedor-tabla-cuentas {
+  max-height: 55vh;
+  max-height: 55dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+/* El ancho minimo evita comprimir las columnas en el celular.
+ Si no entran, se puede deslizar horizontalmente dentro del cuadro. */
+.tabla-cuentas {
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla-cuentas th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-principal-claro);
+  white-space: nowrap;
+}
+
+.tabla-cuentas th:first-child,
+.tabla-cuentas td:first-child {
+  min-width: 11rem;
+}
+
+.tabla-cuentas th:nth-child(2),
+.tabla-cuentas td:nth-child(2) {
+  min-width: 15rem;
+}
+
+.tabla-cuentas th:nth-child(4),
+.tabla-cuentas td:nth-child(4) {
+  min-width: 6rem;
+  white-space: nowrap;
+}
+
+/* La paginacion permanece debajo del cuadro de filas. */
+.paginacion-cuentas {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-mediano);
+}
+
+#informacion-pagina {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+@media (max-width: 600px) {
+  .paginacion-cuentas {
+    justify-content: center;
+    gap: var(--espacio-pequeno);
+  }
+}

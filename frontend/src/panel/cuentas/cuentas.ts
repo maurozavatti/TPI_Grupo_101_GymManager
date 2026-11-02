@@ -158,10 +158,22 @@ function prepararCuentas(usuarioActualId: string): void {
     formulario.querySelectorAll<HTMLInputElement>('input'),
   )
 
+  const contenedorTabla = elemento<HTMLDivElement>(
+    '#contenedor-tabla-cuentas',
+  )
+  const paginacion = elemento<HTMLElement>('#paginacion-cuentas')
+  const paginaAnterior = elemento<HTMLButtonElement>('#pagina-anterior')
+  const paginaSiguiente = elemento<HTMLButtonElement>('#pagina-siguiente')
+  const informacionPagina = elemento<HTMLElement>('#informacion-pagina')
+
   let enviandoAlta = false
   let intentoEnviar = false
   let versionListado = 0
   let cuentasCargadas: Cuenta[] = []
+
+  const cuentasPorPagina = 25
+  let paginaActual = 1
+  let cuentasFiltradas: Cuenta[] = []
 
   /* Ignoramos diferencias de mayusculas y tildes al buscar. */
   function normalizarTexto(valor: string): string {
@@ -172,10 +184,11 @@ function prepararCuentas(usuarioActualId: string): void {
       .trim()
   }
 
-  /* Combinamos busqueda, rol y estado sin consultar nuevamente
-   al servidor. Las cuentas con varios roles coinciden con
-   cualquiera de los roles que tengan asignados. */
-  function aplicarFiltros(): void {
+  /* Primero filtramos todas las cuentas cargadas.
+   Despues elegimos cuales corresponden a la pagina actual. */
+  function aplicarFiltros(reiniciarPagina = false): void {
+    if (reiniciarPagina) paginaActual = 1
+
     const palabras = normalizarTexto(busqueda.value)
       .split(/\s+/)
       .filter(Boolean)
@@ -183,7 +196,7 @@ function prepararCuentas(usuarioActualId: string): void {
     const rolElegido = filtroRol.value
     const estadoElegido = filtroEstado.value
 
-    const filtradas = cuentasCargadas.filter((cuenta) => {
+    cuentasFiltradas = cuentasCargadas.filter((cuenta) => {
       const texto = normalizarTexto(
         `${cuenta.nombre} ${cuenta.apellido} ${cuenta.email}`,
       )
@@ -202,12 +215,42 @@ function prepararCuentas(usuarioActualId: string): void {
       return coincideBusqueda && coincideRol && coincideEstado
     })
 
-    dibujarCuentas(filtradas)
+    dibujarPagina()
+  }
 
-    mostrarMensaje(
-      mensajeListado,
-      `Mostrando ${filtradas.length} de ${cuentasCargadas.length} cuentas.`,
+  /* Mostramos hasta 25 resultados y ajustamos la pagina si
+   una baja, un cambio de rol o un filtro reduce los resultados. */
+  function dibujarPagina(): void {
+    const total = cuentasFiltradas.length
+    const cantidadPaginas = Math.max(
+      1,
+      Math.ceil(total / cuentasPorPagina),
     )
+
+    paginaActual = Math.max(
+      1,
+      Math.min(paginaActual, cantidadPaginas),
+    )
+
+    const inicio = (paginaActual - 1) * cuentasPorPagina
+    const fin = Math.min(inicio + cuentasPorPagina, total)
+
+    dibujarCuentas(cuentasFiltradas.slice(inicio, fin))
+    contenedorTabla.scrollTop = 0
+
+    paginacion.hidden = cantidadPaginas <= 1
+    paginaAnterior.disabled = paginaActual === 1
+    paginaSiguiente.disabled = paginaActual === cantidadPaginas
+
+    informacionPagina.textContent =
+      `Página ${paginaActual} de ${cantidadPaginas}`
+
+    /* Si entra todo en una pagina, evitamos el mensaje N de N. */
+    const texto = cantidadPaginas > 1
+      ? `Mostrando ${inicio + 1}–${fin} de ${total} cuentas.`
+      : `${total} ${total === 1 ? 'cuenta encontrada' : 'cuentas encontradas'}.`
+
+    mostrarMensaje(mensajeListado, texto)
   }
 
   /* Por defecto mostramos los roles como texto.
@@ -402,6 +445,8 @@ function prepararCuentas(usuarioActualId: string): void {
       if (version !== versionListado) return
 
       cuentasCargadas = []
+      cuentasFiltradas = []
+      paginacion.hidden = true
       listado.replaceChildren()
 
       mostrarMensaje(
@@ -685,9 +730,28 @@ function prepararCuentas(usuarioActualId: string): void {
     void cargarCuentas()
   })
 
-  busqueda.addEventListener('input', aplicarFiltros)
-  filtroRol.addEventListener('change', aplicarFiltros)
-  filtroEstado.addEventListener('change', aplicarFiltros)
+  /* Una busqueda nueva empieza desde la primera pagina. */
+  busqueda.addEventListener('input', () => aplicarFiltros(true))
+  filtroRol.addEventListener('change', () => aplicarFiltros(true))
+  filtroEstado.addEventListener('change', () => aplicarFiltros(true))
+
+  paginaAnterior.addEventListener('click', () => {
+    if (paginaActual <= 1) return
+
+    paginaActual--
+    dibujarPagina()
+  })
+
+  paginaSiguiente.addEventListener('click', () => {
+    const cantidadPaginas = Math.ceil(
+      cuentasFiltradas.length / cuentasPorPagina,
+    )
+
+    if (paginaActual >= cantidadPaginas) return
+
+    paginaActual++
+    dibujarPagina()
+  })
 
   void cargarCuentas()
 }

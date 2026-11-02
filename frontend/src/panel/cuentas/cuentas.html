@@ -175,7 +175,12 @@
 
         <p id="mensaje-cuentas" role="status" aria-live="polite"></p>
 
-        <div class="contenedor-tabla-cuentas">
+        <div
+          id="contenedor-tabla-cuentas"
+          class="contenedor-tabla-cuentas"
+          tabindex="0"
+          aria-label="Listado de cuentas con desplazamiento"
+        >
           <table class="tabla-cuentas">
             <caption class="descripcion-tabla">
               Cuentas registradas y edición de sus roles
@@ -194,6 +199,30 @@
             <tbody id="listado-cuentas"></tbody>
           </table>
         </div>
+        <nav
+          id="paginacion-cuentas"
+          class="paginacion-cuentas"
+          aria-label="Páginas del listado de cuentas"
+          hidden
+        >
+          <button
+            id="pagina-anterior"
+            class="boton-panel boton-cancelar-cuenta"
+            type="button"
+          >
+            Anterior
+          </button>
+
+          <span id="informacion-pagina" aria-live="polite"></span>
+
+          <button
+            id="pagina-siguiente"
+            class="boton-panel boton-cancelar-cuenta"
+            type="button"
+          >
+            Siguiente
+          </button>
+        </nav>
       </article>
     </section>
 
