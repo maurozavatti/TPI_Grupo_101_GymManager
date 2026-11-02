@@ -1,12 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { ObjectId } from 'mongodb'
 import { conectarDB } from '../db.ts'
-import {
-  eliminarCookie,
-  nombreCookieSesion,
-  obtenerHashToken,
-} from '../servicios/autenticacion.ts'
+import {eliminarCookie, nombreCookieSesion, obtenerHashToken,} from '../servicios/autenticacion.ts'
 import { ErrorHTTP, leerJSON, responder } from '../compartidos/http.ts'
+import { esRolCuenta } from '../servicios/roles.ts'
+import type { RolesCuenta } from '../servicios/roles.ts'
 
 /* Estos son los roles admitidos por la aplicacion.*/
 export type RolUsuario = 'ADMIN' | 'ENTRENADOR' | 'USUARIO'
@@ -18,7 +16,7 @@ export interface UsuarioSesion {
   nombre: string
   apellido: string
   email: string
-  rol: RolUsuario
+  rol: RolesCuenta
   clienteId: string | null
 }
 
@@ -94,11 +92,9 @@ export async function obtenerUsuarioSesion(
 
   const rol = usuario.rol
 
-  if (
-    rol !== 'ADMIN'
-    && rol !== 'ENTRENADOR'
-    && rol !== 'USUARIO'
-  ) {
+  /* Aceptamos cuentas con un rol o varios roles validos.
+   Un formato incorrecto no permite utilizar la sesion. */
+  if (!esRolCuenta(rol)) {
     return null
   }
 

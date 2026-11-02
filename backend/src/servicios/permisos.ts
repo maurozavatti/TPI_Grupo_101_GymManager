@@ -2,13 +2,23 @@ import type { IncomingMessage } from 'node:http'
 import { conectarDB } from '../db.ts'
 import { ErrorHTTP } from '../compartidos/http.ts'
 import { obtenerUsuarioSesion } from '../controladores/sesion.ts'
+import { incluyeRol } from './roles.ts'
 import type {
   RolUsuario,
   UsuarioSesion,
 } from '../controladores/sesion.ts'
 
+/* Esta funcion comprueba si alguno de los roles de la cuenta
+ coincide con los permitidos para una operacion. */
+export function tieneRol(
+  usuario: Pick<UsuarioSesion, 'rol'>,
+  rolesPermitidos: readonly RolUsuario[],
+): boolean {
+  return incluyeRol(usuario.rol, rolesPermitidos)
+}
+
 /* Esta funcion exige una sesion valida para continuar.
- Devuelve la cuenta autenticada o informa que debe iniciar sesion.*/
+ Devuelve la cuenta autenticada o informa que debe iniciar sesion. */
 export async function exigirSesion(
   solicitud: IncomingMessage,
   conectar = conectarDB,
@@ -25,9 +35,9 @@ export async function exigirSesion(
   return usuario
 }
 
-/* Esta funcion exige una sesion y uno de los roles indicados.
- El rol se obtiene de la cuenta consultada por el backend,
- nunca de un valor enviado por el navegador.*/
+/* Esta funcion exige una sesion y al menos uno de los roles
+ permitidos. Los roles se obtienen de la cuenta en la base,
+ nunca de los datos enviados por el navegador. */
 export async function exigirRol(
   solicitud: IncomingMessage,
   rolesPermitidos: readonly RolUsuario[],
@@ -35,7 +45,7 @@ export async function exigirRol(
 ): Promise<UsuarioSesion> {
   const usuario = await exigirSesion(solicitud, conectar)
 
-  if (!rolesPermitidos.includes(usuario.rol)) {
+  if (!tieneRol(usuario, rolesPermitidos)) {
     throw new ErrorHTTP(
       403,
       'No tenés permiso para realizar esta operación.',

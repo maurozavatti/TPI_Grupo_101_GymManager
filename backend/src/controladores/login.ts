@@ -4,10 +4,8 @@ import { conectarDB } from '../db.ts'
 import { ErrorHTTP, leerJSON, responder } from '../compartidos/http.ts'
 import { verificarContrasena } from '../servicios/contrasenas.ts'
 import {
-  enviarCookie,
-  nuevaSesion,
-  prepararSesiones,
-} from '../servicios/autenticacion.ts'
+  enviarCookie, nuevaSesion, prepararSesiones,} from '../servicios/autenticacion.ts'
+import { esRolCuenta } from '../servicios/roles.ts'
 
 /* Este hash auxiliar permite comparar una contraseña incluso
  cuando el correo no corresponde a una cuenta existente.
@@ -101,10 +99,10 @@ export async function iniciarSesion(
 
     const rol = usuario.rol
 
-    /* Comprobamos el rol y los datos publicos antes de permitir
-     el acceso. No confiamos en un rol enviado por el navegador.*/
+    /* Los roles se consultan en la base y pueden estar
+     guardados como texto o como una lista de valores validos. */
     if (
-      (rol !== 'ADMIN' && rol !== 'ENTRENADOR' && rol !== 'USUARIO')
+      !esRolCuenta(rol)
       || typeof usuario.nombre !== 'string'
       || typeof usuario.apellido !== 'string'
       || typeof usuario.email !== 'string'
