@@ -2,9 +2,10 @@ import './cuentas.css'
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { validarFormulario } from '../../autenticacion/validaciones.ts'
-import {obtenerRoles, type RolesCuenta,} from '../../servicios/roles.ts'
+import { obtenerRoles } from '../../servicios/roles.ts'
+import type { RolesCuenta } from '../../servicios/roles.ts'
+import type { RolUsuario } from '../../servicios/sesion.ts'
 
-/* Estos son los datos publicos que devuelve el listado de cuentas. */
 interface Cuenta {
   id: string
   nombre: string
@@ -15,8 +16,13 @@ interface Cuenta {
   clienteId: string | null
 }
 
-/* Buscamos los elementos necesarios sin continuar con una
- referencia nula si el HTML tiene un identificador incorrecto. */
+const rolesDisponibles: readonly RolUsuario[] = [
+  'USUARIO',
+  'ENTRENADOR',
+  'ADMIN',
+]
+
+/* Buscamos los elementos necesarios para preparar la pantalla. */
 function elemento<T extends Element>(selector: string): T {
   const encontrado = document.querySelector<T>(selector)
 
@@ -27,7 +33,25 @@ function elemento<T extends Element>(selector: string): T {
   return encontrado
 }
 
-/* Si la sesion vencio o cambio el permiso, resolvemos el acceso. */
+/* Leemos las casillas marcadas dentro del grupo indicado. */
+function rolesSeleccionados(grupo: HTMLElement): RolUsuario[] {
+  return Array.from(
+    grupo.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'),
+    (casilla) => casilla.value as RolUsuario,
+  )
+}
+
+/* Mostramos el mensaje usando los colores generales de estado. */
+function mostrarMensaje(
+  elementoMensaje: HTMLElement,
+  texto: string,
+  estado: 'error' | 'exito' | 'normal' = 'normal',
+): void {
+  elementoMensaje.textContent = texto
+  elementoMensaje.classList.toggle('mensaje-error', estado === 'error')
+  elementoMensaje.classList.toggle('mensaje-exito', estado === 'exito')
+}
+
 function revisarAcceso(error: unknown): void {
   if (!(error instanceof ErrorAPI)) return
 
@@ -38,36 +62,34 @@ function revisarAcceso(error: unknown): void {
   }
 }
 
-/* El backend tambien exige ADMIN en cada operacion. */
 const usuario = await prepararPanel('Cuentas', ['ADMIN'])
 
 if (usuario) {
-  prepararCuentas()
+  prepararCuentas(usuario.id)
 }
 
-function prepararCuentas(): void {
+function prepararCuentas(usuarioActualId: string): void {
   const listado = elemento<HTMLTableSectionElement>('#listado-cuentas')
   const mensajeListado = elemento<HTMLParagraphElement>('#mensaje-cuentas')
   const botonActualizar = elemento<HTMLButtonElement>('#actualizar-cuentas')
 
   const formulario = elemento<HTMLFormElement>('#formulario-cuenta')
+  const grupoRolesAlta = elemento<HTMLFieldSetElement>('#roles-alta')
   const mensajeAlta = elemento<HTMLParagraphElement>('#mensaje-alta')
   const botonCrear = elemento<HTMLButtonElement>(
     '#formulario-cuenta button[type="submit"]',
   )
 
-  const campos = Array.from(
-    formulario.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-      'input, select',
-    ),
+  const camposAlta = Array.from(
+    formulario.querySelectorAll<HTMLInputElement>('input'),
   )
 
-  let enviando = false
+  let enviandoAlta = false
   let intentoEnviar = false
   let versionListado = 0
 
-  /* Los datos recibidos se incorporan como texto, sin
-   interpretar nombres o correos como contenido HTML. */
+  /* Creamos las casillas de una cuenta con sus roles actuales.
+   Los nombres y correos siempre se incorporan como texto. */
   function dibujarCuentas(cuentas: Cuenta[]): void {
     listado.replaceChildren()
 
@@ -75,9 +97,8 @@ function prepararCuentas(): void {
       const fila = document.createElement('tr')
       const celda = document.createElement('td')
 
-      celda.colSpan = 4
+      celda.colSpan = 5
       celda.textContent = 'No hay cuentas registradas.'
-
       fila.append(celda)
       listado.append(fila)
       return
@@ -85,53 +106,86 @@ function prepararCuentas(): void {
 
     for (const cuenta of cuentas) {
       const fila = document.createElement('tr')
+      const nombre = document.createElement('td')
+      const correo = document.createElement('td')
+      const celdaRoles = document.createElement('td')
+      const estado = document.createElement('td')
+      const acciones = document.createElement('td')
 
-      const valores = [
-        `${cuenta.nombre} ${cuenta.apellido}`,
-        cuenta.email,
-        obtenerRoles(cuenta.rol).join(' / '),
-        cuenta.activo ? 'Activa' : 'Inactiva',
-      ]
+      nombre.textContent = `${cuenta.nombre} ${cuenta.apellido}`
+      correo.textContent = cuenta.email
+      estado.textContent = cuenta.activo ? 'Activa' : 'Inactiva'
+      celdaRoles.className = 'celda-roles'
 
-      for (const valor of valores) {
-        const celda = document.createElement('td')
-        celda.textContent = valor
-        fila.append(celda)
+      const grupo = document.createElement('fieldset')
+      grupo.className = 'roles-cuenta'
+
+      const leyenda = document.createElement('legend')
+      leyenda.textContent = 'Roles'
+      grupo.append(leyenda)
+
+      const actuales = obtenerRoles(cuenta.rol)
+
+      for (const rol of rolesDisponibles) {
+        const etiqueta = document.createElement('label')
+        etiqueta.className = 'opcion-rol'
+
+        const casilla = document.createElement('input')
+        casilla.type = 'checkbox'
+        casilla.value = rol
+        casilla.checked = actuales.includes(rol)
+
+        etiqueta.append(casilla, document.createTextNode(rol))
+        grupo.append(etiqueta)
       }
 
+      grupo.addEventListener('change', () => {
+        grupo.removeAttribute('aria-invalid')
+      })
+
+      const guardar = document.createElement('button')
+      guardar.type = 'button'
+      guardar.className = 'boton-panel'
+      guardar.textContent = 'Guardar roles'
+
+      guardar.addEventListener('click', () => {
+        void guardarRoles(cuenta, grupo, guardar)
+      })
+
+      celdaRoles.append(grupo)
+      acciones.append(guardar)
+      fila.append(nombre, correo, celdaRoles, estado, acciones)
       listado.append(fila)
     }
   }
 
-  /* Conservamos el resultado de la consulta mas reciente
-   si coinciden una actualizacion manual y un alta. */
+  /* Conservamos el resultado de la consulta mas reciente. */
   async function cargarCuentas(): Promise<void> {
     const version = ++versionListado
 
     botonActualizar.disabled = true
     listado.setAttribute('aria-busy', 'true')
-    mensajeListado.classList.remove('mensaje-error')
-    mensajeListado.textContent = 'Cargando cuentas...'
+    mostrarMensaje(mensajeListado, 'Cargando cuentas...')
 
     try {
-      const datos = await solicitarAPI<{ cuentas: Cuenta[] }>(
-        '/api/cuentas',
-      )
+      const datos = await solicitarAPI<{ cuentas: Cuenta[] }>('/api/cuentas')
 
       if (version !== versionListado) return
 
       dibujarCuentas(datos.cuentas)
-      mensajeListado.textContent =
-        `Cuentas registradas: ${datos.cuentas.length}.`
+      mostrarMensaje(
+        mensajeListado,
+        `Cuentas registradas: ${datos.cuentas.length}.`,
+      )
     } catch (error) {
       if (version !== versionListado) return
 
       listado.replaceChildren()
-      mensajeListado.classList.add('mensaje-error')
-      mensajeListado.textContent = error instanceof Error
-        ? error.message
-        : 'No se pudieron cargar las cuentas.'
-
+      mostrarMensaje(
+        mensajeListado,
+        error instanceof Error ? error.message : 'No se pudieron cargar las cuentas.',
+        'error',
+      )
       revisarAcceso(error)
     } finally {
       if (version === versionListado) {
@@ -141,18 +195,104 @@ function prepararCuentas(): void {
     }
   }
 
-  botonActualizar.addEventListener('click', () => {
-    void cargarCuentas()
-  })
+  /* Guardamos los roles de la fila seleccionada.
+   La comprobacion definitiva de permisos la realiza el backend. */
+  async function guardarRoles(
+    cuenta: Cuenta,
+    grupo: HTMLFieldSetElement,
+    boton: HTMLButtonElement,
+  ): Promise<void> {
+    if (boton.disabled) return
 
-  /* Al corregir un dato revisamos nuevamente las validaciones. */
+    const roles = rolesSeleccionados(grupo)
+
+    if (roles.length === 0) {
+      grupo.setAttribute('aria-invalid', 'true')
+      mostrarMensaje(
+        mensajeListado,
+        'Seleccioná al menos un rol para la cuenta.',
+        'error',
+      )
+      grupo.querySelector<HTMLInputElement>('input')?.focus()
+      return
+    }
+
+    boton.disabled = true
+    grupo.disabled = true
+    boton.textContent = 'Guardando...'
+    mostrarMensaje(mensajeListado, 'Actualizando roles...')
+
+    try {
+      const respuesta = await solicitarAPI<{ mensaje: string }>(
+        '/api/cuentas/roles',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            id: cuenta.id,
+            rol: roles,
+          }),
+        },
+      )
+
+      /* Actualizamos tambien el encabezado y el menu si
+       el cambio corresponde a la cuenta que esta conectada. */
+      if (cuenta.id === usuarioActualId) {
+        window.location.reload()
+        return
+      }
+
+      await cargarCuentas()
+
+      if (!mensajeListado.classList.contains('mensaje-error')) {
+        mostrarMensaje(mensajeListado, respuesta.mensaje, 'exito')
+      }
+    } catch (error) {
+      mostrarMensaje(
+        mensajeListado,
+        error instanceof Error ? error.message : 'No se pudieron guardar los roles.',
+        'error',
+      )
+
+      if (error instanceof ErrorAPI && error.campos.includes('rol')) {
+        grupo.setAttribute('aria-invalid', 'true')
+      }
+
+      revisarAcceso(error)
+    } finally {
+      boton.disabled = false
+      grupo.disabled = false
+      boton.textContent = 'Guardar roles'
+    }
+  }
+
+  /* Reutilizamos las validaciones de los datos personales
+   y comprobamos por separado el grupo de casillas. */
+  function validarAlta(): boolean {
+    const datosValidos = validarFormulario(formulario, mensajeAlta)
+    const rolesValidos = rolesSeleccionados(grupoRolesAlta).length > 0
+
+    grupoRolesAlta.removeAttribute('aria-invalid')
+
+    if (!rolesValidos) {
+      grupoRolesAlta.setAttribute('aria-invalid', 'true')
+      const anterior = mensajeAlta.textContent ?? ''
+      mostrarMensaje(
+        mensajeAlta,
+        `${anterior} Seleccioná al menos un rol.`.trim(),
+        'error',
+      )
+    }
+
+    return datosValidos && rolesValidos
+  }
+
   formulario.addEventListener('input', () => {
-    if (enviando) return
+    if (enviandoAlta) return
 
     mensajeAlta.classList.remove('mensaje-exito')
 
     if (intentoEnviar) {
-      validarFormulario(formulario, mensajeAlta)
+      validarAlta()
     } else {
       mensajeAlta.textContent = ''
     }
@@ -161,33 +301,35 @@ function prepararCuentas(): void {
   formulario.addEventListener('submit', async (evento) => {
     evento.preventDefault()
 
-    if (enviando) return
+    if (enviandoAlta) return
 
     intentoEnviar = true
     mensajeAlta.classList.remove('mensaje-exito')
 
-    if (!validarFormulario(formulario, mensajeAlta)) {
-      formulario.querySelector<HTMLInputElement>(
-        '[aria-invalid="true"]',
-      )?.focus()
+    if (!validarAlta()) {
+      const primerError = formulario.querySelector<HTMLInputElement>(
+        'input[aria-invalid="true"]',
+      )
+
+      if (primerError) {
+        primerError.focus()
+      } else {
+        grupoRolesAlta.querySelector<HTMLInputElement>('input')?.focus()
+      }
+
       return
     }
 
-    /* Capturamos los datos antes de bloquear los controles.
-     La contraseña conserva exactamente lo que se escribio. */
     const datos = new FormData(formulario)
+    const roles = rolesSeleccionados(grupoRolesAlta)
 
-    enviando = true
+    enviandoAlta = true
     botonCrear.disabled = true
     botonCrear.textContent = 'Creando cuenta...'
     formulario.setAttribute('aria-busy', 'true')
+    camposAlta.forEach((campo) => { campo.disabled = true })
 
-    campos.forEach((campo) => {
-      campo.disabled = true
-    })
-
-    mensajeAlta.classList.remove('mensaje-error')
-    mensajeAlta.textContent = 'Guardando cuenta...'
+    mostrarMensaje(mensajeAlta, 'Guardando cuenta...')
 
     try {
       const respuesta = await solicitarAPI<{ mensaje: string }>(
@@ -199,55 +341,53 @@ function prepararCuentas(): void {
             apellido: datos.get('apellido'),
             email: datos.get('email'),
             contrasena: datos.get('contrasena'),
-            rol: datos.get('rol'),
+            rol: roles,
           }),
         },
       )
 
       formulario.reset()
       intentoEnviar = false
+      grupoRolesAlta.removeAttribute('aria-invalid')
+      camposAlta.forEach((campo) => campo.removeAttribute('aria-invalid'))
 
-      campos.forEach((campo) => {
-        campo.removeAttribute('aria-invalid')
-      })
-
-      mensajeAlta.classList.remove('mensaje-error')
-      mensajeAlta.classList.add('mensaje-exito')
-      mensajeAlta.textContent = respuesta.mensaje
-
+      mostrarMensaje(mensajeAlta, respuesta.mensaje, 'exito')
       await cargarCuentas()
     } catch (error) {
-      mensajeAlta.classList.remove('mensaje-exito')
-      mensajeAlta.classList.add('mensaje-error')
-      mensajeAlta.textContent = error instanceof Error
-        ? error.message
-        : 'No se pudo crear la cuenta.'
+      mostrarMensaje(
+        mensajeAlta,
+        error instanceof Error ? error.message : 'No se pudo crear la cuenta.',
+        'error',
+      )
 
-      /* Marcamos los campos indicados por el backend.
-       Sus nombres coinciden con los atributos name del HTML. */
       if (error instanceof ErrorAPI) {
-        campos.forEach((campo) => {
+        camposAlta.forEach((campo) => {
           if (error.campos.includes(campo.name)) {
             campo.setAttribute('aria-invalid', 'true')
           }
         })
+
+        if (error.campos.includes('rol')) {
+          grupoRolesAlta.setAttribute('aria-invalid', 'true')
+        }
       }
 
       revisarAcceso(error)
     } finally {
-      enviando = false
+      enviandoAlta = false
       botonCrear.disabled = false
       botonCrear.textContent = 'Crear cuenta'
       formulario.removeAttribute('aria-busy')
+      camposAlta.forEach((campo) => { campo.disabled = false })
 
-      campos.forEach((campo) => {
-        campo.disabled = false
-      })
-
-      formulario.querySelector<HTMLInputElement | HTMLSelectElement>(
-        '[aria-invalid="true"]',
+      formulario.querySelector<HTMLInputElement>(
+        'input[aria-invalid="true"]',
       )?.focus()
     }
+  })
+
+  botonActualizar.addEventListener('click', () => {
+    void cargarCuentas()
   })
 
   void cargarCuentas()

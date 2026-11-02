@@ -12,7 +12,7 @@
     </p>
 
     <section id="vista" hidden>
-      <!-- Este formulario permite crear cuentas con el rol indicado. -->
+      <!-- Formulario para crear cuentas con uno o varios roles. -->
       <article class="tarjeta-panel tarjeta-alta-cuenta">
         <h2>Crear cuenta</h2>
 
@@ -41,7 +41,7 @@
             />
           </div>
 
-          <div>
+          <div class="ancho-completo">
             <label for="email">Correo electrónico</label>
             <input
               id="email"
@@ -53,14 +53,24 @@
             />
           </div>
 
-          <div>
-            <label for="rol">Rol</label>
-            <select id="rol" name="rol" required>
-              <option value="USUARIO">USUARIO</option>
-              <option value="ENTRENADOR">ENTRENADOR</option>
-              <option value="ADMIN">ADMIN</option>
-            </select>
-          </div>
+          <fieldset id="roles-alta" class="roles-cuenta ancho-completo">
+            <legend>Roles de la cuenta</legend>
+
+            <label class="opcion-rol">
+              <input type="checkbox" name="rol" value="USUARIO" checked />
+              USUARIO
+            </label>
+
+            <label class="opcion-rol">
+              <input type="checkbox" name="rol" value="ENTRENADOR" />
+              ENTRENADOR
+            </label>
+
+            <label class="opcion-rol">
+              <input type="checkbox" name="rol" value="ADMIN" />
+              ADMIN
+            </label>
+          </fieldset>
 
           <div>
             <label for="contrasena">Contraseña</label>
@@ -97,7 +107,7 @@
         </form>
       </article>
 
-      <!-- El listado muestra los datos publicos de las cuentas. -->
+      <!-- Cada fila permite consultar y modificar los roles. -->
       <article class="tarjeta-panel">
         <header class="encabezado-cuentas">
           <h2>Cuentas registradas</h2>
@@ -107,20 +117,25 @@
           </button>
         </header>
 
+        <p class="ayuda-cuentas">
+          Marcá los roles y presioná Guardar roles para aplicar el cambio.
+        </p>
+
         <p id="mensaje-cuentas" role="status" aria-live="polite"></p>
 
         <div class="contenedor-tabla-cuentas">
           <table class="tabla-cuentas">
             <caption class="descripcion-tabla">
-              Cuentas del sistema con su rol y estado
+              Cuentas registradas y edición de sus roles
             </caption>
 
             <thead>
               <tr>
                 <th scope="col">Nombre y apellido</th>
                 <th scope="col">Correo electrónico</th>
-                <th scope="col">Rol</th>
+                <th scope="col">Roles</th>
                 <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
               </tr>
             </thead>
 
