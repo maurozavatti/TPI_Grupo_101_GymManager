@@ -455,3 +455,127 @@
     gap: var(--espacio-pequeno);
   }
 }
+
+/* Las acciones de cada fila se apilan para ocupar menos ancho. */
+.tabla-cuentas .acciones-cuenta {
+  flex-direction: column;
+  align-items: stretch;
+  width: 6.5rem;
+}
+
+.tabla-cuentas .acciones-cuenta .boton-panel {
+  padding: var(--espacio-pequeno);
+}
+
+/* El selector de edicion mantiene un ancho compacto. */
+.selector-roles-edicion {
+  width: 11rem;
+  max-width: 100%;
+}
+
+.selector-roles summary > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Al abrirlo, las opciones quedan dentro de la fila para
+ que el cuadro desplazable de la tabla no las recorte. */
+.selector-roles-edicion .roles-cuenta {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--espacio-minimo);
+  box-shadow: none;
+}
+
+.selector-roles-edicion .opcion-rol {
+  font-size: var(--texto-pequeno);
+}
+
+/* La columna de acciones se reduce al ancho de los iconos. */
+.tabla-cuentas .acciones-cuenta {
+  width: 2.75rem;
+  align-items: center;
+}
+
+.tabla-cuentas .acciones-cuenta .boton-icono {
+  padding: 0;
+}
+
+/* Centramos la paginacion y limitamos su ancho al listado. */
+.paginacion-cuentas {
+  position: relative;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: var(--espacio-pequeno);
+}
+
+.numeros-pagina {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-minimo);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.numero-pagina {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  padding: var(--espacio-minimo);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font: inherit;
+  cursor: pointer;
+}
+
+.numero-pagina:hover {
+  color: var(--color-principal-hover);
+  background: var(--color-principal-claro);
+  border-color: var(--color-principal);
+}
+
+.numero-pagina[aria-current="page"] {
+  color: var(--color-secundario);
+  background: var(--color-principal);
+  border-color: var(--color-principal);
+  font-weight: var(--peso-negrita);
+}
+
+.separador-paginas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-texto-secundario);
+}
+
+/* Reducimos el espacio en celular sin comprimir los numeros. */
+@media (max-width: 600px) {
+  .paginacion-cuentas {
+    gap: var(--espacio-minimo);
+  }
+
+  .paginacion-cuentas .boton-panel.boton-icono {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .numero-pagina {
+    min-width: 2rem;
+    height: 2.25rem;
+    font-size: var(--texto-pequeno);
+  }
+}

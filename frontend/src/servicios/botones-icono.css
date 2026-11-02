@@ -1,0 +1,45 @@
+/* Los botones conservan un area comoda para pulsar con el dedo. */
+.boton-panel.boton-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.boton-icono svg {
+  display: block;
+  pointer-events: none;
+}
+
+/* La reactivacion se identifica con el color de exito. */
+.boton-panel.boton-icono[data-accion="reactivar"] {
+  color: var(--color-exito);
+  border-color: var(--color-exito);
+  background: var(--color-superficie);
+}
+
+.boton-panel.boton-icono[data-accion="reactivar"]:hover:not(:disabled) {
+  color: var(--color-secundario);
+  background: var(--color-exito);
+}
+
+/* La ayuda flota sobre el contenido y no modifica la tabla. */
+.ayuda-boton-icono {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(18rem, calc(100vw - 1rem));
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-secundario);
+  background: var(--color-texto);
+  border-radius: var(--radio-pequeno);
+  box-shadow: var(--sombra-tarjeta);
+  font-size: var(--texto-pequeno);
+  line-height: var(--interlineado-general);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
