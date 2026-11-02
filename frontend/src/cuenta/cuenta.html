@@ -11,73 +11,123 @@
       Comprobando sesión...
     </p>
 
-    <!-- El panel incorpora este contenido dentro de su estructura. -->
-    <section id="vista" hidden>
-      <article class="tarjeta-panel">
-        <h2>Datos de la cuenta</h2>
+    <section id="vista" class="vista-cuenta" hidden>
+      <article class="tarjeta-panel cuenta-personal">
+        <header class="encabezado-cuenta">
+          <div class="identidad-cuenta">
+            <span
+              id="iniciales-usuario"
+              class="avatar-cuenta"
+              aria-hidden="true"
+            ></span>
 
-        <dl>
-          <dt>Nombre</dt>
-          <dd id="nombre-usuario"></dd>
-
-          <dt>Correo electrónico</dt>
-          <dd id="correo-usuario"></dd>
-
-          <dt>Rol</dt>
-          <dd id="rol-usuario"></dd>
-        </dl>
-      </article>
-
-      <article class="tarjeta-panel tarjeta-contrasena">
-        <h2>Cambiar contraseña</h2>
-
-        <form id="formulario-contrasena" class="formulario-cuenta" novalidate>
-          <div>
-            <label for="contrasena-actual">Contraseña actual</label>
-            <input
-              id="contrasena-actual"
-              name="actual"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
+            <div>
+              <h2 id="nombre-usuario"></h2>
+              <p class="descripcion-cuenta">Información de tu cuenta</p>
+            </div>
           </div>
 
-          <div>
-            <label for="contrasena">Nueva contraseña</label>
-            <input
-              id="contrasena"
-              name="nueva"
-              type="password"
-              autocomplete="new-password"
-              minlength="8"
-              aria-describedby="ayuda-contrasena"
-              required
-            />
-            <small id="ayuda-contrasena">
-                Usá al menos 8 caracteres.
-            </small>
-          </div>
-
-          <div>
-            <label for="confirmacion-contrasena">
-              Confirmar nueva contraseña
-            </label>
-            <input
-              id="confirmacion-contrasena"
-              name="confirmacion"
-              type="password"
-              autocomplete="new-password"
-              required
-            />
-          </div>
-
-          <p id="mensaje-contrasena" role="status" aria-live="polite"></p>
-
-          <button class="boton-panel" type="submit">
-            Guardar contraseña
+          <button
+            id="alternar-contrasena"
+            class="boton-panel"
+            type="button"
+            aria-expanded="false"
+            aria-controls="panel-contrasena"
+          >
+            Cambiar contraseña
           </button>
-        </form>
+        </header>
+
+        <!-- Los datos se presentan en bloques independientes. -->
+        <dl class="datos-cuenta">
+          <div class="dato-cuenta">
+            <dt>Correo electrónico</dt>
+            <dd id="correo-usuario"></dd>
+          </div>
+
+          <div class="dato-cuenta">
+            <dt>Roles</dt>
+            <dd id="rol-usuario" class="roles-personales"></dd>
+          </div>
+        </dl>
+
+        <!-- El formulario solo ocupa espacio cuando se abre. -->
+        <section
+          id="panel-contrasena"
+          class="panel-contrasena"
+          aria-labelledby="titulo-contrasena"
+          hidden
+        >
+          <h3 id="titulo-contrasena">Cambiar contraseña</h3>
+
+          <form
+            id="formulario-contrasena"
+            class="formulario-cuenta"
+            novalidate
+          >
+            <div class="campo-clave campo-clave-actual">
+              <label for="contrasena-actual">Contraseña actual</label>
+              <input
+                id="contrasena-actual"
+                name="actual"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <div class="campo-clave">
+              <label for="contrasena">Nueva contraseña</label>
+              <input
+                id="contrasena"
+                name="nueva"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                aria-describedby="ayuda-contrasena"
+                required
+              />
+              <small id="ayuda-contrasena">Mínimo 8 caracteres.</small>
+            </div>
+
+            <div class="campo-clave">
+              <label for="confirmacion-contrasena">
+                Confirmar contraseña
+              </label>
+              <input
+                id="confirmacion-contrasena"
+                name="confirmacion"
+                type="password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <p
+              id="mensaje-contrasena"
+              role="status"
+              aria-live="polite"
+            ></p>
+
+            <div class="acciones-clave">
+              <button
+                id="guardar-contrasena"
+                class="boton-panel"
+                type="submit"
+              >
+                Guardar
+              </button>
+
+              <button
+                id="cancelar-contrasena"
+                class="boton-panel boton-secundario-cuenta"
+                type="button"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
       </article>
     </section>
 

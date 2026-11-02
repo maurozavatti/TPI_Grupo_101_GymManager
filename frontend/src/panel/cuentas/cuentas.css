@@ -258,3 +258,350 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Las acciones principales quedan junto al titulo del listado. */
+.acciones-encabezado-cuentas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-pequeno);
+}
+
+.acciones-encabezado-cuentas .boton-panel {
+  width: auto;
+}
+
+/* El alta se despliega en una tarjeta independiente, sin ocupar
+ espacio cuando esta cerrada. */
+.panel-alta-cuenta {
+  margin-top: 0;
+  margin-bottom: var(--espacio-mediano);
+  scroll-margin-top: var(--espacio-mediano);
+  padding: var(--espacio-mediano);
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.panel-alta-cuenta h3 {
+  font-size: var(--texto-normal);
+}
+
+.panel-alta-cuenta .formulario-cuentas {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-mediano);
+}
+
+.panel-alta-cuenta .formulario-cuentas > div {
+  min-width: 0;
+  gap: var(--espacio-minimo);
+}
+
+.panel-alta-cuenta .formulario-cuentas label,
+.panel-alta-cuenta .campo-roles > span {
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.panel-alta-cuenta input:not([type="checkbox"]) {
+  padding: var(--espacio-pequeno);
+}
+
+.panel-alta-cuenta .campo-contrasena {
+  grid-column: span 2;
+}
+
+/* El selector mantiene las casillas dentro de un desplegable. */
+.selector-roles {
+  position: relative;
+  min-width: 0;
+}
+
+.selector-roles summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-pequeno);
+  padding: var(--espacio-pequeno);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  cursor: pointer;
+  list-style: none;
+}
+
+.selector-roles summary::-webkit-details-marker {
+  display: none;
+}
+
+.selector-roles summary::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.selector-roles[open] summary::after {
+  transform: rotate(225deg);
+}
+
+#resumen-roles-alta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.selector-roles .roles-cuenta {
+  position: absolute;
+  top: calc(100% + var(--espacio-minimo));
+  left: 0;
+  z-index: 5;
+  display: grid;
+  gap: var(--espacio-pequeno);
+  min-width: 100%;
+  width: max-content;
+  padding: var(--espacio-mediano);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* Con menos espacio usamos dos columnas y mantenemos
+ las dos contraseñas en la misma fila. */
+@media (max-width: 1100px) {
+  .panel-alta-cuenta .formulario-cuentas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel-alta-cuenta .campo-contrasena {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .panel-alta-cuenta .campo-correo,
+  .panel-alta-cuenta .campo-roles {
+    grid-column: 1 / -1;
+  }
+
+  .selector-roles .roles-cuenta {
+    width: 100%;
+  }
+}
+
+/* Las filas se desplazan dentro del cuadro.
+ Los filtros y los controles de pagina quedan fuera de ese scroll. */
+.contenedor-tabla-cuentas {
+  max-height: 55vh;
+  max-height: 55dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+/* El ancho minimo evita comprimir las columnas en el celular.
+ Si no entran, se puede deslizar horizontalmente dentro del cuadro. */
+.tabla-cuentas {
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla-cuentas th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-principal-claro);
+  white-space: nowrap;
+}
+
+.tabla-cuentas th:first-child,
+.tabla-cuentas td:first-child {
+  min-width: 11rem;
+}
+
+.tabla-cuentas th:nth-child(2),
+.tabla-cuentas td:nth-child(2) {
+  min-width: 15rem;
+}
+
+.tabla-cuentas th:nth-child(4),
+.tabla-cuentas td:nth-child(4) {
+  min-width: 6rem;
+  white-space: nowrap;
+}
+
+/* La paginacion permanece debajo del cuadro de filas. */
+.paginacion-cuentas {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-mediano);
+}
+
+#informacion-pagina {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+@media (max-width: 600px) {
+  .paginacion-cuentas {
+    justify-content: center;
+    gap: var(--espacio-pequeno);
+  }
+}
+
+/* Las acciones de cada fila se apilan para ocupar menos ancho. */
+.tabla-cuentas .acciones-cuenta {
+  flex-direction: column;
+  align-items: stretch;
+  width: 6.5rem;
+}
+
+.tabla-cuentas .acciones-cuenta .boton-panel {
+  padding: var(--espacio-pequeno);
+}
+
+/* El selector de edicion mantiene un ancho compacto. */
+.selector-roles-edicion {
+  width: 11rem;
+  max-width: 100%;
+}
+
+.selector-roles summary > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Al abrirlo, las opciones quedan dentro de la fila para
+ que el cuadro desplazable de la tabla no las recorte. */
+.selector-roles-edicion .roles-cuenta {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--espacio-minimo);
+  box-shadow: none;
+}
+
+.selector-roles-edicion .opcion-rol {
+  font-size: var(--texto-pequeno);
+}
+
+/* La columna de acciones se reduce al ancho de los iconos. */
+.tabla-cuentas .acciones-cuenta {
+  width: 2.75rem;
+  align-items: center;
+}
+
+.tabla-cuentas .acciones-cuenta .boton-icono {
+  padding: 0;
+}
+
+/* Centramos la paginacion y limitamos su ancho al listado. */
+.paginacion-cuentas {
+  position: relative;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: var(--espacio-pequeno);
+}
+
+.numeros-pagina {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-minimo);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.numero-pagina {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  padding: var(--espacio-minimo);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font: inherit;
+  cursor: pointer;
+}
+
+.numero-pagina:hover {
+  color: var(--color-principal-hover);
+  background: var(--color-principal-claro);
+  border-color: var(--color-principal);
+}
+
+.numero-pagina[aria-current="page"] {
+  color: var(--color-secundario);
+  background: var(--color-principal);
+  border-color: var(--color-principal);
+  font-weight: var(--peso-negrita);
+}
+
+.separador-paginas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-texto-secundario);
+}
+
+/* Reducimos el espacio en celular sin comprimir los numeros. */
+@media (max-width: 600px) {
+  .paginacion-cuentas {
+    gap: var(--espacio-minimo);
+  }
+
+  .paginacion-cuentas .boton-panel.boton-icono {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .numero-pagina {
+    min-width: 2rem;
+    height: 2.25rem;
+    font-size: var(--texto-pequeno);
+  }
+}
+/* Las acciones del alta quedan juntas debajo de los campos. */
+.panel-alta-cuenta .formulario-cuentas > .acciones-alta-cuenta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-pequeno);
+}
+
+.formulario-cuentas .acciones-alta-cuenta .boton-panel {
+  width: auto;
+}
+
+/* Cancelar utiliza el color general de error. */
+.boton-panel.boton-cancelar-alta {
+  color: var(--color-error);
+  background: var(--color-superficie);
+  border-color: var(--color-error);
+}
+
+.boton-panel.boton-cancelar-alta:hover:not(:disabled) {
+  color: var(--color-secundario);
+  background: var(--color-error);
+}
