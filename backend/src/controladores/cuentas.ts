@@ -1,25 +1,36 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { MongoServerError, ObjectId } from 'mongodb'
 import { conectarDB } from '../db.ts'
-import { ErrorHTTP, leerJSON, responder, texto } from '../compartidos/http.ts'
+import {
+  ErrorHTTP,
+  identificador,
+  leerJSON,
+  responder,
+  texto,
+} from '../compartidos/http.ts'
 import { exigirRol } from '../servicios/permisos.ts'
-import type { RolUsuario } from './sesion.ts'
 import { crearHashContrasena } from '../servicios/contrasenas.ts'
+import {
+  esRolCuenta,
+  incluyeRol,
+  obtenerRoles,
+} from '../servicios/roles.ts'
+import type { RolesCuenta } from '../servicios/roles.ts'
 
-/* Estos son los campos que utilizamos para listar las cuentas.
- No incluimos la contraseña ni su hash. */
+/* Estos son los datos publicos utilizados en el listado.
+ El rol acepta el formato anterior y el de multiples valores. */
 interface CuentaListado {
   _id: ObjectId
   nombre: string
   apellido: string
   email: string
-  rol: RolUsuario
+  rol: RolesCuenta
   activo: boolean
   clienteId?: ObjectId | null
 }
 
-/* Esta funcion consulta las cuentas activas e inactivas.
- La proyeccion limita los datos que se leen de la base. */
+/* Consultamos cuentas activas e inactivas sin leer
+ contraseñas, hashes ni datos de sus sesiones. */
 async function listarCuentas(respuesta: ServerResponse): Promise<void> {
   const db = await conectarDB()
 
@@ -41,8 +52,6 @@ async function listarCuentas(respuesta: ServerResponse): Promise<void> {
     .sort({ apellido: 1, nombre: 1, email: 1 })
     .toArray()
 
-  /* Convertimos los identificadores para enviarlos como texto.
-   Una cuenta puede existir sin una ficha de cliente vinculada. */
   responder(respuesta, 200, {
     cuentas: cuentas.map((cuenta) => ({
       id: cuenta._id.toHexString(),
@@ -58,8 +67,8 @@ async function listarCuentas(respuesta: ServerResponse): Promise<void> {
   })
 }
 
-/* Esta funcion crea una cuenta con el rol elegido por ADMIN.
- No inicia una sesion nueva ni crea una ficha de cliente. */
+/* Creamos una cuenta sin cambiar la sesion del administrador
+ ni generar automaticamente una ficha de cliente. */
 async function crearCuenta(
   solicitud: IncomingMessage,
   respuesta: ServerResponse,
@@ -69,7 +78,6 @@ async function crearCuenta(
   const nombre = texto(datos, 'nombre', 100, true)
   const apellido = texto(datos, 'apellido', 100, true)
   const email = texto(datos, 'email', 254, true).toLowerCase()
-  const rol = datos.rol
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new ErrorHTTP(
@@ -79,10 +87,10 @@ async function crearCuenta(
     )
   }
 
-  if (rol !== 'ADMIN' && rol !== 'ENTRENADOR' && rol !== 'USUARIO') {
+  if (!esRolCuenta(datos.rol)) {
     throw new ErrorHTTP(
       400,
-      'Seleccioná un rol válido.',
+      'Seleccioná al menos un rol válido.',
       ['rol'],
     )
   }
@@ -95,8 +103,6 @@ async function crearCuenta(
     )
   }
 
-  /* Reutilizamos las mismas reglas y generacion del hash
-   que se utilizan en el registro y cambio de contraseña. */
   let passwordHash: string
 
   try {
@@ -111,8 +117,6 @@ async function crearCuenta(
 
   const db = await conectarDB()
 
-  /* El indice impide duplicar correos incluso si dos
-   solicitudes intentan crear la misma cuenta a la vez. */
   await db.collection('usuarios').createIndex(
     { email: 1 },
     { unique: true },
@@ -120,14 +124,14 @@ async function crearCuenta(
 
   const ahora = new Date()
 
-  /* clienteId se incorpora al vincular una ficha existente.
-   Lo omitimos para respetar su indice unico sparse. */
+  /* Las cuentas creadas desde administracion guardan sus
+   roles como array. Las cuentas anteriores siguen siendo validas. */
   await db.collection('usuarios').insertOne({
     nombre,
     apellido,
     email,
     passwordHash,
-    rol,
+    rol: obtenerRoles(datos.rol),
     activo: true,
     fechaCreacion: ahora,
     fechaModificacion: ahora,
@@ -138,14 +142,70 @@ async function crearCuenta(
   })
 }
 
-/* Todas las operaciones administrativas de cuentas pasan
- por este controlador y requieren una sesion de ADMIN. */
+/* Modificamos solamente los roles y la fecha del cambio.
+ La vinculacion con el cliente y los demas datos se conservan. */
+async function cambiarRoles(
+  solicitud: IncomingMessage,
+  respuesta: ServerResponse,
+  administradorId: string,
+): Promise<void> {
+  const datos = await leerJSON(solicitud, 16384)
+  const cuentaId = identificador(datos.id)
+
+  if (!esRolCuenta(datos.rol)) {
+    throw new ErrorHTTP(
+      400,
+      'Seleccioná al menos un rol válido.',
+      ['rol'],
+    )
+  }
+
+  const roles = obtenerRoles(datos.rol)
+
+  /* El administrador puede agregarse ENTRENADOR, pero no
+   quitarse ADMIN desde su propia sesion. */
+  if (
+    cuentaId.toHexString() === administradorId
+    && !incluyeRol(roles, ['ADMIN'])
+  ) {
+    throw new ErrorHTTP(
+      409,
+      'No podés quitarte el rol ADMIN desde tu propia cuenta.',
+      ['rol'],
+    )
+  }
+
+  const db = await conectarDB()
+
+  const cambio = await db.collection('usuarios').updateOne(
+    { _id: cuentaId },
+    {
+      $set: {
+        rol: roles,
+        fechaModificacion: new Date(),
+      },
+    },
+  )
+
+  if (cambio.matchedCount !== 1) {
+    throw new ErrorHTTP(404, 'La cuenta no existe.')
+  }
+
+  /* Las sesiones consultan los roles actuales de la cuenta
+   en cada peticion, por lo que no necesitan copiar estos valores. */
+  responder(respuesta, 200, {
+    mensaje: 'Roles actualizados correctamente.',
+  })
+}
+
+/* Todas las operaciones de este controlador requieren ADMIN,
+ tanto si ese rol esta guardado como texto como dentro de un array. */
 export async function gestionarCuentas(
   solicitud: IncomingMessage,
   respuesta: ServerResponse,
 ): Promise<void> {
   try {
-    await exigirRol(solicitud, ['ADMIN'])
+    const administrador = await exigirRol(solicitud, ['ADMIN'])
 
     const ruta = new URL(
       solicitud.url ?? '/',
@@ -162,6 +222,11 @@ export async function gestionarCuentas(
       return
     }
 
+    if (solicitud.method === 'POST' && ruta === '/api/cuentas/roles') {
+      await cambiarRoles(solicitud, respuesta, administrador.id)
+      return
+    }
+
     throw new ErrorHTTP(404, 'Ruta no encontrada.')
   } catch (error) {
     if (
@@ -175,6 +240,7 @@ export async function gestionarCuentas(
       })
       return
     }
+
     if (error instanceof ErrorHTTP) {
       responder(respuesta, error.estado, {
         mensaje: error.message,
