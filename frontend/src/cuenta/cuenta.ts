@@ -2,6 +2,7 @@ import './cuenta.css'
 import { validarFormulario } from '../autenticacion/validaciones.ts'
 import { ErrorAPI, solicitarAPI } from '../servicios/api.ts'
 import { prepararPanel } from '../panel/estructura.ts'
+import { obtenerRoles } from '../servicios/roles.ts'
 
 /* Esta funcion conecta el formulario de contraseña una vez
  que la estructura del panel y la sesion estan preparadas. */
@@ -136,7 +137,7 @@ if (usuario) {
 
   if (nombre) nombre.textContent = `${usuario.nombre} ${usuario.apellido}`
   if (correo) correo.textContent = usuario.email
-  if (rol) rol.textContent = usuario.rol
+  if (rol) rol.textContent = obtenerRoles(usuario.rol).join(' / ')
 
   prepararCambioContrasena()
 }

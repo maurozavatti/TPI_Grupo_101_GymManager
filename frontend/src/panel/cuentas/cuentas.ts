@@ -2,7 +2,7 @@ import './cuentas.css'
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { validarFormulario } from '../../autenticacion/validaciones.ts'
-import type { RolUsuario } from '../../servicios/sesion.ts'
+import {obtenerRoles, type RolesCuenta,} from '../../servicios/roles.ts'
 
 /* Estos son los datos publicos que devuelve el listado de cuentas. */
 interface Cuenta {
@@ -10,7 +10,7 @@ interface Cuenta {
   nombre: string
   apellido: string
   email: string
-  rol: RolUsuario
+  rol: RolesCuenta
   activo: boolean
   clienteId: string | null
 }
@@ -89,7 +89,7 @@ function prepararCuentas(): void {
       const valores = [
         `${cuenta.nombre} ${cuenta.apellido}`,
         cuenta.email,
-        cuenta.rol,
+        obtenerRoles(cuenta.rol).join(' / '),
         cuenta.activo ? 'Activa' : 'Inactiva',
       ]
 

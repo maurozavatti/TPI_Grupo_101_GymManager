@@ -3,6 +3,7 @@ import './estructura.css'
 import { exigirAcceso, tieneRol } from '../servicios/permisos.ts'
 import { cerrarSesion } from '../servicios/sesion.ts'
 import type { RolUsuario, UsuarioSesion } from '../servicios/sesion.ts'
+import { obtenerRoles } from '../servicios/roles.ts'
 
 const rolesPersonal: readonly RolUsuario[] = ['ADMIN', 'ENTRENADOR']
 
@@ -91,7 +92,7 @@ export async function prepararPanel(
 
     encabezado.textContent = titulo
     nombre.textContent = `${usuario.nombre} ${usuario.apellido}`
-    rol.textContent = usuario.rol
+    rol.textContent = obtenerRoles(usuario.rol).join(' / ')
 
     const rutaActual = window.location.pathname === '/index.html'
       ? '/'

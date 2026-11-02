@@ -1,18 +1,18 @@
 import { consultarSesion } from './sesion.ts'
+import { incluyeRol } from './roles.ts'
 import type { RolUsuario, UsuarioSesion } from './sesion.ts'
 
-/* Esta funcion indica si la cuenta tiene uno de los roles permitidos.
- Se utiliza para organizar las opciones visibles de cada pantalla.*/
+/* Basta con que alguno de los roles de la cuenta coincida
+ con los permitidos para mostrar una opcion o abrir una pagina. */
 export function tieneRol(
   usuario: UsuarioSesion,
   rolesPermitidos: readonly RolUsuario[],
 ): boolean {
-  return rolesPermitidos.includes(usuario.rol)
+  return incluyeRol(usuario.rol, rolesPermitidos)
 }
 
-/* Esta funcion comprueba el acceso antes de cargar una pantalla.
- Sin sesion dirige al login. Si el rol no esta permitido,
- vuelve al inicio autenticado. Devuelve null cuando redirige.*/
+/* Sin sesion dirigimos al login. Si el acceso no esta permitido,
+ la entrada principal resuelve el destino correspondiente. */
 export async function exigirAcceso(
   rolesPermitidos?: readonly RolUsuario[],
 ): Promise<UsuarioSesion | null> {
