@@ -1,0 +1,89 @@
+/* Estos estilos organizan las tarjetas de Mi cuenta. */
+#vista {
+  display: grid;
+  gap: var(--espacio-grande);
+}
+
+/* Los datos se presentan sin la sangria predeterminada del navegador. */
+#vista dl {
+  display: grid;
+  gap: var(--espacio-pequeno);
+  margin: var(--espacio-grande) 0 0;
+}
+
+#vista dt {
+  font-weight: var(--peso-negrita);
+}
+
+#vista dd {
+  margin: 0 0 var(--espacio-pequeno);
+}
+
+/* Este es el contenedor del formulario de cambio de contraseña. */
+.formulario-cuenta {
+  display: grid;
+  gap: var(--espacio-grande);
+  max-width: 34rem;
+  margin-top: var(--espacio-grande);
+}
+
+.formulario-cuenta > div {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.formulario-cuenta label {
+  font-weight: var(--peso-medio);
+}
+
+.formulario-cuenta input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.formulario-cuenta input:focus-visible {
+  border-color: var(--color-foco);
+}
+
+.formulario-cuenta small {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+/* Los campos incorrectos y los mensajes usan los colores globales. */
+.formulario-cuenta input[aria-invalid="true"] {
+  border-color: var(--color-error);
+  outline-color: var(--color-error);
+}
+
+.formulario-cuenta .mensaje-error {
+  color: var(--color-error);
+}
+
+.formulario-cuenta .mensaje-exito {
+  color: var(--color-exito);
+}
+
+#mensaje-contrasena {
+  margin: 0;
+}
+
+#mensaje-contrasena:empty {
+  display: none;
+}
+
+.formulario-cuenta button {
+  justify-self: start;
+}
+
+/* En pantallas pequeñas el boton ocupa el ancho disponible. */
+@media (max-width: 600px) {
+  .formulario-cuenta button {
+    width: 100%;
+  }
+}

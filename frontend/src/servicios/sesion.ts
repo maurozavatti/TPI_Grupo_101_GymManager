@@ -1,21 +1,22 @@
 import { ErrorAPI, solicitarAPI } from './api.ts'
+import { esRolCuenta } from './roles.ts'
+import type { RolesCuenta } from './roles.ts'
 
-/* Estos son los roles admitidos por la aplicacion.*/
 export type RolUsuario = 'ADMIN' | 'ENTRENADOR' | 'USUARIO'
 
-/* Estos son los datos publicos que devuelve el backend
- cuando existe una sesion valida.*/
+/* La sesion conserva el formato de rol recibido del backend:
+ un texto para cuentas existentes o un array para varios roles. */
 export interface UsuarioSesion {
   id: string
   nombre: string
   apellido: string
   email: string
-  rol: RolUsuario
+  rol: RolesCuenta
   clienteId: string | null
 }
 
-/* Esta funcion comprueba la estructura de los datos recibidos.
- Los tipos de TypeScript no validan por si solos una respuesta JSON.*/
+/* Comprobamos los datos recibidos antes de utilizarlos.
+ Los tipos de TypeScript no validan una respuesta JSON. */
 function esUsuarioSesion(valor: unknown): valor is UsuarioSesion {
   if (
     valor === null
@@ -32,11 +33,7 @@ function esUsuarioSesion(valor: unknown): valor is UsuarioSesion {
     && typeof usuario.nombre === 'string'
     && typeof usuario.apellido === 'string'
     && typeof usuario.email === 'string'
-    && (
-      usuario.rol === 'ADMIN'
-      || usuario.rol === 'ENTRENADOR'
-      || usuario.rol === 'USUARIO'
-    )
+    && esRolCuenta(usuario.rol)
     && (
       usuario.clienteId === null
       || typeof usuario.clienteId === 'string'
@@ -44,9 +41,8 @@ function esUsuarioSesion(valor: unknown): valor is UsuarioSesion {
   )
 }
 
-/* Esta funcion consulta la sesion actual en el backend.
- El navegador envia la cookie sin que necesitemos leerla
- ni guardar el usuario en localStorage.*/
+/* El navegador envia la cookie sin que necesitemos leerla
+ ni guardar los datos de la cuenta en localStorage. */
 export async function consultarSesion(): Promise<UsuarioSesion | null> {
   try {
     const datos = await solicitarAPI<unknown>('/api/sesion')
@@ -67,9 +63,7 @@ export async function consultarSesion(): Promise<UsuarioSesion | null> {
 
     return usuario
   } catch (error) {
-    /* El estado 401 indica que no hay una sesion valida.
-     Los errores de conexion o del servidor se propagan
-     para mostrarlos sin confundirlos con una sesion cerrada.*/
+    /* Una sesion ausente se distingue de un problema de conexion. */
     if (error instanceof ErrorAPI && error.estado === 401) {
       return null
     }
@@ -78,9 +72,8 @@ export async function consultarSesion(): Promise<UsuarioSesion | null> {
   }
 }
 
-/* Esta funcion solicita el cierre de la sesion actual.
- El navegador procesa la eliminacion de la cookie.
- La pagina que la utiliza decide adonde navegar despues.*/
+/* El navegador procesa la eliminacion de la cookie.
+ La pantalla decide adonde navegar despues del cierre. */
 export async function cerrarSesion(): Promise<void> {
   await solicitarAPI('/api/logout', {
     method: 'POST',
