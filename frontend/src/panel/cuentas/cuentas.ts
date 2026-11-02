@@ -36,22 +36,25 @@ function elemento<T extends Element>(selector: string): T {
 /* Leemos las casillas marcadas dentro del grupo indicado. */
 function rolesSeleccionados(grupo: HTMLElement): RolUsuario[] {
   return Array.from(
-    grupo.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'),
+    grupo.querySelectorAll<HTMLInputElement>(
+      'input[type="checkbox"]:checked',
+    ),
     (casilla) => casilla.value as RolUsuario,
   )
 }
 
-/* Mostramos el mensaje usando los colores generales de estado. */
+/* Los mensajes utilizan los colores generales de estado. */
 function mostrarMensaje(
-  elementoMensaje: HTMLElement,
+  mensaje: HTMLElement,
   texto: string,
   estado: 'error' | 'exito' | 'normal' = 'normal',
 ): void {
-  elementoMensaje.textContent = texto
-  elementoMensaje.classList.toggle('mensaje-error', estado === 'error')
-  elementoMensaje.classList.toggle('mensaje-exito', estado === 'exito')
+  mensaje.textContent = texto
+  mensaje.classList.toggle('mensaje-error', estado === 'error')
+  mensaje.classList.toggle('mensaje-exito', estado === 'exito')
 }
 
+/* Si cambio el acceso de la cuenta, resolvemos su destino. */
 function revisarAcceso(error: unknown): void {
   if (!(error instanceof ErrorAPI)) return
 
@@ -60,6 +63,71 @@ function revisarAcceso(error: unknown): void {
   } else if (error.estado === 403) {
     window.location.replace('/')
   }
+}
+
+/* Esta ventana confirma el cambio de estado sin utilizar
+ los carteles predeterminados del navegador. */
+function confirmarCambioEstado(cuenta: Cuenta): Promise<boolean> {
+  return new Promise((resolver) => {
+    const dialogo = document.createElement('dialog')
+    dialogo.className = 'confirmacion-cuenta'
+    dialogo.setAttribute('aria-labelledby', 'titulo-confirmacion-cuenta')
+
+    const titulo = document.createElement('h2')
+    titulo.id = 'titulo-confirmacion-cuenta'
+    titulo.textContent = cuenta.activo
+      ? 'Dar de baja la cuenta'
+      : 'Reactivar la cuenta'
+
+    const descripcion = document.createElement('p')
+    descripcion.textContent = cuenta.activo
+      ? `La cuenta de ${cuenta.nombre} ${cuenta.apellido} no podrá ingresar y se cerrarán sus sesiones. Sus datos se conservarán.`
+      : `La cuenta de ${cuenta.nombre} ${cuenta.apellido} podrá volver a iniciar sesión.`
+
+    const aclaracion = document.createElement('p')
+    aclaracion.className = 'ayuda-cuentas'
+    aclaracion.textContent =
+      'Los cambios de roles que todavía no guardaste se descartarán al actualizar el listado.'
+
+    const acciones = document.createElement('div')
+    acciones.className = 'acciones-cuenta'
+
+    const confirmar = document.createElement('button')
+    confirmar.type = 'button'
+    confirmar.className = cuenta.activo
+      ? 'boton-panel boton-baja-cuenta'
+      : 'boton-panel'
+    confirmar.textContent = cuenta.activo
+      ? 'Confirmar baja'
+      : 'Reactivar cuenta'
+
+    const cancelar = document.createElement('button')
+    cancelar.type = 'button'
+    cancelar.className = 'boton-panel boton-cancelar-cuenta'
+    cancelar.textContent = 'Cancelar'
+
+    confirmar.addEventListener('click', () => {
+      dialogo.close('confirmar')
+    })
+
+    cancelar.addEventListener('click', () => {
+      dialogo.close('cancelar')
+    })
+
+    /* Escape tambien cierra la ventana sin confirmar. */
+    dialogo.addEventListener('close', () => {
+      const confirmado = dialogo.returnValue === 'confirmar'
+      dialogo.remove()
+      resolver(confirmado)
+    }, { once: true })
+
+    acciones.append(confirmar, cancelar)
+    dialogo.append(titulo, descripcion, aclaracion, acciones)
+    document.body.append(dialogo)
+
+    dialogo.showModal()
+    cancelar.focus()
+  })
 }
 
 const usuario = await prepararPanel('Cuentas', ['ADMIN'])
@@ -88,8 +156,8 @@ function prepararCuentas(usuarioActualId: string): void {
   let intentoEnviar = false
   let versionListado = 0
 
-  /* El listado muestra los roles como texto.
-   Las casillas aparecen solamente al editar una cuenta. */
+  /* Por defecto mostramos los roles como texto.
+   Los controles aparecen solamente al presionar Editar. */
   function dibujarCuentas(cuentas: Cuenta[]): void {
     listado.replaceChildren()
 
@@ -99,6 +167,7 @@ function prepararCuentas(usuarioActualId: string): void {
 
       celda.colSpan = 5
       celda.textContent = 'No hay cuentas registradas.'
+
       fila.append(celda)
       listado.append(fila)
       return
@@ -160,7 +229,7 @@ function prepararCuentas(usuarioActualId: string): void {
       editar.setAttribute('aria-expanded', 'false')
       editar.setAttribute(
         'aria-label',
-        `Editar roles de ${cuenta.nombre} ${cuenta.apellido}`,
+        `Editar cuenta de ${cuenta.nombre} ${cuenta.apellido}`,
       )
 
       const guardar = document.createElement('button')
@@ -169,14 +238,23 @@ function prepararCuentas(usuarioActualId: string): void {
       guardar.textContent = 'Guardar roles'
       guardar.hidden = true
 
+      const cambiarEstado = document.createElement('button')
+      cambiarEstado.type = 'button'
+      cambiarEstado.className = cuenta.activo
+        ? 'boton-panel boton-baja-cuenta'
+        : 'boton-panel'
+      cambiarEstado.textContent = cuenta.activo
+        ? 'Dar de baja'
+        : 'Reactivar'
+      cambiarEstado.hidden = true
+
       const cancelar = document.createElement('button')
       cancelar.type = 'button'
       cancelar.className = 'boton-panel boton-cancelar-cuenta'
       cancelar.textContent = 'Cancelar'
       cancelar.hidden = true
 
-      /* Cambiamos la vista sin guardar automaticamente.
-       Cancelar recupera los valores originales de la cuenta. */
+      /* Cancelar recupera los valores originales sin guardarlos. */
       function cambiarEdicion(editando: boolean): void {
         casillas.forEach((casilla) => {
           casilla.checked = actuales.includes(casilla.value as RolUsuario)
@@ -189,6 +267,7 @@ function prepararCuentas(usuarioActualId: string): void {
         editar.hidden = editando
         editar.setAttribute('aria-expanded', String(editando))
         guardar.hidden = !editando
+        cambiarEstado.hidden = !editando
         cancelar.hidden = !editando
 
         if (editando) {
@@ -207,18 +286,40 @@ function prepararCuentas(usuarioActualId: string): void {
       })
 
       guardar.addEventListener('click', async () => {
-        /* Evitamos cancelar mientras el servidor guarda el cambio. */
         cancelar.disabled = true
+        cambiarEstado.disabled = true
 
         try {
           await guardarRoles(cuenta, grupo, guardar)
         } finally {
           cancelar.disabled = false
+          cambiarEstado.disabled = false
+        }
+      })
+
+      cambiarEstado.addEventListener('click', async () => {
+        if (guardar.disabled || cambiarEstado.disabled) return
+
+        guardar.disabled = true
+        cancelar.disabled = true
+        grupo.disabled = true
+
+        try {
+          await actualizarEstadoCuenta(cuenta, cambiarEstado)
+        } finally {
+          guardar.disabled = false
+          cancelar.disabled = false
+          grupo.disabled = false
         }
       })
 
       celdaRoles.append(textoRoles, grupo)
-      contenedorAcciones.append(editar, guardar, cancelar)
+      contenedorAcciones.append(
+        editar,
+        guardar,
+        cambiarEstado,
+        cancelar,
+      )
       acciones.append(contenedorAcciones)
 
       fila.append(nombre, correo, celdaRoles, estado, acciones)
@@ -250,9 +351,12 @@ function prepararCuentas(usuarioActualId: string): void {
       listado.replaceChildren()
       mostrarMensaje(
         mensajeListado,
-        error instanceof Error ? error.message : 'No se pudieron cargar las cuentas.',
+        error instanceof Error
+          ? error.message
+          : 'No se pudieron cargar las cuentas.',
         'error',
       )
+
       revisarAcceso(error)
     } finally {
       if (version === versionListado) {
@@ -262,8 +366,7 @@ function prepararCuentas(usuarioActualId: string): void {
     }
   }
 
-  /* Guardamos los roles de la fila seleccionada.
-   La comprobacion definitiva de permisos la realiza el backend. */
+  /* Guardamos los roles elegidos para una cuenta existente. */
   async function guardarRoles(
     cuenta: Cuenta,
     grupo: HTMLFieldSetElement,
@@ -301,8 +404,8 @@ function prepararCuentas(usuarioActualId: string): void {
         },
       )
 
-      /* Actualizamos tambien el encabezado y el menu si
-       el cambio corresponde a la cuenta que esta conectada. */
+      /* Si editamos nuestra cuenta, actualizamos tambien
+       el encabezado y las opciones visibles del menu. */
       if (cuenta.id === usuarioActualId) {
         window.location.reload()
         return
@@ -316,7 +419,9 @@ function prepararCuentas(usuarioActualId: string): void {
     } catch (error) {
       mostrarMensaje(
         mensajeListado,
-        error instanceof Error ? error.message : 'No se pudieron guardar los roles.',
+        error instanceof Error
+          ? error.message
+          : 'No se pudieron guardar los roles.',
         'error',
       )
 
@@ -332,8 +437,58 @@ function prepararCuentas(usuarioActualId: string): void {
     }
   }
 
-  /* Reutilizamos las validaciones de los datos personales
-   y comprobamos por separado el grupo de casillas. */
+  /* Confirmamos y enviamos el cambio de estado.
+   El backend comprueba el permiso y protege la cuenta propia. */
+  async function actualizarEstadoCuenta(
+    cuenta: Cuenta,
+    boton: HTMLButtonElement,
+  ): Promise<void> {
+    if (boton.disabled) return
+
+    boton.disabled = true
+
+    try {
+      const confirmado = await confirmarCambioEstado(cuenta)
+
+      if (!confirmado) return
+
+      boton.textContent = 'Guardando...'
+      mostrarMensaje(mensajeListado, 'Actualizando estado de la cuenta...')
+
+      const ruta = cuenta.activo
+        ? '/api/cuentas/desactivar'
+        : '/api/cuentas/reactivar'
+
+      const respuesta = await solicitarAPI<{ mensaje: string }>(
+        ruta,
+        {
+          method: 'POST',
+          body: JSON.stringify({ id: cuenta.id }),
+        },
+      )
+
+      await cargarCuentas()
+
+      if (!mensajeListado.classList.contains('mensaje-error')) {
+        mostrarMensaje(mensajeListado, respuesta.mensaje, 'exito')
+      }
+    } catch (error) {
+      mostrarMensaje(
+        mensajeListado,
+        error instanceof Error
+          ? error.message
+          : 'No se pudo actualizar el estado de la cuenta.',
+        'error',
+      )
+
+      revisarAcceso(error)
+    } finally {
+      boton.disabled = false
+      boton.textContent = cuenta.activo ? 'Dar de baja' : 'Reactivar'
+    }
+  }
+
+  /* Revisamos los datos del alta y exigimos al menos un rol. */
   function validarAlta(): boolean {
     const datosValidos = validarFormulario(formulario, mensajeAlta)
     const rolesValidos = rolesSeleccionados(grupoRolesAlta).length > 0
@@ -343,6 +498,7 @@ function prepararCuentas(usuarioActualId: string): void {
     if (!rolesValidos) {
       grupoRolesAlta.setAttribute('aria-invalid', 'true')
       const anterior = mensajeAlta.textContent ?? ''
+
       mostrarMensaje(
         mensajeAlta,
         `${anterior} Seleccioná al menos un rol.`.trim(),
@@ -387,6 +543,7 @@ function prepararCuentas(usuarioActualId: string): void {
       return
     }
 
+    /* Capturamos los valores antes de bloquear los campos. */
     const datos = new FormData(formulario)
     const roles = rolesSeleccionados(grupoRolesAlta)
 
