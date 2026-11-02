@@ -65,8 +65,8 @@ function revisarAcceso(error: unknown): void {
   }
 }
 
-/* Esta ventana confirma el cambio de estado sin utilizar
- los carteles predeterminados del navegador. */
+/* Esta ventana confirma el cambio de estado utilizando
+ el diseño de la web en lugar del cartel del navegador. */
 function confirmarCambioEstado(cuenta: Cuenta): Promise<boolean> {
   return new Promise((resolver) => {
     const dialogo = document.createElement('dialog')
@@ -141,6 +141,10 @@ function prepararCuentas(usuarioActualId: string): void {
   const mensajeListado = elemento<HTMLParagraphElement>('#mensaje-cuentas')
   const botonActualizar = elemento<HTMLButtonElement>('#actualizar-cuentas')
 
+  const busqueda = elemento<HTMLInputElement>('#buscar-cuenta')
+  const filtroRol = elemento<HTMLSelectElement>('#filtrar-rol')
+  const filtroEstado = elemento<HTMLSelectElement>('#filtrar-estado')
+
   const formulario = elemento<HTMLFormElement>('#formulario-cuenta')
   const grupoRolesAlta = elemento<HTMLFieldSetElement>('#roles-alta')
   const mensajeAlta = elemento<HTMLParagraphElement>('#mensaje-alta')
@@ -155,6 +159,54 @@ function prepararCuentas(usuarioActualId: string): void {
   let enviandoAlta = false
   let intentoEnviar = false
   let versionListado = 0
+  let cuentasCargadas: Cuenta[] = []
+
+  /* Ignoramos diferencias de mayusculas y tildes al buscar. */
+  function normalizarTexto(valor: string): string {
+    return valor
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+  }
+
+  /* Combinamos busqueda, rol y estado sin consultar nuevamente
+   al servidor. Las cuentas con varios roles coinciden con
+   cualquiera de los roles que tengan asignados. */
+  function aplicarFiltros(): void {
+    const palabras = normalizarTexto(busqueda.value)
+      .split(/\s+/)
+      .filter(Boolean)
+
+    const rolElegido = filtroRol.value
+    const estadoElegido = filtroEstado.value
+
+    const filtradas = cuentasCargadas.filter((cuenta) => {
+      const texto = normalizarTexto(
+        `${cuenta.nombre} ${cuenta.apellido} ${cuenta.email}`,
+      )
+
+      const coincideBusqueda = palabras.every(
+        (palabra) => texto.includes(palabra),
+      )
+
+      const coincideRol = !rolElegido
+        || obtenerRoles(cuenta.rol).some((rol) => rol === rolElegido)
+
+      const coincideEstado = !estadoElegido
+        || (estadoElegido === 'activo' && cuenta.activo)
+        || (estadoElegido === 'inactivo' && !cuenta.activo)
+
+      return coincideBusqueda && coincideRol && coincideEstado
+    })
+
+    dibujarCuentas(filtradas)
+
+    mostrarMensaje(
+      mensajeListado,
+      `Mostrando ${filtradas.length} de ${cuentasCargadas.length} cuentas.`,
+    )
+  }
 
   /* Por defecto mostramos los roles como texto.
    Los controles aparecen solamente al presionar Editar. */
@@ -166,7 +218,8 @@ function prepararCuentas(usuarioActualId: string): void {
       const celda = document.createElement('td')
 
       celda.colSpan = 5
-      celda.textContent = 'No hay cuentas registradas.'
+      celda.textContent =
+        'No hay cuentas que coincidan con la búsqueda y los filtros.'
 
       fila.append(celda)
       listado.append(fila)
@@ -327,7 +380,8 @@ function prepararCuentas(usuarioActualId: string): void {
     }
   }
 
-  /* Conservamos el resultado de la consulta mas reciente. */
+  /* Actualizamos los datos y conservamos los filtros elegidos.
+   Si coinciden consultas, utilizamos la respuesta mas reciente. */
   async function cargarCuentas(): Promise<void> {
     const version = ++versionListado
 
@@ -340,15 +394,14 @@ function prepararCuentas(usuarioActualId: string): void {
 
       if (version !== versionListado) return
 
-      dibujarCuentas(datos.cuentas)
-      mostrarMensaje(
-        mensajeListado,
-        `Cuentas registradas: ${datos.cuentas.length}.`,
-      )
+      cuentasCargadas = datos.cuentas
+      aplicarFiltros()
     } catch (error) {
       if (version !== versionListado) return
 
+      cuentasCargadas = []
       listado.replaceChildren()
+
       mostrarMensaje(
         mensajeListado,
         error instanceof Error
@@ -378,11 +431,13 @@ function prepararCuentas(usuarioActualId: string): void {
 
     if (roles.length === 0) {
       grupo.setAttribute('aria-invalid', 'true')
+
       mostrarMensaje(
         mensajeListado,
         'Seleccioná al menos un rol para la cuenta.',
         'error',
       )
+
       grupo.querySelector<HTMLInputElement>('input')?.focus()
       return
     }
@@ -404,8 +459,7 @@ function prepararCuentas(usuarioActualId: string): void {
         },
       )
 
-      /* Si editamos nuestra cuenta, actualizamos tambien
-       el encabezado y las opciones visibles del menu. */
+      /* Actualizamos tambien el menu si cambiamos nuestros roles. */
       if (cuenta.id === usuarioActualId) {
         window.location.reload()
         return
@@ -613,6 +667,10 @@ function prepararCuentas(usuarioActualId: string): void {
   botonActualizar.addEventListener('click', () => {
     void cargarCuentas()
   })
+
+  busqueda.addEventListener('input', aplicarFiltros)
+  filtroRol.addEventListener('change', aplicarFiltros)
+  filtroEstado.addEventListener('change', aplicarFiltros)
 
   void cargarCuentas()
 }

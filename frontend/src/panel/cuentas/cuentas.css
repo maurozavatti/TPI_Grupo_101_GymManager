@@ -224,3 +224,37 @@
     width: 100%;
   }
 }
+
+/* Estos controles filtran el listado sin recargar la pagina. */
+.filtros-cuentas {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-grande);
+}
+
+.filtros-cuentas > div {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.filtros-cuentas label {
+  font-weight: var(--peso-medio);
+}
+
+.filtros-cuentas input,
+.filtros-cuentas select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+@media (max-width: 700px) {
+  .filtros-cuentas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

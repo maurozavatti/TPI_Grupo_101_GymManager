@@ -117,6 +117,36 @@
           </button>
         </header>
 
+        <div class="filtros-cuentas">
+          <div>
+            <label for="buscar-cuenta">Buscar cuenta</label>
+            <input
+              id="buscar-cuenta"
+              type="search"
+              placeholder="Nombre, apellido o correo"
+            />
+          </div>
+
+          <div>
+            <label for="filtrar-rol">Rol</label>
+            <select id="filtrar-rol">
+              <option value="">Todos los roles</option>
+              <option value="USUARIO">USUARIO</option>
+              <option value="ENTRENADOR">ENTRENADOR</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filtrar-estado">Estado</label>
+            <select id="filtrar-estado">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activas</option>
+              <option value="inactivo">Inactivas</option>
+            </select>
+          </div>
+        </div>
+
         <p class="ayuda-cuentas">
           Presioná Editar para modificar los roles de una cuenta.
         </p>
