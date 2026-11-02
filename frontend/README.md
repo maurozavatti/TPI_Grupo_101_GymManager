@@ -1,6 +1,6 @@
 # Frontend — Gym Manager
 
-> **Tecnologías:** HTML, CSS, TypeScript y Vite.
+> **Tecnologías:** HTML, CSS, TypeScript, Vite e iconos SVG de Lucide.
 
 ---
 
@@ -42,6 +42,8 @@ npm --prefix backend ci
 ```
 
 Los archivos `package-lock.json` incluidos en el repositorio permiten reproducir la instalación.
+
+La instalación del frontend incluye `lucide`, que se utiliza para los iconos de acciones y paginación. No requiere agregar scripts externos al HTML.
 
 ---
 
@@ -138,6 +140,15 @@ Desde Cuentas, como `ADMIN`, se comprueban alta, correo duplicado, selección de
 
 La búsqueda debe encontrar nombre, apellido o correo sin distinguir mayúsculas ni tildes. Los filtros por rol y estado se combinan: una cuenta `ADMIN` + `ENTRENADOR` debe aparecer al elegir cualquiera de esos roles. Actualizar el listado conserva los filtros elegidos.
 
+También se comprueba el comportamiento visual y de navegación:
+
+1. Al entrar en Cuentas debe verse primero el listado y permanecer oculto el formulario de alta. Nueva cuenta abre una tarjeta encima del listado; Cancelar limpia los datos y errores, cierra la tarjeta y permite abrirla nuevamente.
+2. La selección de roles se despliega tanto en el alta como al editar una cuenta. Los cambios del editor se descartan con Cancelar si todavía no se guardaron.
+3. Con más de 15 resultados aparecen flechas y números de página. La página actual queda marcada y los puntos suspensivos reemplazan números intermedios cuando hay muchas páginas. Una búsqueda o un filtro nuevo vuelve a la primera página.
+4. Las filas se desplazan dentro del cuadro y los nombres de las columnas permanecen visibles. En una pantalla angosta se puede desplazar la tabla horizontalmente sin comprimir las palabras.
+5. Los botones con iconos muestran su descripción al pasar el mouse, recibir foco con teclado o mantenerlos pulsados en una pantalla táctil. La pulsación larga muestra la ayuda sin ejecutar la acción.
+6. Mi cuenta presenta las iniciales, el nombre, el correo y las etiquetas de roles. Cambiar contraseña abre el formulario; Cancelar lo cierra y limpia las claves. Después de un cambio correcto permanece abierto para mostrar la confirmación.
+
 Estas indicaciones describen comprobaciones manuales; no constituyen una suite automática del frontend. Las pantallas de clientes, turnos, pagos e inicio requieren los ajustes de roles descritos en la sección 8.8 antes de dar por correcto el flujo completo con cuentas que guardan arrays.
 
 ---
@@ -176,7 +187,9 @@ frontend/
 │   │   ├── api.ts
 │   │   ├── sesion.ts
 │   │   ├── permisos.ts
-│   │   └── roles.ts
+│   │   ├── roles.ts
+│   │   ├── botones-icono.ts
+│   │   └── botones-icono.css
 │   ├── cuenta/
 │   │   ├── cuenta.html
 │   │   ├── cuenta.ts
@@ -185,7 +198,7 @@ frontend/
 │   │   ├── estructura.ts
 │   │   ├── estructura.css
 │   │   ├── inicio/       (inicio.html, inicio.ts, inicio.css)
-│   │   ├── cuentas/      (cuentas.html, cuentas.ts, cuentas.css)
+│   │   ├── cuentas/      (cuentas.html, cuentas.ts, cuentas.css, formulario-cuentas.ts)
 │   │   ├── clientes/     (clientes.html, clientes.ts, clientes.css)
 │   │   ├── turnos/       (turnos.html, turnos.ts, turnos.css)
 │   │   └── pagos/        (pagos.html, pagos.ts, pagos.css)
@@ -223,17 +236,20 @@ frontend/
 | `src/servicios/sesion.ts` | Define los datos públicos de sesión, valida la respuesta del backend y permite consultar o cerrar la sesión actual. |
 | `src/servicios/permisos.ts` | Comprueba roles con `tieneRol` y exige sesión o roles permitidos mediante `exigirAcceso` antes de cargar una pantalla. |
 | `src/servicios/roles.ts` | Define `RolesCuenta`; valida e interpreta roles como texto o array mediante `esRolCuenta`, `obtenerRoles` e `incluyeRol`. |
-| `src/cuenta/cuenta.html` | Define la página independiente de datos de cuenta y formulario de cambio de contraseña. |
-| `src/cuenta/cuenta.ts` | Prepara el panel para los tres roles, muestra datos públicos y envía el cambio de contraseña con validaciones, bloqueo durante el envío y mensajes propios. |
-| `src/cuenta/cuenta.css` | Organiza las tarjetas, datos y formulario de cuenta propia, con estados de error y éxito. |
+| `src/servicios/botones-icono.ts` | Aplica iconos de Lucide a los botones mediante `ponerIconoBoton`, asigna nombres accesibles y comparte una ayuda flotante para mouse, teclado y pulsación larga. |
+| `src/servicios/botones-icono.css` | Define el tamaño de los botones con iconos, el estado visual de reactivación y la presentación de la ayuda flotante. |
+| `src/cuenta/cuenta.html` | Define la tarjeta de identidad, los bloques de correo y roles y el formulario de contraseña inicialmente oculto. |
+| `src/cuenta/cuenta.ts` | Prepara el panel para los tres roles, muestra iniciales y etiquetas de roles, abre o cancela el formulario y envía el cambio de contraseña con validación y mensajes propios. |
+| `src/cuenta/cuenta.css` | Diseña la identidad, los bloques de datos, las etiquetas de roles y el formulario compacto de contraseña, con adaptación a pantallas pequeñas y estados de error y éxito. |
 | `src/panel/estructura.ts` | Prepara sesión y permisos, encabezado, menú filtrado, cierre de sesión y contenido de cada pantalla dentro de la estructura compartida. |
 | `src/panel/estructura.css` | Define barra lateral, encabezado, tarjetas y botones comunes. En escritorio mantiene la barra visible con altura de pantalla; en celulares coloca el menú arriba. |
 | `src/panel/inicio/inicio.html` | Define el saludo, indicadores administrativos y tabla de turnos del día. |
 | `src/panel/inicio/inicio.ts` | Consulta `/api/resumen`, muestra los turnos del día y completa los indicadores que devuelve el backend. |
 | `src/panel/inicio/inicio.css` | Distribuye las tarjetas de indicadores y la tabla del inicio. |
-| `src/panel/cuentas/cuentas.html` | Define alta administrativa con casillas de roles, búsqueda, filtros y tabla de cuentas. |
-| `src/panel/cuentas/cuentas.ts` | Carga y filtra cuentas, crea nuevas, habilita edición de roles y confirma bajas/reactivaciones mediante un diálogo con estilos propios. |
-| `src/panel/cuentas/cuentas.css` | Diseña formulario, roles, filtros, tabla, acciones y ventana de confirmación de cuentas. |
+| `src/panel/cuentas/cuentas.html` | Define el alta inicialmente oculta en una tarjeta encima del listado, búsqueda, filtros, tabla con desplazamiento y controles de paginación. |
+| `src/panel/cuentas/cuentas.ts` | Carga y filtra cuentas, muestra 15 por página, genera números y flechas de navegación, crea cuentas y conecta edición de roles, iconos y confirmación de bajas/reactivaciones. |
+| `src/panel/cuentas/formulario-cuentas.ts` | Abre el alta, prepara el resumen desplegable de roles y conecta Cancelar para limpiar y cerrar. Impide cancelar durante el envío y devuelve el foco al botón Nueva cuenta. |
+| `src/panel/cuentas/cuentas.css` | Diseña el formulario compacto, selectores de roles, filtros, tabla con encabezados fijos, acciones apiladas, paginación centrada y diálogo de confirmación. |
 | `src/panel/clientes/clientes.html` | Define tabla de fichas y formularios de alta/edición y vinculación con una cuenta. |
 | `src/panel/clientes/clientes.ts` | Consulta fichas, crea o edita sus datos, solicita baja/reactivación y envía la vinculación confirmada por correo. |
 | `src/panel/clientes/clientes.css` | Diseña formularios, listado, acciones y estados de las fichas. |
@@ -245,7 +261,7 @@ frontend/
 | `src/panel/pagos/pagos.css` | Diseña formulario, filtro, tabla y etiquetas de estado de pagos. |
 | `vite.config.ts` | Reenvía las peticiones `/api` al backend durante el desarrollo local e incluye automáticamente `index.html` y los HTML de `src` al compilar. |
 | `tsconfig.json` | Configura la comprobación del código TypeScript del frontend. |
-| `package.json` | Declara las herramientas y los comandos del frontend. |
+| `package.json` | Declara las herramientas, la dependencia de iconos Lucide y los comandos del frontend. |
 | `package-lock.json` | Registra las versiones de las dependencias para reproducir la instalación. |
 | `.gitignore` | Excluye dependencias instaladas, archivos generados y otros archivos locales. |
 
@@ -287,7 +303,7 @@ Los mensajes y campos incorrectos usan `--color-error`; los mensajes de éxito u
 
 `exigirAcceso()` exige una sesión antes de cargar una página. Si no hay sesión, dirige al login y devuelve `null`. Al recibir una lista de roles, como `exigirAcceso(['ADMIN'])`, comprueba además que alguno de los roles de la cuenta coincida; si no coincide, dirige a `/` y devuelve `null`. Los errores de consulta se propagan para informar el fallo. `tieneRol(usuario, rolesPermitidos)` permite decidir qué opciones mostrar.
 
-El campo `rol` puede ser un texto, como `'ADMIN'`, o un array, como `['ADMIN', 'ENTRENADOR']`. `esRolCuenta` valida ambos formatos, `obtenerRoles` devuelve una lista e `incluyeRol` comprueba pertenencia. El encabezado y Mi cuenta presentan los roles separados por `/`. Las comparaciones directas contra un texto no sustituyen estas funciones.
+El campo `rol` puede ser un texto, como `'ADMIN'`, o un array, como `['ADMIN', 'ENTRENADOR']`. `esRolCuenta` valida ambos formatos, `obtenerRoles` devuelve una lista e `incluyeRol` comprueba pertenencia. El encabezado presenta los roles separados por `/`; Mi cuenta utiliza una etiqueta individual por rol. Las comparaciones directas contra un texto no sustituyen estas funciones.
 
 Estas funciones organizan la navegación del frontend. El backend sigue comprobando los permisos de cada operación; ocultar un botón o redirigir una página no reemplaza esa autorización.
 
@@ -327,17 +343,29 @@ La opción actual se identifica mediante `aria-current="page"`. Los nombres y ro
 
 ### 8.5 Cuenta propia
 
-`/src/cuenta/cuenta.html` admite los tres roles y muestra nombre, correo y roles actuales. El formulario envía `actual`, `nueva` y `confirmacion` a `/api/cuenta/contrasena`. Reutiliza las validaciones, muestra los campos rechazados y toma los colores de `--color-error` y `--color-exito`.
+`/src/cuenta/cuenta.html` admite los tres roles. Presenta una tarjeta compacta con las iniciales y el nombre de la persona, un bloque de correo y etiquetas individuales para los roles actuales. Los colores distinguen `ADMIN`, `ENTRENADOR` y `USUARIO` utilizando las variables generales de la web.
 
-Mientras se envía se bloquea otro envío y la edición de los valores. El formulario se limpia después de recibir éxito. El backend renueva la sesión del navegador actual y elimina las anteriores de esa cuenta. La clave nueva requiere al menos ocho caracteres; los límites completos se comprueban también en el backend.
+El formulario permanece oculto hasta pulsar Cambiar contraseña. Se adapta al ancho disponible y mantiene juntas la nueva contraseña y su confirmación. Cerrar o Cancelar limpia las claves, quita los errores y devuelve el foco al botón de apertura.
+
+El formulario envía `actual`, `nueva` y `confirmacion` a `/api/cuenta/contrasena`. Reutiliza las validaciones, muestra los campos rechazados y toma los colores de `--color-error` y `--color-exito`. Si hay varios campos incorrectos muestra un mensaje general y conserva sus bordes marcados; con un solo error mantiene el mensaje específico.
+
+Mientras se envía se bloquean otro envío, el cierre del formulario y la edición de los valores. El formulario se limpia después de recibir éxito y permanece abierto para mostrar la confirmación. El backend renueva la sesión del navegador actual y elimina las anteriores de esa cuenta. La clave nueva requiere al menos ocho caracteres; los límites completos se comprueban también en el backend.
 
 ### 8.6 Administración de cuentas
 
-`/src/panel/cuentas/cuentas.html` exige `ADMIN`. El alta permite elegir uno o varios roles mediante casillas; debe quedar al menos uno seleccionado. La creación no cambia la sesión del administrador y no crea fichas de cliente.
+`/src/panel/cuentas/cuentas.html` exige `ADMIN` y muestra primero las cuentas registradas. El botón Nueva cuenta abre una tarjeta independiente encima del listado y conserva su nombre; queda deshabilitado mientras el formulario está abierto. Crear y Cancelar aparecen juntos al pie del formulario. Cancelar descarta los datos y errores, cierra la tarjeta y devuelve el foco a Nueva cuenta. Durante el envío no se permite cancelar.
 
-El listado muestra nombre y apellido, correo, roles como texto y estado. Al pulsar Editar aparecen las casillas, Guardar roles, Dar de baja o Reactivar y Cancelar. Cancelar descarta la edición local. La baja/reactivación requiere un diálogo de confirmación con los estilos de la web y admite cancelar con Escape. El diálogo advierte que la actualización del listado descarta cambios de roles que no se hayan guardado.
+El formulario distribuye nombre, apellido, correo y roles en una fila cuando hay espacio. Las dos contraseñas se mantienen juntas y la distribución se adapta a pantallas menores. El selector de roles contiene casillas dentro de un desplegable y resume la selección; debe quedar al menos un rol marcado. Cuando hay varios campos incorrectos se muestra un mensaje breve y se conservan sus marcas de error. La creación no cambia la sesión del administrador y no crea fichas de cliente.
 
-La búsqueda se realiza sobre las cuentas ya cargadas, por palabras de nombre/apellido/correo, sin distinguir mayúsculas ni tildes. Los filtros de rol y estado se combinan y se conservan al actualizar. Las cuentas con varios roles coinciden con cualquiera de ellos. Se muestra la cantidad visible respecto del total cargado.
+El listado muestra nombre y apellido, correo, roles como texto y estado. El icono de lápiz habilita la edición y muestra un selector desplegable de roles y las acciones de guardar, baja o reactivación y cancelar. Los botones se apilan para ocupar menos ancho y tienen iconos y descripciones accesibles. Cancelar descarta la edición local. La baja/reactivación requiere un diálogo de confirmación con los estilos de la web y admite cancelar con Escape. El diálogo advierte que la actualización del listado descarta cambios de roles que no se hayan guardado.
+
+La búsqueda se realiza sobre las cuentas ya cargadas, por palabras de nombre/apellido/correo, sin distinguir mayúsculas ni tildes. Los filtros de rol y estado se combinan y se conservan al actualizar. Las cuentas con varios roles coinciden con cualquiera de ellos.
+
+La paginación se realiza en el navegador sobre los resultados filtrados, con un máximo de **15 cuentas por página**, definido por `cuentasPorPagina` en `cuentas.ts`. No limita la cantidad que devuelve la API. Si hay varias páginas se informa el intervalo mostrado respecto del total filtrado; si todo entra en una página se informa solamente la cantidad encontrada.
+
+Los controles centrados incluyen flechas, números y puntos suspensivos cuando no entran todos los números. La página actual queda identificada y las flechas se deshabilitan en los extremos. Una búsqueda o un filtro nuevo vuelve a la primera página. Al cambiar de página, el desplazamiento vertical de las filas vuelve al inicio.
+
+La tabla tiene desplazamiento propio y una altura máxima relativa a la pantalla. Sus encabezados permanecen visibles dentro del cuadro; los filtros y la paginación quedan fuera de ese desplazamiento. En celulares conserva un ancho mínimo y permite deslizar horizontalmente para evitar comprimir las columnas.
 
 El frontend envía los roles como array a `/api/cuentas` o `/api/cuentas/roles`. Al modificar la propia cuenta se recarga para actualizar también el menú y encabezado. El backend impide quitarse `ADMIN` o desactivar la cuenta propia. Ante `401` se vuelve al login y ante `403` a la entrada principal.
 
@@ -361,6 +389,16 @@ Los servicios comunes, la entrada principal, el panel compartido, Mi cuenta y Cu
 Para completar la integración se deben reutilizar `tieneRol` o `incluyeRol` en cada módulo y dar prioridad al alcance administrativo cuando una cuenta tiene `ADMIN` y `ENTRENADOR`. No basta con que el menú muestre el enlace. El detalle del backend y de la validación de MongoDB está en su README.
 
 Esta carpeta no contiene todavía las pantallas de ejercicios, rutinas, perfil del cliente ni historia clínica. El menú no muestra enlaces a sus HTML mientras no existan. El destino de las cuentas que solo poseen `USUARIO` permanece en Mi cuenta.
+
+---
+
+### 8.9 Iconos y ayudas de los botones
+
+`src/servicios/botones-icono.ts` importa los iconos utilizados desde `lucide` y los incorpora como SVG mediante `ponerIconoBoton(boton, accion, descripcion)`. Se utiliza para editar, guardar, dar de baja, reactivar, cancelar y navegar entre páginas. El archivo importa su propio CSS.
+
+Cada botón recibe un nombre mediante `aria-label`. Una ayuda flotante compartida muestra la descripción al pasar el mouse, navegar con teclado o mantener pulsado el botón durante aproximadamente 550 ms en una pantalla táctil. Un toque corto ejecuta la acción; una pulsación larga consulta la ayuda y bloquea ese clic. Mover el dedo cancela la espera para permitir el desplazamiento.
+
+La ayuda se coloca fuera de la tabla para evitar recortes y se oculta al desplazarse, cambiar el tamaño de la ventana, salir del botón o tocar otra zona. Los iconos y estados visuales reutilizan las variables globales.
 
 ---
 
