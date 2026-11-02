@@ -7,6 +7,7 @@ import { iniciarSesion } from './controladores/login.ts'
 import { gestionarClientes } from './controladores/clientes.ts'
 import { gestionarTurnos } from './controladores/turnos.ts'
 import { gestionarPagos } from './controladores/pagos.ts'
+import { gestionarResumen } from './controladores/resumen.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -68,6 +69,12 @@ const servidor = createServer(async (peticion, respuesta) => {
   // Delegamos las operaciones de pagos a su controlador.
   if (ruta === '/api/pagos' || ruta.startsWith('/api/pagos/')) {
     await gestionarPagos(peticion, respuesta)
+    return
+  }
+
+    // Delegamos la consulta de indicadores del inicio a su controlador.
+  if (ruta === '/api/resumen') {
+    await gestionarResumen(peticion, respuesta)
     return
   }
   
