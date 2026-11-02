@@ -270,10 +270,12 @@
   width: auto;
 }
 
-/* El alta se despliega dentro de la tarjeta, sin ocupar
+/* El alta se despliega en una tarjeta independiente, sin ocupar
  espacio cuando esta cerrada. */
 .panel-alta-cuenta {
-  margin-top: var(--espacio-mediano);
+  margin-top: 0;
+  margin-bottom: var(--espacio-mediano);
+  scroll-margin-top: var(--espacio-mediano);
   padding: var(--espacio-mediano);
   background: var(--color-fondo);
   border: 1px solid var(--color-borde);
@@ -578,4 +580,28 @@
     height: 2.25rem;
     font-size: var(--texto-pequeno);
   }
+}
+/* Las acciones del alta quedan juntas debajo de los campos. */
+.panel-alta-cuenta .formulario-cuentas > .acciones-alta-cuenta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-pequeno);
+}
+
+.formulario-cuentas .acciones-alta-cuenta .boton-panel {
+  width: auto;
+}
+
+/* Cancelar utiliza el color general de error. */
+.boton-panel.boton-cancelar-alta {
+  color: var(--color-error);
+  background: var(--color-superficie);
+  border-color: var(--color-error);
+}
+
+.boton-panel.boton-cancelar-alta:hover:not(:disabled) {
+  color: var(--color-secundario);
+  background: var(--color-error);
 }

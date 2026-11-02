@@ -175,6 +175,19 @@ function prepararCuentas(usuarioActualId: string): void {
 
   let enviandoAlta = false
   let intentoEnviar = false
+
+  /* Al limpiar el formulario quitamos los errores anteriores
+   y recuperamos el estado inicial de la validacion. */
+  formulario.addEventListener('reset', () => {
+    intentoEnviar = false
+    grupoRolesAlta.removeAttribute('aria-invalid')
+
+    camposAlta.forEach((campo) => {
+      campo.removeAttribute('aria-invalid')
+    })
+
+    mostrarMensaje(mensajeAlta, '')
+  })
   let versionListado = 0
   let cuentasCargadas: Cuenta[] = []
 
@@ -318,7 +331,7 @@ function prepararCuentas(usuarioActualId: string): void {
     }
   }
 
-  /* Mostramos hasta 25 resultados y ajustamos la pagina si
+  /* Mostramos hasta 15 resultados y ajustamos la pagina si
    una baja, un cambio de rol o un filtro reduce los resultados. */
   function dibujarPagina(): void {
     const total = cuentasFiltradas.length

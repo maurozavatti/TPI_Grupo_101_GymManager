@@ -12,31 +12,10 @@
     </p>
 
     <section id="vista" hidden>
-      <article class="tarjeta-panel">
-        <header class="encabezado-cuentas">
-          <h2>Cuentas registradas</h2>
-
-          <div class="acciones-encabezado-cuentas">
-            <button
-              id="abrir-alta-cuenta"
-              class="boton-panel"
-              type="button"
-              aria-expanded="false"
-              aria-controls="panel-alta-cuenta"
-            >
-              Nueva cuenta
-            </button>
-
-            <button id="actualizar-cuentas" class="boton-panel" type="button">
-              Actualizar
-            </button>
-          </div>
-        </header>
-
-        <!-- El alta permanece cerrada hasta que se solicita. -->
-        <section
+      <!-- El formulario se abre encima del listado. -->
+      <section
           id="panel-alta-cuenta"
-          class="panel-alta-cuenta"
+          class="tarjeta-panel panel-alta-cuenta"
           aria-labelledby="titulo-alta-cuenta"
           hidden
         >
@@ -139,9 +118,41 @@
 
             <p id="mensaje-alta" role="status" aria-live="polite"></p>
 
-            <button class="boton-panel" type="submit">Crear</button>
+            <div class="acciones-alta-cuenta">
+              <button class="boton-panel" type="submit">Crear</button>
+              <button
+                id="cancelar-alta-cuenta"
+                class="boton-panel boton-cancelar-alta"
+                type="button"
+              >
+                Cancelar
+              </button>
+            </div>
           </form>
         </section>
+
+      <article class="tarjeta-panel">
+        <header class="encabezado-cuentas">
+          <h2>Cuentas registradas</h2>
+
+          <div class="acciones-encabezado-cuentas">
+            <button
+              id="abrir-alta-cuenta"
+              class="boton-panel"
+              type="button"
+              aria-expanded="false"
+              aria-controls="panel-alta-cuenta"
+            >
+              Nueva cuenta
+            </button>
+
+            <button id="actualizar-cuentas" class="boton-panel" type="button">
+              Actualizar
+            </button>
+          </div>
+        </header>
+
+
 
         <div class="filtros-cuentas">
           <div>

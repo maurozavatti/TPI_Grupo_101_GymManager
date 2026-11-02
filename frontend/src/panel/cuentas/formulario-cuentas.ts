@@ -4,6 +4,7 @@ export function prepararAltaDesplegable(): void {
   const boton = document.querySelector<HTMLButtonElement>(
     '#abrir-alta-cuenta',
   )
+  const cancelar = document.querySelector<HTMLButtonElement>('#cancelar-alta-cuenta')
   const panel = document.querySelector<HTMLElement>(
     '#panel-alta-cuenta',
   )
@@ -17,7 +18,7 @@ export function prepararAltaDesplegable(): void {
     '#resumen-roles-alta',
   )
 
-  if (!boton || !panel || !formulario || !selector || !resumen) return
+  if (!boton || !cancelar || !panel || !formulario || !selector || !resumen) return
 
   /* Mostramos un texto breve para no ensanchar el formulario. */
   function actualizarResumen(): void {
@@ -39,20 +40,37 @@ export function prepararAltaDesplegable(): void {
     resumen.title = seleccionados.join(' / ')
   }
 
+  /* Abrimos el formulario sin cambiar el nombre del boton. */
   boton.addEventListener('click', () => {
     if (formulario.getAttribute('aria-busy') === 'true') return
 
-    const abrir = panel.hidden
+    panel.hidden = false
+    boton.disabled = true
+    boton.setAttribute('aria-expanded', 'true')
+    panel.scrollIntoView({ block: 'start' })
+    formulario.querySelector<HTMLInputElement>('#nombre')?.focus()
+  })
 
-    panel.hidden = !abrir
-    boton.setAttribute('aria-expanded', String(abrir))
-    boton.textContent = abrir ? 'Cerrar' : 'Nueva cuenta'
+  /* Cancelar descarta los datos ingresados y cierra el alta. */
+  cancelar.addEventListener('click', () => {
+    if (formulario.getAttribute('aria-busy') === 'true') return
 
-    if (abrir) {
-      formulario.querySelector<HTMLInputElement>('#nombre')?.focus()
-    } else {
-      selector.open = false
-    }
+    formulario.reset()
+    selector.open = false
+    panel.hidden = true
+    boton.disabled = false
+    boton.setAttribute('aria-expanded', 'false')
+    boton.focus()
+  })
+
+  /* Bloqueamos la cancelacion mientras se envia la cuenta. */
+  const observador = new MutationObserver(() => {
+    cancelar.disabled = formulario.getAttribute('aria-busy') === 'true'
+  })
+
+  observador.observe(formulario, {
+    attributes: true,
+    attributeFilter: ['aria-busy'],
   })
 
   formulario.addEventListener('change', actualizarResumen)
