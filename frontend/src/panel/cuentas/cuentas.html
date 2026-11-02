@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cuentas — GymManager</title>
+  </head>
+
+  <body>
+    <p id="estado-panel" class="estado-panel" role="status">
+      Comprobando sesión...
+    </p>
+
+    <section id="vista" hidden>
+      <article class="tarjeta-panel">
+        <header class="encabezado-cuentas">
+          <h2>Cuentas registradas</h2>
+
+          <button id="actualizar-cuentas" class="boton-panel" type="button">
+            Actualizar listado
+          </button>
+        </header>
+
+        <p id="mensaje-cuentas" role="status" aria-live="polite"></p>
+
+        <div class="contenedor-tabla-cuentas">
+          <table class="tabla-cuentas">
+            <caption class="descripcion-tabla">
+              Cuentas del sistema con su rol y estado
+            </caption>
+
+            <thead>
+              <tr>
+                <th scope="col">Nombre y apellido</th>
+                <th scope="col">Correo electrónico</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+              </tr>
+            </thead>
+
+            <tbody id="listado-cuentas"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <script type="module" src="./cuentas.ts"></script>
+  </body>
+</html>
