@@ -1,72 +1,167 @@
-/* Estos estilos organizan las tarjetas de Mi cuenta. */
-#vista {
-  display: grid;
-  gap: var(--espacio-grande);
+/* La cuenta utiliza una tarjeta compacta dentro del panel compartido. */
+.vista-cuenta {
+  width: 100%;
+  max-width: 64rem;
 }
 
-/* Los datos se presentan sin la sangria predeterminada del navegador. */
-#vista dl {
-  display: grid;
-  gap: var(--espacio-pequeno);
-  margin: var(--espacio-grande) 0 0;
+.encabezado-cuenta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
 }
 
-#vista dt {
+.identidad-cuenta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-mediano);
+  min-width: 0;
+}
+
+.identidad-cuenta > div {
+  min-width: 0;
+}
+
+.identidad-cuenta h2 {
+  overflow-wrap: anywhere;
+}
+
+.avatar-cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  color: var(--color-principal);
+  background: var(--color-principal-claro);
+  border: 1px solid var(--color-principal);
+  border-radius: 50%;
   font-weight: var(--peso-negrita);
 }
 
-#vista dd {
-  margin: 0 0 var(--espacio-pequeno);
+.descripcion-cuenta {
+  margin: var(--espacio-minimo) 0 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
 }
 
-/* Este es el contenedor del formulario de cambio de contraseña. */
-.formulario-cuenta {
+/* Correo y roles quedan en bloques con bordes suaves. */
+.datos-cuenta {
   display: grid;
-  gap: var(--espacio-grande);
-  max-width: 34rem;
-  margin-top: var(--espacio-grande);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--espacio-mediano);
+  margin: var(--espacio-grande) 0 0;
 }
 
-.formulario-cuenta > div {
-  display: grid;
+.dato-cuenta {
+  min-width: 0;
+  padding: var(--espacio-mediano);
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.dato-cuenta dt {
+  margin-bottom: var(--espacio-pequeno);
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+.dato-cuenta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.roles-personales {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--espacio-pequeno);
 }
 
-.formulario-cuenta label {
+/* Cada rol tiene una etiqueta distinguible usando la paleta global. */
+.etiqueta-rol {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--espacio-minimo) var(--espacio-pequeno);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-negrita);
+}
+
+.etiqueta-rol-admin {
+  color: var(--color-principal-hover);
+  background: var(--color-principal-claro);
+  border-color: var(--color-principal);
+}
+
+.etiqueta-rol-entrenador {
+  color: var(--color-exito);
+  background: var(--color-superficie);
+  border-color: var(--color-exito);
+}
+
+.etiqueta-rol-usuario {
+  color: var(--color-texto);
+  background: var(--color-superficie);
+}
+
+/* El cambio de contraseña se despliega dentro de la misma tarjeta. */
+.panel-contrasena {
+  margin-top: var(--espacio-grande);
+  padding-top: var(--espacio-grande);
+  border-top: 1px solid var(--color-borde);
+}
+
+.panel-contrasena h3 {
+  font-size: var(--texto-normal);
+}
+
+.formulario-cuenta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-mediano);
+}
+
+.campo-clave {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-minimo);
+  min-width: 0;
+}
+
+.campo-clave label {
+  font-size: var(--texto-pequeno);
   font-weight: var(--peso-medio);
 }
 
-.formulario-cuenta input {
+.campo-clave input {
   width: 100%;
   min-width: 0;
-  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  padding: var(--espacio-pequeno);
   color: var(--color-texto);
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-pequeno);
 }
 
-.formulario-cuenta input:focus-visible {
-  border-color: var(--color-foco);
-}
-
-.formulario-cuenta small {
+.campo-clave small {
   color: var(--color-texto-secundario);
   font-size: var(--texto-pequeno);
 }
 
-/* Los campos incorrectos y los mensajes usan los colores globales. */
-.formulario-cuenta input[aria-invalid="true"] {
+.campo-clave input[aria-invalid="true"] {
   border-color: var(--color-error);
   outline-color: var(--color-error);
 }
 
-.formulario-cuenta .mensaje-error {
-  color: var(--color-error);
-}
-
-.formulario-cuenta .mensaje-exito {
-  color: var(--color-exito);
+#mensaje-contrasena,
+.acciones-clave {
+  grid-column: 1 / -1;
 }
 
 #mensaje-contrasena {
@@ -77,13 +172,56 @@
   display: none;
 }
 
-.formulario-cuenta button {
-  justify-self: start;
+#mensaje-contrasena.mensaje-error {
+  color: var(--color-error);
 }
 
-/* En pantallas pequeñas el boton ocupa el ancho disponible. */
-@media (max-width: 600px) {
-  .formulario-cuenta button {
+#mensaje-contrasena.mensaje-exito {
+  color: var(--color-exito);
+}
+
+.acciones-clave {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-pequeno);
+}
+
+.boton-panel.boton-secundario-cuenta {
+  color: var(--color-principal);
+  background: var(--color-superficie);
+}
+
+.boton-panel.boton-secundario-cuenta:hover:not(:disabled) {
+  color: var(--color-principal-hover);
+  background: var(--color-principal-claro);
+}
+
+/* En pantallas pequeñas las contraseñas nuevas siguen emparejadas. */
+@media (max-width: 700px) {
+  .datos-cuenta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formulario-cuenta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .campo-clave-actual {
+    grid-column: 1 / -1;
+  }
+
+  .campo-clave:not(.campo-clave-actual) label {
+    min-height: 2.8em;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 450px) {
+  .cuenta-personal {
+    padding: var(--espacio-mediano);
+  }
+
+  .encabezado-cuenta > .boton-panel {
     width: 100%;
   }
 }

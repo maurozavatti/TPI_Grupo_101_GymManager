@@ -4,20 +4,25 @@ import { ErrorAPI, solicitarAPI } from '../servicios/api.ts'
 import { prepararPanel } from '../panel/estructura.ts'
 import { obtenerRoles } from '../servicios/roles.ts'
 
-/* Esta funcion conecta el formulario de contraseña una vez
- que la estructura del panel y la sesion estan preparadas. */
-export function prepararCambioContrasena(): void {
-  const formulario = document.querySelector<HTMLFormElement>(
-    '#formulario-contrasena',
-  )
-  const mensaje = document.querySelector<HTMLParagraphElement>(
-    '#mensaje-contrasena',
-  )
-  const boton = formulario?.querySelector<HTMLButtonElement>(
-    'button[type="submit"]',
-  )
+function elemento<T extends Element>(selector: string): T {
+  const encontrado = document.querySelector<T>(selector)
 
-  if (!formulario || !mensaje || !boton) return
+  if (!encontrado) {
+    throw new Error(`Falta el elemento ${selector} en Mi cuenta.`)
+  }
+
+  return encontrado
+}
+
+/* Conectamos el formulario una vez que el panel esta preparado. */
+export function prepararCambioContrasena(): void {
+  const formulario = elemento<HTMLFormElement>('#formulario-contrasena')
+  const panel = elemento<HTMLElement>('#panel-contrasena')
+  const mensaje = elemento<HTMLParagraphElement>('#mensaje-contrasena')
+  const alternar = elemento<HTMLButtonElement>('#alternar-contrasena')
+  const guardar = elemento<HTMLButtonElement>('#guardar-contrasena')
+  const cancelar = elemento<HTMLButtonElement>('#cancelar-contrasena')
+  const actual = elemento<HTMLInputElement>('#contrasena-actual')
 
   const campos = Array.from(
     formulario.querySelectorAll<HTMLInputElement>('input'),
@@ -26,17 +31,69 @@ export function prepararCambioContrasena(): void {
   let enviando = false
   let intentoEnviar = false
 
-  /* Al corregir un campo revisamos nuevamente los errores.
-   Mientras se envia la peticion no cambiamos su estado. */
+  function mostrarMensaje(
+    texto: string,
+    estado: 'error' | 'exito' | 'normal' = 'normal',
+  ): void {
+    mensaje.textContent = texto
+    mensaje.classList.toggle('mensaje-error', estado === 'error')
+    mensaje.classList.toggle('mensaje-exito', estado === 'exito')
+  }
+
+  /* Al cerrar limpiamos las claves para no dejarlas escritas.
+   Durante el envio no permitimos cerrar el formulario. */
+  function cambiarVisibilidad(abrir: boolean): void {
+    if (enviando) return
+
+    panel.hidden = !abrir
+    alternar.setAttribute('aria-expanded', String(abrir))
+    alternar.textContent = abrir ? 'Cerrar' : 'Cambiar contraseña'
+
+    if (abrir) {
+      actual.focus()
+      return
+    }
+
+    formulario.reset()
+    intentoEnviar = false
+    campos.forEach((campo) => campo.removeAttribute('aria-invalid'))
+    mostrarMensaje('')
+    alternar.focus()
+  }
+
+  /* Conservamos los bordes de todos los errores y resumimos
+   el mensaje si hay mas de un campo incorrecto. */
+  function validarClave(): boolean {
+    const valido = validarFormulario(formulario, mensaje)
+
+    const errores = formulario.querySelectorAll(
+      'input[aria-invalid="true"]',
+    ).length
+
+    if (errores > 1) {
+      mostrarMensaje('Revisá los campos marcados.', 'error')
+    }
+
+    return valido
+  }
+
+  alternar.addEventListener('click', () => {
+    cambiarVisibilidad(panel.hasAttribute('hidden'))
+  })
+
+  cancelar.addEventListener('click', () => {
+    cambiarVisibilidad(false)
+  })
+
   formulario.addEventListener('input', () => {
     if (enviando) return
 
     mensaje.classList.remove('mensaje-exito')
 
     if (intentoEnviar) {
-      validarFormulario(formulario, mensaje)
+      validarClave()
     } else {
-      mensaje.textContent = ''
+      mostrarMensaje('')
     }
   })
 
@@ -48,25 +105,26 @@ export function prepararCambioContrasena(): void {
     intentoEnviar = true
     mensaje.classList.remove('mensaje-exito')
 
-    if (!validarFormulario(formulario, mensaje)) {
+    if (!validarClave()) {
       formulario.querySelector<HTMLInputElement>(
         '[aria-invalid="true"]',
       )?.focus()
       return
     }
 
-    /* Tomamos los valores antes de bloquear el formulario.
-     Las contraseñas se envian exactamente como se escribieron. */
+    /* Capturamos los valores antes de bloquear los controles.
+     Las contraseñas no se recortan ni se modifican. */
     const datos = new FormData(formulario)
 
     enviando = true
-    boton.disabled = true
-    boton.textContent = 'Guardando...'
+    guardar.disabled = true
+    cancelar.disabled = true
+    alternar.disabled = true
+    guardar.textContent = 'Guardando...'
     formulario.setAttribute('aria-busy', 'true')
     campos.forEach((campo) => { campo.readOnly = true })
 
-    mensaje.classList.remove('mensaje-error')
-    mensaje.textContent = 'Actualizando contraseña...'
+    mostrarMensaje('Actualizando contraseña...')
 
     try {
       const respuesta = await solicitarAPI<{ mensaje: string }>(
@@ -85,24 +143,23 @@ export function prepararCambioContrasena(): void {
       intentoEnviar = false
       campos.forEach((campo) => campo.removeAttribute('aria-invalid'))
 
-      mensaje.classList.remove('mensaje-error')
-      mensaje.classList.add('mensaje-exito')
-      mensaje.textContent = respuesta.mensaje
+      /* Conservamos abierto el panel para que pueda leerse
+       la confirmacion del cambio realizado. */
+      mostrarMensaje(respuesta.mensaje, 'exito')
     } catch (error) {
-      mensaje.classList.remove('mensaje-exito')
-      mensaje.classList.add('mensaje-error')
-      mensaje.textContent = error instanceof Error
-        ? error.message
-        : 'No se pudo cambiar la contraseña. Intentá nuevamente.'
+      mostrarMensaje(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo cambiar la contraseña. Intentá nuevamente.',
+        'error',
+      )
 
-      /* El backend identifica los campos incorrectos por nombre.
-       Marcamos sus bordes y enfocamos el primero. */
       if (error instanceof ErrorAPI) {
-        for (const campo of campos) {
+        campos.forEach((campo) => {
           if (error.campos.includes(campo.name)) {
             campo.setAttribute('aria-invalid', 'true')
           }
-        }
+        })
 
         if (error.estado === 401) {
           window.location.replace('/src/autenticacion/login/login.html')
@@ -115,29 +172,44 @@ export function prepararCambioContrasena(): void {
       )?.focus()
     } finally {
       enviando = false
-      boton.disabled = false
-      boton.textContent = 'Guardar contraseña'
+      guardar.disabled = false
+      cancelar.disabled = false
+      alternar.disabled = false
+      guardar.textContent = 'Guardar'
       formulario.removeAttribute('aria-busy')
       campos.forEach((campo) => { campo.readOnly = false })
     }
   })
 }
 
-/* Preparamos la pagina de cuenta para cualquiera de los roles.
- Los datos visibles se obtienen de la sesion verificada. */
+/* Los datos visibles siempre se obtienen de la sesion verificada. */
 const usuario = await prepararPanel(
   'Mi cuenta',
   ['ADMIN', 'ENTRENADOR', 'USUARIO'],
 )
 
 if (usuario) {
-  const nombre = document.querySelector<HTMLElement>('#nombre-usuario')
-  const correo = document.querySelector<HTMLElement>('#correo-usuario')
-  const rol = document.querySelector<HTMLElement>('#rol-usuario')
+  const nombre = elemento<HTMLElement>('#nombre-usuario')
+  const correo = elemento<HTMLElement>('#correo-usuario')
+  const roles = elemento<HTMLElement>('#rol-usuario')
+  const iniciales = elemento<HTMLElement>('#iniciales-usuario')
 
-  if (nombre) nombre.textContent = `${usuario.nombre} ${usuario.apellido}`
-  if (correo) correo.textContent = usuario.email
-  if (rol) rol.textContent = obtenerRoles(usuario.rol).join(' / ')
+  nombre.textContent = `${usuario.nombre} ${usuario.apellido}`
+  correo.textContent = usuario.email
+
+  iniciales.textContent = (
+    usuario.nombre.trim().charAt(0)
+    + usuario.apellido.trim().charAt(0)
+  ).toUpperCase() || 'GM'
+
+  roles.replaceChildren()
+
+  for (const rol of obtenerRoles(usuario.rol)) {
+    const etiqueta = document.createElement('span')
+    etiqueta.className = `etiqueta-rol etiqueta-rol-${rol.toLowerCase()}`
+    etiqueta.textContent = rol
+    roles.append(etiqueta)
+  }
 
   prepararCambioContrasena()
 }
