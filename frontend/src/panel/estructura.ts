@@ -6,8 +6,6 @@ import type { RolUsuario, UsuarioSesion } from '../servicios/sesion.ts'
 
 const rolesPersonal: readonly RolUsuario[] = ['ADMIN', 'ENTRENADOR']
 
-/* Detectamos las paginas existentes para no mostrar enlaces
- a modulos que todavia no fueron incorporados al proyecto.*/
 const paginasDisponibles = new Set(Object.keys(
   import.meta.glob('/src/**/*.html', { query: '?raw', import: 'default' }),
 ))
@@ -25,7 +23,7 @@ const opcionesMenu: {
   { texto: 'Pagos', ruta: '/src/panel/pagos/pagos.html', roles: ['ADMIN'] },
   { texto: 'Cuentas', ruta: '/src/panel/cuentas/cuentas.html', roles: ['ADMIN'] },
   { texto: 'Mi perfil', ruta: '/src/cliente/perfil/perfil.html', roles: ['USUARIO'] },
-  { texto: 'Mi cuenta', ruta: '/', roles: ['ADMIN', 'ENTRENADOR', 'USUARIO'] },
+  {texto: 'Mi cuenta', ruta: '/src/cuenta/cuenta.html', roles: ['ADMIN', 'ENTRENADOR', 'USUARIO'],},
 ]
 
 /* Esta funcion prepara la estructura compartida del panel.
@@ -99,8 +97,7 @@ export async function prepararPanel(
       ? '/'
       : window.location.pathname
 
-    /* Cada opcion requiere un rol permitido y una pagina existente.
-     Mi cuenta permanece disponible en la raiz del proyecto.*/
+    /* Cada opcion requiere un rol permitido y una pagina existente.*/
     for (const opcion of opcionesMenu) {
       if (!tieneRol(usuario, opcion.roles)) continue
       if (opcion.ruta !== '/' && !paginasDisponibles.has(opcion.ruta)) continue
