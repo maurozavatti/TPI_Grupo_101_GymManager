@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { MongoServerError, ObjectId } from 'mongodb'
-import { conectarDB } from '../db.ts'
+import { conectarDB, ejecutarTransaccion } from '../db.ts'
 import {
   ErrorHTTP,
   identificador,
@@ -198,6 +198,74 @@ async function cambiarRoles(
   })
 }
 
+/* Cambiamos el estado de la cuenta sin borrar sus datos.
+ La ficha de cliente vinculada se administra por separado. */
+async function cambiarEstadoCuenta(
+  solicitud: IncomingMessage,
+  respuesta: ServerResponse,
+  administradorId: string,
+  activo: boolean,
+): Promise<void> {
+  const datos = await leerJSON(solicitud, 16384)
+  const cuentaId = identificador(datos.id)
+
+  /* Evitamos que el administrador cierre su propio acceso
+   al desactivar la cuenta que esta utilizando. */
+  if (!activo && cuentaId.toHexString() === administradorId) {
+    throw new ErrorHTTP(
+      409,
+      'No podés dar de baja tu propia cuenta desde esta sesión.',
+    )
+  }
+
+  /* La baja y el cierre de sesiones se aplican juntos.
+   Si alguna operacion falla, la transaccion deshace los cambios. */
+  await ejecutarTransaccion(async (db, transaccion) => {
+    const ahora = new Date()
+
+    const cambio = await db.collection('usuarios').updateOne(
+      { _id: cuentaId },
+      activo
+        ? {
+            $set: {
+              activo: true,
+              fechaModificacion: ahora,
+            },
+            $unset: {
+              fechaBaja: '',
+            },
+          }
+        : {
+            $set: {
+              activo: false,
+              fechaBaja: ahora,
+              fechaModificacion: ahora,
+            },
+          },
+      { session: transaccion },
+    )
+
+    if (cambio.matchedCount !== 1) {
+      throw new ErrorHTTP(404, 'La cuenta no existe.')
+    }
+
+    /* Reactivar permite volver a iniciar sesion, pero no
+     recupera las sesiones eliminadas durante la baja. */
+    if (!activo) {
+      await db.collection('sesiones').deleteMany(
+        { usuarioId: cuentaId },
+        { session: transaccion },
+      )
+    }
+  })
+
+  responder(respuesta, 200, {
+    mensaje: activo
+      ? 'Cuenta reactivada correctamente.'
+      : 'Cuenta dada de baja correctamente.',
+  })
+}
+
 /* Todas las operaciones de este controlador requieren ADMIN,
  tanto si ese rol esta guardado como texto como dentro de un array. */
 export async function gestionarCuentas(
@@ -224,6 +292,26 @@ export async function gestionarCuentas(
 
     if (solicitud.method === 'POST' && ruta === '/api/cuentas/roles') {
       await cambiarRoles(solicitud, respuesta, administrador.id)
+      return
+    }
+
+    if (solicitud.method === 'POST' && ruta === '/api/cuentas/desactivar') {
+      await cambiarEstadoCuenta(
+        solicitud,
+        respuesta,
+        administrador.id,
+        false,
+      )
+      return
+    }
+
+    if (solicitud.method === 'POST' && ruta === '/api/cuentas/reactivar') {
+      await cambiarEstadoCuenta(
+        solicitud,
+        respuesta,
+        administrador.id,
+        true,
+      )
       return
     }
 
