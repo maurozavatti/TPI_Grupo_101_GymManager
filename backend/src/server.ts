@@ -10,6 +10,7 @@ import { gestionarPagos } from './controladores/pagos.ts'
 import { gestionarResumen } from './controladores/resumen.ts'
 import { cambiarContrasena } from './controladores/cuenta.ts'
 import { gestionarCuentas } from './controladores/cuentas.ts'
+import { gestionarEjercicios } from './controladores/ejercicios.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -92,6 +93,15 @@ const servidor = createServer(async (peticion, respuesta) => {
     return
   }
   
+  // Derivamos las solicitudes del catálogo de ejercicios a su controlador.
+  if (
+    ruta === '/api/ejercicios'
+    || ruta.startsWith('/api/ejercicios/')
+  ) {
+    await gestionarEjercicios(peticion, respuesta)
+    return
+  }
+
   // Las rutas de API que todavia no existen devuelven un error.
   if (ruta === '/api' || ruta.startsWith('/api/')) {
     respuesta.writeHead(404, {
