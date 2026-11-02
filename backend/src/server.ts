@@ -9,6 +9,7 @@ import { gestionarTurnos } from './controladores/turnos.ts'
 import { gestionarPagos } from './controladores/pagos.ts'
 import { gestionarResumen } from './controladores/resumen.ts'
 import { cambiarContrasena } from './controladores/cuenta.ts'
+import { gestionarCuentas } from './controladores/cuentas.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -82,6 +83,12 @@ const servidor = createServer(async (peticion, respuesta) => {
     // Cambiamos la contraseña de la cuenta que tiene sesion iniciada.
   if (peticion.method === 'POST' && ruta === '/api/cuenta/contrasena') {
     await cambiarContrasena(peticion, respuesta)
+    return
+  }
+
+    // Delegamos la administracion de cuentas a su controlador.
+  if (ruta === '/api/cuentas' || ruta.startsWith('/api/cuentas/')) {
+    await gestionarCuentas(peticion, respuesta)
     return
   }
   
