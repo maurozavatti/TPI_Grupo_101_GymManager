@@ -5,6 +5,7 @@ import { validarFormulario } from '../../autenticacion/validaciones.ts'
 import { obtenerRoles } from '../../servicios/roles.ts'
 import type { RolesCuenta } from '../../servicios/roles.ts'
 import type { RolUsuario } from '../../servicios/sesion.ts'
+import { prepararAltaDesplegable } from './formulario-cuentas.ts'
 
 interface Cuenta {
   id: string
@@ -133,6 +134,7 @@ function confirmarCambioEstado(cuenta: Cuenta): Promise<boolean> {
 const usuario = await prepararPanel('Cuentas', ['ADMIN'])
 
 if (usuario) {
+  prepararAltaDesplegable()
   prepararCuentas(usuario.id)
 }
 
@@ -542,7 +544,8 @@ function prepararCuentas(usuarioActualId: string): void {
     }
   }
 
-  /* Revisamos los datos del alta y exigimos al menos un rol. */
+    /* Marcamos todos los campos incorrectos, pero mostramos
+   un mensaje general cuando hay varios errores. */
   function validarAlta(): boolean {
     const datosValidos = validarFormulario(formulario, mensajeAlta)
     const rolesValidos = rolesSeleccionados(grupoRolesAlta).length > 0
@@ -551,18 +554,32 @@ function prepararCuentas(usuarioActualId: string): void {
 
     if (!rolesValidos) {
       grupoRolesAlta.setAttribute('aria-invalid', 'true')
-      const anterior = mensajeAlta.textContent ?? ''
+    }
 
+    const erroresCampos = formulario.querySelectorAll(
+      'input[aria-invalid="true"]',
+    ).length
+
+    const cantidadErrores = erroresCampos + (rolesValidos ? 0 : 1)
+
+    if (cantidadErrores > 1) {
       mostrarMensaje(
         mensajeAlta,
-        `${anterior} Seleccioná al menos un rol.`.trim(),
+        'Revisá los campos marcados.',
+        'error',
+      )
+    } else if (!rolesValidos) {
+      mostrarMensaje(
+        mensajeAlta,
+        'Seleccioná al menos un rol.',
         'error',
       )
     }
 
+    /* Si solamente hay un campo incorrecto, conservamos
+     el mensaje especifico del validador compartido. */
     return datosValidos && rolesValidos
   }
-
   formulario.addEventListener('input', () => {
     if (enviandoAlta) return
 
@@ -603,7 +620,7 @@ function prepararCuentas(usuarioActualId: string): void {
 
     enviandoAlta = true
     botonCrear.disabled = true
-    botonCrear.textContent = 'Creando cuenta...'
+    botonCrear.textContent = 'Creando...'
     formulario.setAttribute('aria-busy', 'true')
     camposAlta.forEach((campo) => { campo.disabled = true })
 
@@ -654,7 +671,7 @@ function prepararCuentas(usuarioActualId: string): void {
     } finally {
       enviandoAlta = false
       botonCrear.disabled = false
-      botonCrear.textContent = 'Crear cuenta'
+      botonCrear.textContent = 'Crear'
       formulario.removeAttribute('aria-busy')
       camposAlta.forEach((campo) => { campo.disabled = false })
 

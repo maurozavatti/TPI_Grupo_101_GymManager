@@ -258,3 +258,134 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Las acciones principales quedan junto al titulo del listado. */
+.acciones-encabezado-cuentas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-pequeno);
+}
+
+.acciones-encabezado-cuentas .boton-panel {
+  width: auto;
+}
+
+/* El alta se despliega dentro de la tarjeta, sin ocupar
+ espacio cuando esta cerrada. */
+.panel-alta-cuenta {
+  margin-top: var(--espacio-mediano);
+  padding: var(--espacio-mediano);
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.panel-alta-cuenta h3 {
+  font-size: var(--texto-normal);
+}
+
+.panel-alta-cuenta .formulario-cuentas {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-mediano);
+}
+
+.panel-alta-cuenta .formulario-cuentas > div {
+  min-width: 0;
+  gap: var(--espacio-minimo);
+}
+
+.panel-alta-cuenta .formulario-cuentas label,
+.panel-alta-cuenta .campo-roles > span {
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.panel-alta-cuenta input:not([type="checkbox"]) {
+  padding: var(--espacio-pequeno);
+}
+
+.panel-alta-cuenta .campo-contrasena {
+  grid-column: span 2;
+}
+
+/* El selector mantiene las casillas dentro de un desplegable. */
+.selector-roles {
+  position: relative;
+  min-width: 0;
+}
+
+.selector-roles summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-pequeno);
+  padding: var(--espacio-pequeno);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  cursor: pointer;
+  list-style: none;
+}
+
+.selector-roles summary::-webkit-details-marker {
+  display: none;
+}
+
+.selector-roles summary::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.selector-roles[open] summary::after {
+  transform: rotate(225deg);
+}
+
+#resumen-roles-alta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.selector-roles .roles-cuenta {
+  position: absolute;
+  top: calc(100% + var(--espacio-minimo));
+  left: 0;
+  z-index: 5;
+  display: grid;
+  gap: var(--espacio-pequeno);
+  min-width: 100%;
+  width: max-content;
+  padding: var(--espacio-mediano);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* Con menos espacio usamos dos columnas y mantenemos
+ las dos contraseñas en la misma fila. */
+@media (max-width: 1100px) {
+  .panel-alta-cuenta .formulario-cuentas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel-alta-cuenta .campo-contrasena {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .panel-alta-cuenta .campo-correo,
+  .panel-alta-cuenta .campo-roles {
+    grid-column: 1 / -1;
+  }
+
+  .selector-roles .roles-cuenta {
+    width: 100%;
+  }
+}
