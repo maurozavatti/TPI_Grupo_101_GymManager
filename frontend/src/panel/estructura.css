@@ -153,3 +153,23 @@
     padding: var(--espacio-grande);
   }
 }
+
+/* En escritorio la barra lateral permanece visible y ocupa
+ la altura de la pantalla, aunque el contenido sea mas largo. */
+@media (min-width: 801px) {
+  .barra-lateral {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+  }
+
+  /* Si falta espacio vertical, permitimos desplazar la barra
+   sin comprimir las opciones ni el boton de salida. */
+  .menu-panel,
+  .cerrar-panel {
+    flex-shrink: 0;
+  }
+}
