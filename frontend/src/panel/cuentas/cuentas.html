@@ -12,6 +12,92 @@
     </p>
 
     <section id="vista" hidden>
+      <!-- Este formulario permite crear cuentas con el rol indicado. -->
+      <article class="tarjeta-panel tarjeta-alta-cuenta">
+        <h2>Crear cuenta</h2>
+
+        <form id="formulario-cuenta" class="formulario-cuentas" novalidate>
+          <div>
+            <label for="nombre">Nombre</label>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              maxlength="100"
+              autocomplete="given-name"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="apellido">Apellido</label>
+            <input
+              id="apellido"
+              name="apellido"
+              type="text"
+              maxlength="100"
+              autocomplete="family-name"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="email">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              maxlength="254"
+              autocomplete="off"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="rol">Rol</label>
+            <select id="rol" name="rol" required>
+              <option value="USUARIO">USUARIO</option>
+              <option value="ENTRENADOR">ENTRENADOR</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="contrasena">Contraseña</label>
+            <input
+              id="contrasena"
+              name="contrasena"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              aria-describedby="ayuda-clave"
+              required
+            />
+            <small id="ayuda-clave">Usá al menos 8 caracteres.</small>
+          </div>
+
+          <div>
+            <label for="confirmacion-contrasena">
+              Confirmar contraseña
+            </label>
+            <input
+              id="confirmacion-contrasena"
+              name="confirmacion"
+              type="password"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+
+          <p id="mensaje-alta" role="status" aria-live="polite"></p>
+
+          <button class="boton-panel" type="submit">
+            Crear cuenta
+          </button>
+        </form>
+      </article>
+
+      <!-- El listado muestra los datos publicos de las cuentas. -->
       <article class="tarjeta-panel">
         <header class="encabezado-cuentas">
           <h2>Cuentas registradas</h2>
