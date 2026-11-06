@@ -88,6 +88,10 @@ async function crearOEditarTurno(db: Db, datos: Record<string, unknown>, esEdici
     const horaInicio = texto(datos, 'horaInicio', 5, true)
     const horaFin = texto(datos, 'horaFin', 5, true)
     validarHorario(horaInicio, horaFin)
+    /* Los turnos individuales duran siempre una hora exacta, igual que
+     los que arma "Generar agenda" en bloque. */
+    if (minutos(horaFin) - minutos(horaInicio) !== 60)
+        throw new ErrorHTTP(400, 'Los turnos duran exactamente una hora.', ['horaFin'])
     const capacidad = entero(datos.capacidad, 'capacidad', 1, 100)
     const entrenadorId = identificador(datos.entrenadorId)
     const observaciones = texto(datos, 'observaciones', 2000)

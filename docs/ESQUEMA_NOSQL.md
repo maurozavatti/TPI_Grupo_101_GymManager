@@ -341,7 +341,7 @@ turnos
 | `_id` | ObjectId | Identificador único del turno. |
 | `dia` | String | Día de la semana. |
 | `horaInicio` | String | Hora de inicio. |
-| `horaFin` | String | Hora de finalización. |
+| `horaFin` | String | Hora de finalización. Todo turno dura exactamente una hora: `horaFin` es siempre `horaInicio + 1h` (RN-19), tanto si se crea individualmente como si se genera en bloque con "Generar agenda". |
 | `capacidad` | Number | Cantidad máxima de clientes. |
 | `entrenadorId` | ObjectId | Entrenador responsable del turno. |
 | `clientes` | Array<ObjectId> | Clientes asignados al turno. |

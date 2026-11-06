@@ -11,6 +11,15 @@ function textoDia(dia: string): string {
   return dia.charAt(0) + dia.slice(1).toLowerCase()
 }
 
+/* Un turno individual dura siempre una hora exacta (el backend tambien
+ lo valida). A partir de la hora de inicio calculamos la de fin. */
+function sumarUnaHora(horaInicio: string): string {
+  const minutos = Number(horaInicio.slice(0, 2)) * 60 + Number(horaInicio.slice(3)) + 60
+  const horas = Math.floor(minutos / 60) % 24
+  const mins = minutos % 60
+  return `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+}
+
 /* Estos son los datos de cada turno tal como los devuelve
  el backend en /api/turnos. */
 interface Turno {
@@ -76,7 +85,15 @@ if (usuario) {
   const tituloFormularioTurno = elemento<HTMLHeadingElement>('#titulo-formulario-turno')
   const campoTurnoId = elemento<HTMLInputElement>('#turnoId')
   const campoDia = elemento<HTMLSelectElement>('#dia')
+  const campoHoraInicio = elemento<HTMLInputElement>('#horaInicio')
+  const campoHoraFin = elemento<HTMLInputElement>('#horaFin')
   const campoEntrenadorId = elemento<HTMLInputElement>('#entrenadorId')
+
+  /* La hora de fin del turno individual se recalcula sola cada vez
+   que cambia la hora de inicio: siempre dura una hora exacta. */
+  campoHoraInicio.addEventListener('input', () => {
+    campoHoraFin.value = campoHoraInicio.value ? sumarUnaHora(campoHoraInicio.value) : ''
+  })
   const botonCancelarTurno = elemento<HTMLButtonElement>('#boton-cancelar-turno')
 
   const formularioGenerar = elemento<HTMLFormElement>('#formulario-generar')
