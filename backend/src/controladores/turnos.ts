@@ -7,6 +7,7 @@ import type { UsuarioSesion } from './sesion.ts'
 import { ErrorHTTP, responder, leerJSON, texto, identificador, entero } from '../compartidos/http.ts'
 import { diasSemana, validarHorario } from '../compartidos/reglas.ts'
 import type { ConfiguracionAgenda, Turno } from '../compartidos/modelos.ts'
+import { incluyeRol } from '../servicios/roles.ts'
 
 type Dependencias = {
     conectar: typeof conectarDB
@@ -20,8 +21,14 @@ const configuracionInicial: ConfiguracionAgenda = { franjas: [{ inicio: '09:00',
 const minutos = (hora: string) => Number(hora.slice(0, 2)) * 60 + Number(hora.slice(3))
 const hora = (valor: number) => `${String(Math.floor(valor / 60)).padStart(2, '0')}:${String(valor % 60).padStart(2, '0')}`
 
+/* Una cuenta que ademas de ENTRENADOR tiene el rol ADMIN se
+ trata como Administrador: sin esta restriccion sobre turnos ajenos. */
+function esSoloEntrenador(personal: UsuarioSesion): boolean {
+    return incluyeRol(personal.rol, ['ENTRENADOR']) && !incluyeRol(personal.rol, ['ADMIN'])
+}
+
 function exigirTurnoPropio(personal: UsuarioSesion, entrenadorId: ObjectId): void {
-    if (personal.rol === 'ENTRENADOR' && entrenadorId.toHexString() !== personal.id)
+    if (esSoloEntrenador(personal) && entrenadorId.toHexString() !== personal.id)
         throw new ErrorHTTP(403, 'Solo podés administrar tus propios turnos.')
 }
 
@@ -68,7 +75,7 @@ async function consultarConfiguracionEndpoint(db: Db, personal: UsuarioSesion, r
     responder(respuesta, 200, {
         configuracion: {
             ...configuracion,
-            trabajos: personal.rol === 'ENTRENADOR'
+            trabajos: esSoloEntrenador(personal)
                 ? configuracion.trabajos.filter(t => t.entrenadorId.toHexString() === personal.id)
                 : configuracion.trabajos,
         },
@@ -162,7 +169,7 @@ async function generarAgenda(dependencias: Dependencias, datos: Record<string, u
         && datos.franjas.every((f: unknown, i: number) => typeof f === 'object' && f !== null
             && (f as Record<string, unknown>).inicio === configuracion.franjas[i]!.inicio
             && (f as Record<string, unknown>).fin === configuracion.franjas[i]!.fin)
-    if (personal.rol === 'ENTRENADOR' && (datos.capacidad !== configuracion.capacidad || !conservaApertura))
+    if (esSoloEntrenador(personal) && (datos.capacidad !== configuracion.capacidad || !conservaApertura))
         throw new ErrorHTTP(403, 'Solo el Administrador puede cambiar los horarios de apertura y el cupo por defecto.')
 
     const capacidad = entero(datos.capacidad, 'capacidad', 1, 100)
@@ -191,7 +198,7 @@ async function generarAgenda(dependencias: Dependencias, datos: Record<string, u
     })
     if (new Set(trabajos.map(t => t.entrenadorId.toHexString())).size !== trabajos.length)
         throw new ErrorHTTP(400, 'Un entrenador aparece repetido.')
-    if (personal.rol === 'ENTRENADOR' && (trabajos.length !== 1 || trabajos[0]!.entrenadorId.toHexString() !== personal.id))
+    if (esSoloEntrenador(personal) && (trabajos.length !== 1 || trabajos[0]!.entrenadorId.toHexString() !== personal.id))
         throw new ErrorHTTP(403, 'Solo podés generar los turnos de tu propia agenda.')
     for (const trabajo of trabajos) await validarEntrenador(db, trabajo.entrenadorId)
 
@@ -232,7 +239,7 @@ async function generarAgenda(dependencias: Dependencias, datos: Record<string, u
         const trabajosActualizados = [...configuracion.trabajos.filter(t => !seleccionados.has(t.entrenadorId.toHexString())), ...trabajos]
         await baseTransaccional.collection('configuracion').updateOne({ _id: idConfiguracion }, {
             $set: {
-                ...(personal.rol === 'ADMIN' ? { franjas, capacidad } : {}),
+                ...(incluyeRol(personal.rol, ['ADMIN']) ? { franjas, capacidad } : {}),
                 trabajos: trabajosActualizados,
                 fechaModificacion: new Date(),
             },
@@ -243,7 +250,7 @@ async function generarAgenda(dependencias: Dependencias, datos: Record<string, u
 }
 
 async function operarEnLote(dependencias: Dependencias, datos: Record<string, unknown>, personal: UsuarioSesion, respuesta: ServerResponse): Promise<void> {
-    if (personal.rol !== 'ADMIN') throw new ErrorHTTP(403, 'Solo el Administrador puede operar turnos en lote.')
+    if (!incluyeRol(personal.rol, ['ADMIN'])) throw new ErrorHTTP(403, 'Solo el Administrador puede operar turnos en lote.')
     if (!Array.isArray(datos.ids) || !datos.ids.length || datos.ids.length > 2000 || typeof datos.eliminar !== 'boolean' || datos.confirmado !== true)
         throw new ErrorHTTP(400, 'Seleccioná turnos y confirmá la operación.')
     const ids = [...new Map(datos.ids.map(valor => { const id = identificador(valor); return [id.toHexString(), id] as const })).values()]
@@ -266,7 +273,7 @@ export function crearGestorTurnos(dependencias: Dependencias = {
         try {
             const personal = await dependencias.usuario(solicitud)
             if (!personal) throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
-            if (personal.rol !== 'ADMIN' && personal.rol !== 'ENTRENADOR')
+            if (!incluyeRol(personal.rol, ['ADMIN', 'ENTRENADOR']))
                 throw new ErrorHTTP(403, 'No tenés permiso para acceder a turnos.')
 
             const ruta = solicitud.url?.split('?')[0]

@@ -6,6 +6,7 @@ import { obtenerUsuarioSesion } from './sesion.ts'
 import type { UsuarioSesion } from './sesion.ts'
 import { ErrorHTTP, responder, leerJSON, texto, identificador, fechaArgentina } from '../compartidos/http.ts'
 import type { Turno } from '../compartidos/modelos.ts'
+import { incluyeRol } from '../servicios/roles.ts'
 
 type Dependencias = {
     conectar: typeof conectarDB
@@ -136,7 +137,7 @@ export function crearGestorClientes(dependencias: Dependencias = {
         try {
             const personal = await dependencias.usuario(solicitud)
             if (!personal) throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
-            if (personal.rol !== 'ADMIN' && personal.rol !== 'ENTRENADOR')
+            if (!incluyeRol(personal.rol, ['ADMIN', 'ENTRENADOR']))
                 throw new ErrorHTTP(403, 'No tenés permiso para acceder a clientes.')
 
             const ruta = solicitud.url?.split('?')[0]
@@ -148,7 +149,7 @@ export function crearGestorClientes(dependencias: Dependencias = {
             }
 
             if (solicitud.method !== 'POST') throw new ErrorHTTP(405, 'Método no permitido.')
-            if (personal.rol !== 'ADMIN') throw new ErrorHTTP(403, 'Esta acción requiere permisos de administrador.')
+            if (!incluyeRol(personal.rol, ['ADMIN'])) throw new ErrorHTTP(403, 'Esta acción requiere permisos de administrador.')
 
             const datos = await leerJSON(solicitud, 16384)
 

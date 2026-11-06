@@ -3,6 +3,7 @@ import './clientes.css'
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { validarFormulario } from '../../autenticacion/validaciones.ts'
+import { incluyeRol } from '../../servicios/roles.ts'
 
 interface Cliente {
   id: string
@@ -18,7 +19,7 @@ interface Cliente {
 const usuario = await prepararPanel('Clientes')
 
 if (usuario) {
-  const esAdmin = usuario.rol === 'ADMIN'
+  const esAdmin = incluyeRol(usuario.rol, ['ADMIN'])
 
   const mensajeGeneral = document.querySelector<HTMLElement>('#mensaje-clientes')!
   const botonNuevo = document.querySelector<HTMLButtonElement>('#boton-nuevo-cliente')!

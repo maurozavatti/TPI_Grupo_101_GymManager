@@ -3,7 +3,9 @@ import type { Db } from 'mongodb'
 import { ObjectId } from 'mongodb'
 import { conectarDB } from '../db.ts'
 import { obtenerUsuarioSesion } from './sesion.ts'
+import type { UsuarioSesion } from './sesion.ts'
 import { ErrorHTTP, responder, leerJSON, texto, identificador, entero, fechaArgentina } from '../compartidos/http.ts'
+import { incluyeRol } from '../servicios/roles.ts'
 
 const tiposPago = ['INSCRIPCION', 'CUOTA'] as const
 
@@ -33,7 +35,7 @@ async function listarPagos(db: Db, datos: URLSearchParams, respuesta: ServerResp
     })
 }
 
-async function registrarPago(db: Db, datos: Record<string, unknown>, respuesta: ServerResponse): Promise<void> {
+async function registrarPago(db: Db, datos: Record<string, unknown>, personal: UsuarioSesion, respuesta: ServerResponse): Promise<void> {
     const clienteId = identificador(datos.clienteId)
     const tipo = texto(datos, 'tipo', 20, true)
     if (!tiposPago.includes(tipo as typeof tiposPago[number]))
@@ -47,9 +49,12 @@ async function registrarPago(db: Db, datos: Record<string, unknown>, respuesta: 
     const cliente = await db.collection('clientes').findOne({ _id: clienteId, activo: true })
     if (!cliente) throw new ErrorHTTP(404, 'El cliente no existe o está inactivo.')
 
+    /* RN-10: todo pago registra quien lo cargo, para poder auditarlo. */
+    const usuarioRegistroId = new ObjectId(personal.id)
+
     if (pagado) {
         await db.collection('pagos').insertOne({
-            clienteId, tipo, monto, observaciones,
+            clienteId, tipo, monto, observaciones, usuarioRegistroId,
             fechaPago: new Date(),
             estado: 'PAGADO',
             ...(fechaVencimiento ? { fechaVencimiento } : {}),
@@ -60,7 +65,7 @@ async function registrarPago(db: Db, datos: Record<string, unknown>, respuesta: 
 
     if (!fechaVencimiento) throw new ErrorHTTP(400, 'Indicá la fecha de vencimiento de la cuota.', ['fechaVencimiento'])
     await db.collection('pagos').insertOne({
-        clienteId, tipo, monto, observaciones, fechaVencimiento,
+        clienteId, tipo, monto, observaciones, fechaVencimiento, usuarioRegistroId,
         fechaPago: null,
         estado: 'PENDIENTE',
     })
@@ -84,7 +89,7 @@ export function crearGestorPagos(dependencias = {
         try {
             const personal = await dependencias.usuario(solicitud)
             if (!personal) throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
-            if (personal.rol !== 'ADMIN') throw new ErrorHTTP(403, 'Esta sección requiere permisos de administrador.')
+            if (!incluyeRol(personal.rol, ['ADMIN'])) throw new ErrorHTTP(403, 'Esta sección requiere permisos de administrador.')
 
             const url = new URL(solicitud.url ?? '/', 'http://localhost')
             const ruta = url.pathname
@@ -99,7 +104,7 @@ export function crearGestorPagos(dependencias = {
             const datos = await leerJSON(solicitud, 16384)
 
             if (ruta === '/api/pagos') {
-                await registrarPago(db, datos, respuesta)
+                await registrarPago(db, datos, personal, respuesta)
                 return
             }
             if (ruta === '/api/pagos/pagar') {

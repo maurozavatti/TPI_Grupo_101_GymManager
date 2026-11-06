@@ -1,6 +1,7 @@
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { validarFormulario } from '../../autenticacion/validaciones.ts'
+import { incluyeRol } from '../../servicios/roles.ts'
 
 /* Estos son los dias admitidos por el backend (compartidos/reglas.ts).
  El texto que ve la persona se genera a partir de este mismo valor. */
@@ -54,7 +55,7 @@ if (usuario) {
    funciones definidas mas abajo no pierdan el estrechamiento de tipo
    (TypeScript no lo conserva dentro de funciones anidadas). */
   const sesion = usuario
-  const esAdmin = sesion.rol === 'ADMIN'
+  const esAdmin = incluyeRol(sesion.rol, ['ADMIN'])
 
   /* Comprobamos que todos los elementos existan antes de usarlos.
    Si falta alguno, la pantalla no puede funcionar. */

@@ -1,5 +1,6 @@
 import { prepararPanel } from '../estructura.ts'
 import { solicitarAPI } from '../../servicios/api.ts'
+import { incluyeRol } from '../../servicios/roles.ts'
 
 /* Estos son los datos que devuelve el backend en /api/resumen.
  El bloque administrativo viene null cuando quien consulta
@@ -45,7 +46,7 @@ if (usuario) {
   const cuerpoTablaTurnosHoy = elemento<HTMLTableSectionElement>('#cuerpo-tabla-turnos-hoy')
 
   saludo.textContent = `Hola, ${usuario.nombre}`
-  tituloTurnosHoy.textContent = usuario.rol === 'ADMIN' ? 'Turnos de hoy' : 'Tus turnos de hoy'
+  tituloTurnosHoy.textContent = incluyeRol(usuario.rol, ['ADMIN']) ? 'Turnos de hoy' : 'Tus turnos de hoy'
 
   function dibujarTurnosHoy(turnos: ResumenTurnoHoy[]): void {
     cuerpoTablaTurnosHoy.replaceChildren()
