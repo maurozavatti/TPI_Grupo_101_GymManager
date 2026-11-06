@@ -10,7 +10,7 @@ import {
 } from '../servicios/autenticacion.ts'
 
 /* Esta funcion registra una cuenta y crea su primera sesion.
- El rol del registro publico siempre es USUARIO.*/
+ El registro publico siempre asigna USUARIO dentro de un array. */
 export async function registrarUsuario(
   solicitud: IncomingMessage,
   respuesta: ServerResponse,
@@ -18,7 +18,7 @@ export async function registrarUsuario(
   try {
     /* Leemos un objeto JSON de hasta 16 KiB.
      Las validaciones del backend se aplican aunque el
-     frontend ya haya comprobado el formulario.*/
+     frontend ya haya comprobado el formulario. */
     const datos = await leerJSON(solicitud, 16 * 1024)
 
     const nombre = typeof datos.nombre === 'string'
@@ -34,7 +34,7 @@ export async function registrarUsuario(
       : ''
 
     /* La contraseña se conserva tal como fue escrita.
-     No eliminamos espacios ni cambiamos sus caracteres.*/
+     No eliminamos espacios ni cambiamos sus caracteres. */
     const contrasena = typeof datos.contrasena === 'string'
       ? datos.contrasena
       : ''
@@ -70,7 +70,7 @@ export async function registrarUsuario(
     }
 
     /* Generamos el hash antes de comenzar la transaccion.
-     El servicio comprueba los limites de la contraseña.*/
+     El servicio comprueba los limites de la contraseña. */
     let passwordHash: string
 
     try {
@@ -87,7 +87,7 @@ export async function registrarUsuario(
 
     /* Preparamos los indices fuera de la transaccion.
      El indice unico de correo tambien evita duplicados
-     cuando llegan dos registros al mismo tiempo.*/
+     cuando llegan dos registros al mismo tiempo. */
     await db.collection('usuarios').createIndex(
       { email: 1 },
       { unique: true },
@@ -104,7 +104,7 @@ export async function registrarUsuario(
       apellido,
       email,
       passwordHash,
-      rol: 'USUARIO' as const,
+      rol: ['USUARIO' as const],
       activo: true,
       fechaCreacion: fechaActual,
       fechaModificacion: fechaActual,
@@ -112,11 +112,11 @@ export async function registrarUsuario(
 
     /* No guardamos clienteId hasta que se vincule una ficha.
      Asi las cuentas sin cliente asociado no colisionan
-     con el indice unico sparse de ese campo.*/
+     con el indice unico sparse de ese campo. */
     const sesion = nuevaSesion(usuarioId)
 
     /* Las dos inserciones usan la misma transaccion.
-     La cuenta y su sesion se guardan juntas.*/
+     La cuenta y su sesion se guardan juntas. */
     await ejecutarTransaccion(async (base, transaccion) => {
       await base.collection('usuarios').insertOne(
         usuario,
@@ -130,7 +130,7 @@ export async function registrarUsuario(
     })
 
     /* Enviamos la cookie solamente despues de confirmar
-     que la cuenta y la sesion quedaron guardadas.*/
+     que la cuenta y la sesion quedaron guardadas. */
     enviarCookie(respuesta, sesion.token)
 
     responder(respuesta, 201, {
@@ -146,7 +146,7 @@ export async function registrarUsuario(
     })
   } catch (error) {
     /* Los errores de validacion incluyen los campos que
-     el frontend debe marcar como incorrectos.*/
+     el frontend debe marcar como incorrectos. */
     if (error instanceof ErrorHTTP) {
       responder(respuesta, error.estado, {
         mensaje: error.message,
@@ -156,7 +156,7 @@ export async function registrarUsuario(
     }
 
     /* MongoDB informa el codigo 11000 cuando se intenta
-     repetir un valor protegido por un indice unico.*/
+     repetir un valor protegido por un indice unico. */
     if (
       error instanceof MongoServerError
       && error.code === 11000
