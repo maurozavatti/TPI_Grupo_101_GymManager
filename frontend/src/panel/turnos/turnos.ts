@@ -151,7 +151,7 @@ if (usuario) {
     ocultarFormularios()
     formularioTurno.reset()
     campoTurnoId.value = ''
-    tituloFormularioTurno.textContent = 'Nuevo turno'
+    tituloFormularioTurno.textContent = 'Agregar turno individual'
     if (!esAdmin) campoEntrenadorId.value = sesion.id
     formularioTurno.hidden = false
   }
