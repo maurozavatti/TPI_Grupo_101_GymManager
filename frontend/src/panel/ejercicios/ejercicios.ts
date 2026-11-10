@@ -1,6 +1,7 @@
 
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
+import { tieneRol } from '../../servicios/permisos.ts'
 
 interface Ejercicio {
   id: string
@@ -28,7 +29,7 @@ interface FilaExcel {
 const usuario = await prepararPanel('Ejercicios')
 
 if (usuario) {
-  const esAdmin = usuario.rol === 'ADMIN'
+  const esAdmin = tieneRol(usuario, ['ADMIN'])
 
   function elemento<T extends Element>(selector: string): T {
     const encontrado = document.querySelector<T>(selector)

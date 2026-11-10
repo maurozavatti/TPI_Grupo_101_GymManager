@@ -11,6 +11,7 @@ import {
     texto,
     identificador,
 } from '../compartidos/http.ts'
+import { incluyeRol } from '../servicios/roles.ts'
 
 type Dependencias = {
     conectar: typeof conectarDB
@@ -20,12 +21,10 @@ type Dependencias = {
 async function listarEjercicios(
     db: Db,
     respuesta: ServerResponse,
-    rol: string,
+    esAdmin: boolean,
 ): Promise<void> {
     // El entrenador solamente consulta ejercicios activos.
-    const filtro = rol === 'ENTRENADOR'
-        ? { activo: true }
-        : {}
+    const filtro = esAdmin ? {} : { activo: true }
 
     const documentos = await db.collection('ejercicios')
         .find(filtro)
@@ -160,14 +159,16 @@ export function crearGestorEjercicios(
         try {
             const personal = await dependencias.usuario(solicitud)
 
+            // Primero comprobamos que exista una sesión válida.
             if (!personal) {
                 throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
             }
 
-            if (
-                personal.rol !== 'ADMIN'
-                && personal.rol !== 'ENTRENADOR'
-            ) {
+            // Ahora TypeScript sabe que personal no es null.
+            const esAdmin = incluyeRol(personal.rol, ['ADMIN'])
+            const esEntrenador = incluyeRol(personal.rol, ['ENTRENADOR'])
+
+            if (!esAdmin && !esEntrenador) {
                 throw new ErrorHTTP(
                     403,
                     'No tenés permiso para acceder al catálogo.',
@@ -186,7 +187,7 @@ export function crearGestorEjercicios(
                 solicitud.method === 'GET'
                 && ruta === '/api/ejercicios'
             ) {
-                await listarEjercicios(db, respuesta, personal.rol)
+                await listarEjercicios(db, respuesta, esAdmin)
                 return
             }
 
@@ -195,7 +196,7 @@ export function crearGestorEjercicios(
             }
 
             // Las modificaciones son exclusivas del Administrador.
-            if (personal.rol !== 'ADMIN') {
+            if (!esAdmin) {
                 throw new ErrorHTTP(
                     403,
                     'Esta operación requiere permisos de administrador.',
