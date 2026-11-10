@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rutinas — GymManager</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../estructura.css">
+  <link rel="stylesheet" href="./rutinas.css">
+</head>
+<body>
+  <section id="vista" hidden>
+    <div class="cabecera-modulo">
+      <div>
+        <h2>Rutinas de entrenamiento</h2>
+        <p class="nota-modulo">
+          Creá, asigná y consultá las rutinas de los clientes.
+        </p>
+      </div>
+    </div>
+
+    <p id="mensaje-rutinas" class="mensaje-panel" role="status"></p>
+
+    <section class="tarjeta-panel tarjeta-selector">
+      <div class="campo-formulario">
+        <label for="selector-cliente">Seleccionar cliente</label>
+        <select id="selector-cliente">
+          <option value="">Cargando clientes...</option>
+        </select>
+      </div>
+
+      <div id="datos-cliente" hidden>
+        <h3 id="nombre-cliente"></h3>
+        <span id="estado-cliente" class="etiqueta-estado"></span>
+      </div>
+    </section>
+
+    <section id="tarjeta-historial" class="tarjeta-panel" hidden>
+      <div class="cabecera-seccion">
+        <div>
+          <h3>Historial de rutinas</h3>
+          <p class="nota-modulo">
+            Se conservan hasta 12 rutinas por cliente.
+          </p>
+        </div>
+
+        <button id="boton-nueva-rutina" type="button"
+          class="boton-panel">
+          Asignar nueva rutina
+        </button>
+      </div>
+
+      <div id="lista-historial" class="lista-historial"></div>
+    </section>
+
+    <section id="tarjeta-editor" class="tarjeta-panel" hidden>
+      <div class="cabecera-seccion">
+        <h3 id="titulo-editor">Nueva rutina</h3>
+      </div>
+
+      <form id="formulario-rutina">
+        <div class="campo-formulario">
+          <label for="observaciones-rutina">
+            Observaciones generales
+          </label>
+          <textarea id="observaciones-rutina"
+            maxlength="2000" rows="3"
+            placeholder="Indicaciones generales para el cliente..."></textarea>
+        </div>
+
+        <div class="cabecera-ejercicios">
+          <h4>Ejercicios de la rutina</h4>
+          <button id="boton-agregar-ejercicio" type="button"
+            class="boton-secundario">
+            Agregar ejercicio
+          </button>
+        </div>
+
+        <div id="lista-ejercicios"></div>
+
+        <p id="mensaje-formulario-rutina"
+          class="mensaje-formulario" role="status"></p>
+
+        <div class="acciones-formulario">
+          <button id="boton-guardar-rutina" type="submit"
+            class="boton-panel">
+            Asignar rutina
+          </button>
+
+          <button id="boton-cancelar-editor" type="button"
+            class="boton-secundario">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section id="tarjeta-detalle" class="tarjeta-panel" hidden>
+      <div class="cabecera-seccion no-imprimir">
+        <div>
+          <h3>Detalle de la rutina</h3>
+          <p class="nota-modulo">
+            Seleccioná una rutina del historial para consultar o imprimir.
+          </p>
+        </div>
+
+        <div class="acciones-formulario">
+          <button id="boton-editar-rutina" type="button"
+            class="boton-secundario" hidden>
+            Modificar rutina
+          </button>
+
+          <button id="boton-imprimir-rutina" type="button"
+            class="boton-panel">
+            Imprimir rutina
+          </button>
+        </div>
+      </div>
+
+      <div id="area-impresion">
+        <div class="encabezado-impresion">
+          <h2>GymManager</h2>
+          <h3 id="titulo-rutina"></h3>
+          <p id="fecha-rutina"></p>
+          <p id="cliente-impresion"></p>
+        </div>
+
+        <div class="observaciones-impresion">
+          <strong>Observaciones:</strong>
+          <p id="observaciones-detalle"></p>
+        </div>
+
+        <div class="tabla-contenedor">
+          <table class="tabla-datos">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ejercicio</th>
+                <th>Series</th>
+                <th>Repeticiones</th>
+                <th>Peso (kg)</th>
+                <th>Descanso (seg.)</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-ejercicios-detalle"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p id="aviso-rutina" class="nota-modulo no-imprimir"></p>
+    </section>
+  </section>
+
+  <script type="module" src="./rutinas.ts"></script>
+</body>
+</html>
