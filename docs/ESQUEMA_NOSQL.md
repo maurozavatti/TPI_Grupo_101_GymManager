@@ -4,7 +4,7 @@
 
 Para el desarrollo del sistema **Gym Manager** se utilizará una base de datos documental **MongoDB NoSQL**.
 
-El modelo estará compuesto por **seis colecciones principales**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
+El modelo estará compuesto por **siete colecciones principales**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
 
 Las colecciones definidas son:
 
@@ -14,6 +14,9 @@ Las colecciones definidas son:
 - `turnos`
 - `pagos`
 - `configuracion`
+- `sesiones`
+
+De estas, `sesiones` es una colección técnica (no representa una entidad del negocio): almacena las sesiones de acceso autenticado, como se detalla en la sección correspondiente más abajo.
 
 La información correspondiente a las **rutinas** y a la **historia clínica básica** se almacenará como documentos embebidos dentro de la colección `clientes`, evitando crear colecciones independientes para estos datos.
 
@@ -60,7 +63,7 @@ usuarios
 | `apellido` | String | Apellido del usuario. |
 | `email` | String | Correo utilizado para iniciar sesión. |
 | `passwordHash` | String | Hash de la contraseña (nunca se almacena en texto plano). |
-| `rol` | String | `ADMIN`, `ENTRENADOR` o `USUARIO`. |
+| `rol` | Array\<String\> | Uno o más de `ADMIN`, `ENTRENADOR` o `USUARIO`. Una misma cuenta puede tener más de un rol a la vez (por ejemplo, el dueño del gimnasio puede ser `ADMIN` y además `ENTRENADOR`). Aunque tenga un solo rol, siempre se almacena como arreglo (por ejemplo `["USUARIO"]`), para no tener que soportar dos formatos distintos en el código. |
 | `clienteId` | ObjectId / null | Referencia al cliente cuando el usuario representa a un cliente. |
 | `activo` | Boolean | Indica si la cuenta está habilitada (baja lógica). |
 | `fechaCreacion` | Date | Fecha en la que se creó la cuenta. |
@@ -76,7 +79,7 @@ usuarios
   "apellido": "Pérez",
   "email": "juan@email.com",
   "passwordHash": "$2b$12$K3n9...",
-  "rol": "USUARIO",
+  "rol": ["USUARIO"],
   "clienteId": "ObjectId",
   "activo": true,
   "fechaCreacion": "2026-03-01",
@@ -88,6 +91,8 @@ usuarios
 El campo `clienteId` es opcional debido a que **no todos los usuarios del sistema son clientes**. Por ejemplo, un entrenador tendrá el rol `ENTRENADOR` y no necesita estar asociado a un documento de `clientes`.
 
 La baja de un usuario es **lógica**: en lugar de eliminar el documento, se marca `activo: false` y se completa `fechaBaja`, conservando el registro y su historial de actividad (por ejemplo, los turnos que dictó o las rutinas que asignó como entrenador).
+
+**Cuentas con más de un rol.** Al guardar `rol` siempre como arreglo, una misma cuenta puede combinar roles (por ejemplo `["ADMIN", "ENTRENADOR"]`). Una cuenta que tiene a la vez `ADMIN` y `ENTRENADOR` se trata, a nivel de permisos, como Administrador: no aplican sobre ella las restricciones propias del Entrenador (por ejemplo, la de operar solo sobre sus propios turnos), ya que el `ADMIN` ya tiene acceso sin restricciones a esas operaciones.
 
 ---
 
@@ -336,7 +341,7 @@ turnos
 | `_id` | ObjectId | Identificador único del turno. |
 | `dia` | String | Día de la semana. |
 | `horaInicio` | String | Hora de inicio. |
-| `horaFin` | String | Hora de finalización. |
+| `horaFin` | String | Hora de finalización. Todo turno dura exactamente una hora: `horaFin` es siempre `horaInicio + 1h` (RN-19), tanto si se crea individualmente como si se genera en bloque con "Generar agenda". |
 | `capacidad` | Number | Cantidad máxima de clientes. |
 | `entrenadorId` | ObjectId | Entrenador responsable del turno. |
 | `clientes` | Array<ObjectId> | Clientes asignados al turno. |
@@ -398,7 +403,7 @@ pagos
 | `_id` | ObjectId | Identificador único del pago. |
 | `clienteId` | ObjectId | Cliente al que corresponde el pago. |
 | `tipo` | String | `INSCRIPCION` o `CUOTA`. |
-| `monto` | Decimal128 | Importe del pago. Se usa `Decimal128` en lugar de `Number` para evitar errores de precisión al operar con montos de dinero (los `Number` de MongoDB usan punto flotante, que no es exacto para cálculos monetarios). |
+| `monto` | Number (entero) | Importe del pago, en pesos enteros (sin centavos). Al tratarse siempre de un entero, no hay riesgo de los errores de precisión que sí podrían afectar a un `Number` con parte decimal. |
 | `fechaPago` | Date | Fecha en la que se realizó el pago. |
 | `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
 | `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
@@ -412,7 +417,7 @@ pagos
   "_id": "ObjectId",
   "clienteId": "ObjectId",
   "tipo": "CUOTA",
-  "monto": 25000.00,
+  "monto": 25000,
   "fechaPago": "2026-09-01",
   "fechaVencimiento": "2026-10-01",
   "estado": "PAGADO",
@@ -420,8 +425,6 @@ pagos
   "usuarioRegistroId": "ObjectId"
 }
 ```
-
-> **Nota:** en MongoDB, `monto` se almacena con el tipo BSON `Decimal128`, aunque en este ejemplo se representa de forma simplificada como un valor numérico.
 
 ---
 
@@ -477,6 +480,45 @@ Si no existe un documento en esta colección, el sistema utiliza valores por def
 
 ---
 
+# 7. Colección `sesiones`
+
+Almacena las sesiones de acceso autenticado de cada cuenta. Es una colección técnica, propia del mecanismo de autenticación por cookies (no hay JWT), y no representa una entidad del negocio.
+
+Al iniciar sesión, el backend genera un token aleatorio, envía ese token al navegador dentro de una cookie `HttpOnly`, y guarda en esta colección únicamente el **hash** del token (nunca el token original), junto con la cuenta a la que pertenece y su fecha de vencimiento.
+
+### Estructura
+
+```text
+sesiones
+│
+├── _id
+├── usuarioId
+├── tokenHash
+├── fechaCreacion
+└── fechaVencimiento
+```
+
+### Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador único de la sesión. |
+| `usuarioId` | ObjectId | Referencia a la cuenta (`usuarios`) a la que pertenece la sesión. |
+| `tokenHash` | String | Hash SHA-256 del token enviado al navegador. Nunca se almacena el token en texto plano. |
+| `fechaCreacion` | Date | Momento en el que se inició la sesión. |
+| `fechaVencimiento` | Date | Momento en el que la sesión deja de ser válida (ocho horas después de `fechaCreacion`). |
+
+### Índices
+
+| Campo | Tipo de índice | Motivo |
+|---|---|---|
+| `tokenHash` | Único | No puede haber dos sesiones con el mismo hash de token. |
+| `fechaVencimiento` | TTL (`expireAfterSeconds: 0`) | MongoDB elimina automáticamente el documento una vez alcanzada la fecha de vencimiento, sin necesidad de un proceso de limpieza manual. |
+
+Al cerrar sesión, además de eliminarse la cookie del navegador, se elimina el documento correspondiente de esta colección.
+
+---
+
 # Relaciones entre colecciones
 
 Aunque MongoDB es una base de datos documental y permite almacenar información relacionada dentro de un mismo documento, algunas relaciones se resuelven mediante referencias entre colecciones. A continuación se describe cada una, indicando su tipo de cardinalidad.
@@ -492,6 +534,8 @@ Aunque MongoDB es una base de datos documental y permite almacenar información 
 **Rutina y Entrenador.** Cada rutina embebida dentro de un cliente referencia, mediante `entrenadorId`, al entrenador que la asignó. Un mismo entrenador puede haber asignado rutinas a muchos clientes distintos (y, a lo largo del tiempo, varias rutinas al mismo cliente). Es una relación **uno a muchos**: un entrenador puede estar asociado a muchas rutinas, pero cada rutina fue asignada por un único entrenador.
 
 **Rutina y Ejercicio.** Cada rutina contiene un arreglo `ejercicios[]` donde cada elemento referencia, mediante `ejercicioId`, a un ejercicio del catálogo. Un mismo ejercicio puede formar parte de muchas rutinas distintas (de distintos clientes, o de distintas rutinas del mismo cliente), y una rutina normalmente incluye varios ejercicios. Es una relación **muchos a muchos**: un ejercicio puede estar en muchas rutinas, y una rutina puede tener muchos ejercicios.
+
+**Sesión y Usuario.** Cada documento de `sesiones` referencia, mediante `usuarioId`, a la cuenta que inició esa sesión. Una misma cuenta puede tener varias sesiones activas a la vez (por ejemplo, si inicia sesión desde distintos dispositivos). Es una relación **uno a muchos**: un usuario puede tener muchas sesiones, pero cada sesión pertenece a un único usuario.
 
 ---
 

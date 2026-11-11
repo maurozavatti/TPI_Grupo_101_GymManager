@@ -6,6 +6,13 @@ import type { UsuarioSesion } from './sesion.ts'
 import { ErrorHTTP, responder } from '../compartidos/http.ts'
 import { diasSemana } from '../compartidos/reglas.ts'
 import type { Turno } from '../compartidos/modelos.ts'
+import { incluyeRol } from '../servicios/roles.ts'
+
+/* Una cuenta que ademas de ENTRENADOR tiene el rol ADMIN se
+ trata como Administrador: ve todos los turnos y el dashboard completo. */
+function esAdministrador(personal: UsuarioSesion): boolean {
+    return incluyeRol(personal.rol, ['ADMIN'])
+}
 
 type Dependencias = {
     conectar: typeof conectarDB
@@ -39,9 +46,9 @@ async function resumenTurnosHoy(db: Db, personal: UsuarioSesion): Promise<{
         .sort({ horaInicio: 1 })
         .toArray()
 
-    const turnosFiltrados = personal.rol === 'ENTRENADOR'
-        ? turnosDelDia.filter(t => t.entrenadorId.toHexString() === personal.id)
-        : turnosDelDia
+    const turnosFiltrados = esAdministrador(personal)
+        ? turnosDelDia
+        : turnosDelDia.filter(t => t.entrenadorId.toHexString() === personal.id)
 
     const capacidadTotal = turnosFiltrados.reduce((total, t) => total + t.capacidad, 0)
     const ocupacionTotal = turnosFiltrados.reduce((total, t) => total + (t.clientes ?? []).length, 0)
@@ -88,7 +95,7 @@ async function resumenAdministrativo(db: Db) {
 
 async function consultarResumen(db: Db, personal: UsuarioSesion, respuesta: ServerResponse): Promise<void> {
     const turnosHoy = await resumenTurnosHoy(db, personal)
-    const administrativo = personal.rol === 'ADMIN' ? await resumenAdministrativo(db) : null
+    const administrativo = esAdministrador(personal) ? await resumenAdministrativo(db) : null
 
     responder(respuesta, 200, {
         resumen: {
@@ -105,7 +112,7 @@ export function crearGestorResumen(dependencias: Dependencias = {
         try {
             const personal = await dependencias.usuario(solicitud)
             if (!personal) throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
-            if (personal.rol !== 'ADMIN' && personal.rol !== 'ENTRENADOR')
+            if (!incluyeRol(personal.rol, ['ADMIN', 'ENTRENADOR']))
                 throw new ErrorHTTP(403, 'No tenés permiso para acceder al resumen.')
 
             if (solicitud.method !== 'GET' || solicitud.url?.split('?')[0] !== '/api/resumen')

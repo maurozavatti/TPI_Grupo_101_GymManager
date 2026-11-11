@@ -15,7 +15,12 @@ db.createCollection("usuarios", {
         apellido: { bsonType: "string" },
         email: { bsonType: "string" },
         passwordHash: { bsonType: "string" },
-        rol: { enum: ["ADMIN", "ENTRENADOR", "USUARIO"] },
+        rol: {
+          bsonType: "array",
+          minItems: 1,
+          uniqueItems: true,
+          items: { enum: ["ADMIN", "ENTRENADOR", "USUARIO"] }
+        },
         clienteId: { bsonType: ["objectId", "null"] },
         activo: { bsonType: "bool" },
         fechaCreacion: { bsonType: "date" },
@@ -133,6 +138,19 @@ db.createCollection("turnos", {
           bsonType: "array",
           items: { bsonType: "objectId" }
         },
+        historialClientes: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            required: ["clienteId", "accion", "fecha", "usuarioId"],
+            properties: {
+              clienteId: { bsonType: "objectId" },
+              accion: { enum: ["ASIGNACION", "RETIRO", "BAJA_CLIENTE"] },
+              fecha: { bsonType: "date" },
+              usuarioId: { bsonType: "objectId" }
+            }
+          }
+        },
         activo: { bsonType: "bool" },
         observaciones: { bsonType: "string" }
       }
@@ -148,12 +166,65 @@ db.createCollection("pagos", {
       properties: {
         clienteId: { bsonType: "objectId" },
         tipo: { enum: ["INSCRIPCION", "CUOTA"] },
-        monto: { bsonType: "decimal" },
+        // monto se guarda como entero (pesos sin centavos), nunca Decimal128.
+        monto: { bsonType: "int" },
         fechaPago: { bsonType: "date" },
         fechaVencimiento: { bsonType: "date" },
         estado: { enum: ["PAGADO", "PENDIENTE", "VENCIDO"] },
         observaciones: { bsonType: "string" },
         usuarioRegistroId: { bsonType: "objectId" }
+      }
+    }
+  }
+});
+
+db.createCollection("configuracion", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["franjas", "capacidad", "trabajos", "fechaModificacion"],
+      properties: {
+        franjas: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            required: ["inicio", "fin"],
+            properties: {
+              inicio: { bsonType: "string" },
+              fin: { bsonType: "string" }
+            }
+          }
+        },
+        capacidad: { bsonType: "int" },
+        trabajos: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            required: ["entrenadorId", "dias"],
+            properties: {
+              entrenadorId: { bsonType: "objectId" },
+              dias: { bsonType: "array", items: { bsonType: "string" } }
+            }
+          }
+        },
+        fechaModificacion: { bsonType: "date" }
+      }
+    }
+  }
+});
+
+// Documento unico (singleton) de configuracion, identificado siempre con el mismo _id fijo.
+// Lo crea el propio backend con upsert la primera vez que se genera una agenda.
+db.createCollection("sesiones", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["usuarioId", "tokenHash", "fechaCreacion", "fechaVencimiento"],
+      properties: {
+        usuarioId: { bsonType: "objectId" },
+        tokenHash: { bsonType: "string" },
+        fechaCreacion: { bsonType: "date" },
+        fechaVencimiento: { bsonType: "date" }
       }
     }
   }

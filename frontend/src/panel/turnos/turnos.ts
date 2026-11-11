@@ -1,6 +1,7 @@
 import { prepararPanel } from '../estructura.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { validarFormulario } from '../../autenticacion/validaciones.ts'
+import { incluyeRol } from '../../servicios/roles.ts'
 
 /* Estos son los dias admitidos por el backend (compartidos/reglas.ts).
  El texto que ve la persona se genera a partir de este mismo valor. */
@@ -8,6 +9,15 @@ const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO
 
 function textoDia(dia: string): string {
   return dia.charAt(0) + dia.slice(1).toLowerCase()
+}
+
+/* Un turno individual dura siempre una hora exacta (el backend tambien
+ lo valida). A partir de la hora de inicio calculamos la de fin. */
+function sumarUnaHora(horaInicio: string): string {
+  const minutos = Number(horaInicio.slice(0, 2)) * 60 + Number(horaInicio.slice(3)) + 60
+  const horas = Math.floor(minutos / 60) % 24
+  const mins = minutos % 60
+  return `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
 }
 
 /* Estos son los datos de cada turno tal como los devuelve
@@ -54,7 +64,7 @@ if (usuario) {
    funciones definidas mas abajo no pierdan el estrechamiento de tipo
    (TypeScript no lo conserva dentro de funciones anidadas). */
   const sesion = usuario
-  const esAdmin = sesion.rol === 'ADMIN'
+  const esAdmin = incluyeRol(sesion.rol, ['ADMIN'])
 
   /* Comprobamos que todos los elementos existan antes de usarlos.
    Si falta alguno, la pantalla no puede funcionar. */
@@ -75,7 +85,15 @@ if (usuario) {
   const tituloFormularioTurno = elemento<HTMLHeadingElement>('#titulo-formulario-turno')
   const campoTurnoId = elemento<HTMLInputElement>('#turnoId')
   const campoDia = elemento<HTMLSelectElement>('#dia')
+  const campoHoraInicio = elemento<HTMLInputElement>('#horaInicio')
+  const campoHoraFin = elemento<HTMLInputElement>('#horaFin')
   const campoEntrenadorId = elemento<HTMLInputElement>('#entrenadorId')
+
+  /* La hora de fin del turno individual se recalcula sola cada vez
+   que cambia la hora de inicio: siempre dura una hora exacta. */
+  campoHoraInicio.addEventListener('input', () => {
+    campoHoraFin.value = campoHoraInicio.value ? sumarUnaHora(campoHoraInicio.value) : ''
+  })
   const botonCancelarTurno = elemento<HTMLButtonElement>('#boton-cancelar-turno')
 
   const formularioGenerar = elemento<HTMLFormElement>('#formulario-generar')
@@ -133,7 +151,7 @@ if (usuario) {
     ocultarFormularios()
     formularioTurno.reset()
     campoTurnoId.value = ''
-    tituloFormularioTurno.textContent = 'Nuevo turno'
+    tituloFormularioTurno.textContent = 'Agregar turno individual'
     if (!esAdmin) campoEntrenadorId.value = sesion.id
     formularioTurno.hidden = false
   }

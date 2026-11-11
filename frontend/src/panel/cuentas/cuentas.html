@@ -12,114 +12,151 @@
     </p>
 
     <section id="vista" hidden>
-      <!-- Formulario para crear cuentas con uno o varios roles. -->
-      <article class="tarjeta-panel tarjeta-alta-cuenta">
-        <h2>Crear cuenta</h2>
+      <!-- El formulario se abre encima del listado. -->
+      <section
+          id="panel-alta-cuenta"
+          class="tarjeta-panel panel-alta-cuenta"
+          aria-labelledby="titulo-alta-cuenta"
+          hidden
+        >
+          <h3 id="titulo-alta-cuenta">Nueva cuenta</h3>
 
-        <form id="formulario-cuenta" class="formulario-cuentas" novalidate>
-          <div>
-            <label for="nombre">Nombre</label>
-            <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              maxlength="100"
-              autocomplete="given-name"
-              required
-            />
-          </div>
+          <form id="formulario-cuenta" class="formulario-cuentas" novalidate>
+            <div>
+              <label for="nombre">Nombre</label>
+              <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                autocomplete="given-name"
+                required
+              />
+            </div>
 
-          <div>
-            <label for="apellido">Apellido</label>
-            <input
-              id="apellido"
-              name="apellido"
-              type="text"
-              maxlength="100"
-              autocomplete="family-name"
-              required
-            />
-          </div>
+            <div>
+              <label for="apellido">Apellido</label>
+              <input
+                id="apellido"
+                name="apellido"
+                type="text"
+                maxlength="100"
+                autocomplete="family-name"
+                required
+              />
+            </div>
 
-          <div class="ancho-completo">
-            <label for="email">Correo electrónico</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              maxlength="254"
-              autocomplete="off"
-              required
-            />
-          </div>
+            <div class="campo-correo">
+              <label for="email">Correo electrónico</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                maxlength="254"
+                autocomplete="off"
+                required
+              />
+            </div>
 
-          <fieldset id="roles-alta" class="roles-cuenta ancho-completo">
-            <legend>Roles de la cuenta</legend>
+            <div class="campo-roles">
+              <span id="etiqueta-roles-alta">Roles</span>
 
-            <label class="opcion-rol">
-              <input type="checkbox" name="rol" value="USUARIO" checked />
-              USUARIO
-            </label>
+              <details id="selector-roles-alta" class="selector-roles">
+                <summary
+                  aria-labelledby="etiqueta-roles-alta resumen-roles-alta"
+                >
+                  <span id="resumen-roles-alta">USUARIO</span>
+                </summary>
 
-            <label class="opcion-rol">
-              <input type="checkbox" name="rol" value="ENTRENADOR" />
-              ENTRENADOR
-            </label>
+                <fieldset id="roles-alta" class="roles-cuenta">
+                  <legend class="descripcion-tabla">
+                    Roles de la cuenta
+                  </legend>
 
-            <label class="opcion-rol">
-              <input type="checkbox" name="rol" value="ADMIN" />
-              ADMIN
-            </label>
-          </fieldset>
+                  <label class="opcion-rol">
+                    <input type="checkbox" name="rol" value="USUARIO" checked />
+                    USUARIO
+                  </label>
 
-          <div>
-            <label for="contrasena">Contraseña</label>
-            <input
-              id="contrasena"
-              name="contrasena"
-              type="password"
-              minlength="8"
-              autocomplete="new-password"
-              aria-describedby="ayuda-clave"
-              required
-            />
-            <small id="ayuda-clave">Usá al menos 8 caracteres.</small>
-          </div>
+                  <label class="opcion-rol">
+                    <input type="checkbox" name="rol" value="ENTRENADOR" />
+                    ENTRENADOR
+                  </label>
 
-          <div>
-            <label for="confirmacion-contrasena">
-              Confirmar contraseña
-            </label>
-            <input
-              id="confirmacion-contrasena"
-              name="confirmacion"
-              type="password"
-              autocomplete="new-password"
-              required
-            />
-          </div>
+                  <label class="opcion-rol">
+                    <input type="checkbox" name="rol" value="ADMIN" />
+                    ADMIN
+                  </label>
+                </fieldset>
+              </details>
+            </div>
 
-          <p id="mensaje-alta" role="status" aria-live="polite"></p>
+            <div class="campo-contrasena">
+              <label for="contrasena">Contraseña</label>
+              <input
+                id="contrasena"
+                name="contrasena"
+                type="password"
+                minlength="8"
+                autocomplete="new-password"
+                aria-describedby="ayuda-clave"
+                required
+              />
+              <small id="ayuda-clave">Mínimo 8 caracteres.</small>
+            </div>
 
-          <button class="boton-panel" type="submit">
-            Crear cuenta
-          </button>
-        </form>
-      </article>
+            <div class="campo-contrasena">
+              <label for="confirmacion-contrasena">Confirmar contraseña</label>
+              <input
+                id="confirmacion-contrasena"
+                name="confirmacion"
+                type="password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
 
-      <!-- Cada fila permite consultar y modificar los roles. -->
+            <p id="mensaje-alta" role="status" aria-live="polite"></p>
+
+            <div class="acciones-alta-cuenta">
+              <button class="boton-panel" type="submit">Crear</button>
+              <button
+                id="cancelar-alta-cuenta"
+                class="boton-panel boton-cancelar-alta"
+                type="button"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
+
       <article class="tarjeta-panel">
         <header class="encabezado-cuentas">
           <h2>Cuentas registradas</h2>
 
-          <button id="actualizar-cuentas" class="boton-panel" type="button">
-            Actualizar listado
-          </button>
+          <div class="acciones-encabezado-cuentas">
+            <button
+              id="abrir-alta-cuenta"
+              class="boton-panel"
+              type="button"
+              aria-expanded="false"
+              aria-controls="panel-alta-cuenta"
+            >
+              Nueva cuenta
+            </button>
+
+            <button id="actualizar-cuentas" class="boton-panel" type="button">
+              Actualizar
+            </button>
+          </div>
         </header>
+
+
 
         <div class="filtros-cuentas">
           <div>
-            <label for="buscar-cuenta">Buscar cuenta</label>
+            <label for="buscar-cuenta">Buscar</label>
             <input
               id="buscar-cuenta"
               type="search"
@@ -147,13 +184,14 @@
           </div>
         </div>
 
-        <p class="ayuda-cuentas">
-          Presioná Editar para modificar los roles de una cuenta.
-        </p>
-
         <p id="mensaje-cuentas" role="status" aria-live="polite"></p>
 
-        <div class="contenedor-tabla-cuentas">
+        <div
+          id="contenedor-tabla-cuentas"
+          class="contenedor-tabla-cuentas"
+          tabindex="0"
+          aria-label="Listado de cuentas con desplazamiento"
+        >
           <table class="tabla-cuentas">
             <caption class="descripcion-tabla">
               Cuentas registradas y edición de sus roles
@@ -172,6 +210,36 @@
             <tbody id="listado-cuentas"></tbody>
           </table>
         </div>
+        <nav
+          id="paginacion-cuentas"
+          class="paginacion-cuentas"
+          aria-label="Páginas del listado de cuentas"
+          hidden
+        >
+          <button
+            id="pagina-anterior"
+            class="boton-panel boton-cancelar-cuenta"
+            type="button"
+          >
+            Anterior
+          </button>
+
+          <div id="numeros-pagina" class="numeros-pagina"></div>
+
+          <button
+            id="pagina-siguiente"
+            class="boton-panel boton-cancelar-cuenta"
+            type="button"
+          >
+            Siguiente
+          </button>
+
+          <span
+            id="informacion-pagina"
+            class="descripcion-tabla"
+            aria-live="polite"
+          ></span>
+          </nav>
       </article>
     </section>
 

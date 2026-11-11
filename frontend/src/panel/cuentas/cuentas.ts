@@ -5,6 +5,8 @@ import { validarFormulario } from '../../autenticacion/validaciones.ts'
 import { obtenerRoles } from '../../servicios/roles.ts'
 import type { RolesCuenta } from '../../servicios/roles.ts'
 import type { RolUsuario } from '../../servicios/sesion.ts'
+import { prepararAltaDesplegable } from './formulario-cuentas.ts'
+import { ponerIconoBoton } from '../../servicios/botones-icono.ts'
 
 interface Cuenta {
   id: string
@@ -133,6 +135,7 @@ function confirmarCambioEstado(cuenta: Cuenta): Promise<boolean> {
 const usuario = await prepararPanel('Cuentas', ['ADMIN'])
 
 if (usuario) {
+  prepararAltaDesplegable()
   prepararCuentas(usuario.id)
 }
 
@@ -156,10 +159,41 @@ function prepararCuentas(usuarioActualId: string): void {
     formulario.querySelectorAll<HTMLInputElement>('input'),
   )
 
+  const contenedorTabla = elemento<HTMLDivElement>(
+    '#contenedor-tabla-cuentas',
+  )
+  const paginacion = elemento<HTMLElement>('#paginacion-cuentas')
+  const paginaAnterior = elemento<HTMLButtonElement>('#pagina-anterior')
+  const paginaSiguiente = elemento<HTMLButtonElement>('#pagina-siguiente')
+  const informacionPagina = elemento<HTMLElement>('#informacion-pagina')
+
+  const numerosPagina = elemento<HTMLDivElement>('#numeros-pagina')
+  const vistaCompacta = window.matchMedia('(max-width: 600px)')
+
+  ponerIconoBoton(paginaAnterior, 'anterior', 'Ir a la página anterior')
+  ponerIconoBoton(paginaSiguiente, 'siguiente', 'Ir a la página siguiente')
+
   let enviandoAlta = false
   let intentoEnviar = false
+
+  /* Al limpiar el formulario quitamos los errores anteriores
+   y recuperamos el estado inicial de la validacion. */
+  formulario.addEventListener('reset', () => {
+    intentoEnviar = false
+    grupoRolesAlta.removeAttribute('aria-invalid')
+
+    camposAlta.forEach((campo) => {
+      campo.removeAttribute('aria-invalid')
+    })
+
+    mostrarMensaje(mensajeAlta, '')
+  })
   let versionListado = 0
   let cuentasCargadas: Cuenta[] = []
+
+  const cuentasPorPagina = 15
+  let paginaActual = 1
+  let cuentasFiltradas: Cuenta[] = []
 
   /* Ignoramos diferencias de mayusculas y tildes al buscar. */
   function normalizarTexto(valor: string): string {
@@ -170,10 +204,11 @@ function prepararCuentas(usuarioActualId: string): void {
       .trim()
   }
 
-  /* Combinamos busqueda, rol y estado sin consultar nuevamente
-   al servidor. Las cuentas con varios roles coinciden con
-   cualquiera de los roles que tengan asignados. */
-  function aplicarFiltros(): void {
+  /* Primero filtramos todas las cuentas cargadas.
+   Despues elegimos cuales corresponden a la pagina actual. */
+  function aplicarFiltros(reiniciarPagina = false): void {
+    if (reiniciarPagina) paginaActual = 1
+
     const palabras = normalizarTexto(busqueda.value)
       .split(/\s+/)
       .filter(Boolean)
@@ -181,7 +216,7 @@ function prepararCuentas(usuarioActualId: string): void {
     const rolElegido = filtroRol.value
     const estadoElegido = filtroEstado.value
 
-    const filtradas = cuentasCargadas.filter((cuenta) => {
+    cuentasFiltradas = cuentasCargadas.filter((cuenta) => {
       const texto = normalizarTexto(
         `${cuenta.nombre} ${cuenta.apellido} ${cuenta.email}`,
       )
@@ -200,16 +235,141 @@ function prepararCuentas(usuarioActualId: string): void {
       return coincideBusqueda && coincideRol && coincideEstado
     })
 
-    dibujarCuentas(filtradas)
-
-    mostrarMensaje(
-      mensajeListado,
-      `Mostrando ${filtradas.length} de ${cuentasCargadas.length} cuentas.`,
-    )
+    dibujarPagina()
   }
 
-  /* Por defecto mostramos los roles como texto.
-   Los controles aparecen solamente al presionar Editar. */
+/* Limitamos la cantidad de posiciones visibles.
+   Conservamos primera, ultima y pagina actual, usando puntos
+   suspensivos para los grupos que quedan fuera de la vista. */
+  function obtenerNumerosPagina(
+    total: number,
+  ): (number | '...')[] {
+    const limite = vistaCompacta.matches ? 5 : 7
+
+    if (total <= limite) {
+      return Array.from({ length: total }, (_, indice) => indice + 1)
+    }
+
+    const cantidadExtremo = limite - 2
+    const umbral = vistaCompacta.matches ? 3 : 4
+
+    if (paginaActual <= umbral) {
+      return [
+        ...Array.from(
+          { length: cantidadExtremo },
+          (_, indice) => indice + 1,
+        ),
+        '...',
+        total,
+      ]
+    }
+
+    if (paginaActual >= total - umbral + 1) {
+      return [
+        1,
+        '...',
+        ...Array.from(
+          { length: cantidadExtremo },
+          (_, indice) => total - cantidadExtremo + indice + 1,
+        ),
+      ]
+    }
+
+    if (vistaCompacta.matches) {
+      return [1, '...', paginaActual, '...', total]
+    }
+
+    return [
+      1,
+      '...',
+      paginaActual - 1,
+      paginaActual,
+      paginaActual + 1,
+      '...',
+      total,
+    ]
+  }
+
+  /* Cada numero permite ir directamente a esa pagina.
+   Los puntos suspensivos son solamente un separador visual. */
+  function dibujarNumerosPagina(total: number): void {
+    numerosPagina.replaceChildren()
+
+    for (const numero of obtenerNumerosPagina(total)) {
+      if (numero === '...') {
+        const separador = document.createElement('span')
+        separador.className = 'separador-paginas'
+        separador.textContent = '…'
+        separador.setAttribute('aria-hidden', 'true')
+        numerosPagina.append(separador)
+        continue
+      }
+
+      const boton = document.createElement('button')
+      boton.type = 'button'
+      boton.className = 'numero-pagina'
+      boton.textContent = String(numero)
+      boton.setAttribute('aria-label', `Ir a la página ${numero}`)
+
+      if (numero === paginaActual) {
+        boton.setAttribute('aria-current', 'page')
+      }
+
+      boton.addEventListener('click', () => {
+        if (numero === paginaActual) return
+
+        paginaActual = numero
+        dibujarPagina()
+
+        /* Recuperamos el foco despues de regenerar los numeros. */
+        numerosPagina.querySelector<HTMLButtonElement>(
+          '[aria-current="page"]',
+        )?.focus()
+      })
+
+      numerosPagina.append(boton)
+    }
+  }
+
+  /* Mostramos hasta 15 resultados y ajustamos la pagina si
+   una baja, un cambio de rol o un filtro reduce los resultados. */
+  function dibujarPagina(): void {
+    const total = cuentasFiltradas.length
+    const cantidadPaginas = Math.max(
+      1,
+      Math.ceil(total / cuentasPorPagina),
+    )
+
+    paginaActual = Math.max(
+      1,
+      Math.min(paginaActual, cantidadPaginas),
+    )
+
+    const inicio = (paginaActual - 1) * cuentasPorPagina
+    const fin = Math.min(inicio + cuentasPorPagina, total)
+
+    dibujarCuentas(cuentasFiltradas.slice(inicio, fin))
+    contenedorTabla.scrollTop = 0
+
+    paginacion.hidden = cantidadPaginas <= 1
+    paginaAnterior.disabled = paginaActual === 1
+    paginaSiguiente.disabled = paginaActual === cantidadPaginas
+
+    informacionPagina.textContent =
+      `Página ${paginaActual} de ${cantidadPaginas}`
+
+    dibujarNumerosPagina(cantidadPaginas)
+
+    /* Si entra todo en una pagina, evitamos el mensaje N de N. */
+    const texto = cantidadPaginas > 1
+      ? `Mostrando ${inicio + 1}–${fin} de ${total} cuentas.`
+      : `${total} ${total === 1 ? 'cuenta encontrada' : 'cuentas encontradas'}.`
+
+    mostrarMensaje(mensajeListado, texto)
+  }
+
+    /* Mostramos los roles como texto y habilitamos su selector
+   desplegable solamente al editar una cuenta. */
   function dibujarCuentas(cuentas: Cuenta[]): void {
     listado.replaceChildren()
 
@@ -244,15 +404,38 @@ function prepararCuentas(usuarioActualId: string): void {
       const textoRoles = document.createElement('span')
       textoRoles.textContent = actuales.join(' / ')
 
+      /* El selector cerrado ocupa el espacio de un control.
+       Las casillas aparecen cuando se abre. */
+      const selector = document.createElement('details')
+      selector.className = 'selector-roles selector-roles-edicion'
+      selector.hidden = true
+
+      const encabezado = document.createElement('summary')
+      const resumen = document.createElement('span')
+      encabezado.append(resumen)
+
       const grupo = document.createElement('fieldset')
       grupo.className = 'roles-cuenta'
-      grupo.hidden = true
 
       const leyenda = document.createElement('legend')
-      leyenda.textContent = 'Roles'
+      leyenda.className = 'descripcion-tabla'
+      leyenda.textContent =
+        `Roles de ${cuenta.nombre} ${cuenta.apellido}`
       grupo.append(leyenda)
 
       const casillas: HTMLInputElement[] = []
+
+      function actualizarResumen(): void {
+        const seleccionados = rolesSeleccionados(grupo)
+
+        resumen.textContent = seleccionados.length === 0
+          ? 'Seleccionar'
+          : seleccionados.length === 1
+            ? seleccionados[0]!
+            : `${seleccionados.length} roles`
+
+        resumen.title = seleccionados.join(' / ')
+      }
 
       for (const rol of rolesDisponibles) {
         const etiqueta = document.createElement('label')
@@ -270,7 +453,18 @@ function prepararCuentas(usuarioActualId: string): void {
 
       grupo.addEventListener('change', () => {
         grupo.removeAttribute('aria-invalid')
+        actualizarResumen()
       })
+
+      selector.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape') {
+          selector.open = false
+          encabezado.focus()
+        }
+      })
+
+      actualizarResumen()
+      selector.append(encabezado, grupo)
 
       const contenedorAcciones = document.createElement('div')
       contenedorAcciones.className = 'acciones-cuenta'
@@ -288,7 +482,7 @@ function prepararCuentas(usuarioActualId: string): void {
       const guardar = document.createElement('button')
       guardar.type = 'button'
       guardar.className = 'boton-panel'
-      guardar.textContent = 'Guardar roles'
+      guardar.textContent = 'Guardar'
       guardar.hidden = true
 
       const cambiarEstado = document.createElement('button')
@@ -296,9 +490,13 @@ function prepararCuentas(usuarioActualId: string): void {
       cambiarEstado.className = cuenta.activo
         ? 'boton-panel boton-baja-cuenta'
         : 'boton-panel'
-      cambiarEstado.textContent = cuenta.activo
-        ? 'Dar de baja'
-        : 'Reactivar'
+      cambiarEstado.textContent = cuenta.activo ? 'Baja' : 'Reactivar'
+      cambiarEstado.setAttribute(
+        'aria-label',
+        cuenta.activo
+          ? `Dar de baja la cuenta de ${cuenta.nombre} ${cuenta.apellido}`
+          : `Reactivar la cuenta de ${cuenta.nombre} ${cuenta.apellido}`,
+      )
       cambiarEstado.hidden = true
 
       const cancelar = document.createElement('button')
@@ -307,14 +505,39 @@ function prepararCuentas(usuarioActualId: string): void {
       cancelar.textContent = 'Cancelar'
       cancelar.hidden = true
 
-      /* Cancelar recupera los valores originales sin guardarlos. */
+      ponerIconoBoton(
+        editar,
+        'editar',
+        `Editar cuenta de ${cuenta.nombre} ${cuenta.apellido}`,
+      )
+
+      ponerIconoBoton(guardar, 'guardar', 'Guardar los roles seleccionados')
+
+      ponerIconoBoton(
+        cambiarEstado,
+        cuenta.activo ? 'baja' : 'reactivar',
+        cuenta.activo
+          ? 'Dar de baja la cuenta sin borrar sus datos'
+          : 'Reactivar la cuenta para permitir su ingreso',
+      )
+
+      ponerIconoBoton(
+        cancelar,
+        'cancelar',
+        'Cancelar la edición sin guardar los cambios',
+      )
+
+      /* Al cancelar recuperamos los roles originales.
+       Abrir o cerrar el editor no guarda cambios. */
       function cambiarEdicion(editando: boolean): void {
         casillas.forEach((casilla) => {
           casilla.checked = actuales.includes(casilla.value as RolUsuario)
         })
 
+        actualizarResumen()
         grupo.removeAttribute('aria-invalid')
-        grupo.hidden = !editando
+        selector.open = false
+        selector.hidden = !editando
         textoRoles.hidden = editando
 
         editar.hidden = editando
@@ -324,7 +547,7 @@ function prepararCuentas(usuarioActualId: string): void {
         cancelar.hidden = !editando
 
         if (editando) {
-          casillas[0]?.focus()
+          encabezado.focus()
         } else {
           editar.focus()
         }
@@ -342,8 +565,18 @@ function prepararCuentas(usuarioActualId: string): void {
         cancelar.disabled = true
         cambiarEstado.disabled = true
 
+        /* Abrimos el selector para mostrar y enfocar el error
+         si se intenta guardar sin ningun rol marcado. */
+        if (rolesSeleccionados(grupo).length === 0) {
+          selector.open = true
+        }
+
         try {
           await guardarRoles(cuenta, grupo, guardar)
+
+          if (grupo.hasAttribute('aria-invalid')) {
+            selector.open = true
+          }
         } finally {
           cancelar.disabled = false
           cambiarEstado.disabled = false
@@ -356,6 +589,7 @@ function prepararCuentas(usuarioActualId: string): void {
         guardar.disabled = true
         cancelar.disabled = true
         grupo.disabled = true
+        selector.open = false
 
         try {
           await actualizarEstadoCuenta(cuenta, cambiarEstado)
@@ -366,7 +600,7 @@ function prepararCuentas(usuarioActualId: string): void {
         }
       })
 
-      celdaRoles.append(textoRoles, grupo)
+      celdaRoles.append(textoRoles, selector)
       contenedorAcciones.append(
         editar,
         guardar,
@@ -400,6 +634,8 @@ function prepararCuentas(usuarioActualId: string): void {
       if (version !== versionListado) return
 
       cuentasCargadas = []
+      cuentasFiltradas = []
+      paginacion.hidden = true
       listado.replaceChildren()
 
       mostrarMensaje(
@@ -444,7 +680,7 @@ function prepararCuentas(usuarioActualId: string): void {
 
     boton.disabled = true
     grupo.disabled = true
-    boton.textContent = 'Guardando...'
+    ponerIconoBoton(boton, 'guardar', 'Guardando los roles...')
     mostrarMensaje(mensajeListado, 'Actualizando roles...')
 
     try {
@@ -487,7 +723,7 @@ function prepararCuentas(usuarioActualId: string): void {
     } finally {
       boton.disabled = false
       grupo.disabled = false
-      boton.textContent = 'Guardar roles'
+      ponerIconoBoton(boton, 'guardar', 'Guardar los roles seleccionados')
     }
   }
 
@@ -506,7 +742,7 @@ function prepararCuentas(usuarioActualId: string): void {
 
       if (!confirmado) return
 
-      boton.textContent = 'Guardando...'
+      ponerIconoBoton(boton,cuenta.activo ? 'baja' : 'reactivar','Actualizando el estado de la cuenta...',)
       mostrarMensaje(mensajeListado, 'Actualizando estado de la cuenta...')
 
       const ruta = cuenta.activo
@@ -538,11 +774,12 @@ function prepararCuentas(usuarioActualId: string): void {
       revisarAcceso(error)
     } finally {
       boton.disabled = false
-      boton.textContent = cuenta.activo ? 'Dar de baja' : 'Reactivar'
+      ponerIconoBoton(boton,cuenta.activo ? 'baja' : 'reactivar',cuenta.activo? 'Dar de baja la cuenta sin borrar sus datos': 'Reactivar la cuenta para permitir su ingreso',)
     }
   }
 
-  /* Revisamos los datos del alta y exigimos al menos un rol. */
+    /* Marcamos todos los campos incorrectos, pero mostramos
+   un mensaje general cuando hay varios errores. */
   function validarAlta(): boolean {
     const datosValidos = validarFormulario(formulario, mensajeAlta)
     const rolesValidos = rolesSeleccionados(grupoRolesAlta).length > 0
@@ -551,18 +788,32 @@ function prepararCuentas(usuarioActualId: string): void {
 
     if (!rolesValidos) {
       grupoRolesAlta.setAttribute('aria-invalid', 'true')
-      const anterior = mensajeAlta.textContent ?? ''
+    }
 
+    const erroresCampos = formulario.querySelectorAll(
+      'input[aria-invalid="true"]',
+    ).length
+
+    const cantidadErrores = erroresCampos + (rolesValidos ? 0 : 1)
+
+    if (cantidadErrores > 1) {
       mostrarMensaje(
         mensajeAlta,
-        `${anterior} Seleccioná al menos un rol.`.trim(),
+        'Revisá los campos marcados.',
+        'error',
+      )
+    } else if (!rolesValidos) {
+      mostrarMensaje(
+        mensajeAlta,
+        'Seleccioná al menos un rol.',
         'error',
       )
     }
 
+    /* Si solamente hay un campo incorrecto, conservamos
+     el mensaje especifico del validador compartido. */
     return datosValidos && rolesValidos
   }
-
   formulario.addEventListener('input', () => {
     if (enviandoAlta) return
 
@@ -603,7 +854,7 @@ function prepararCuentas(usuarioActualId: string): void {
 
     enviandoAlta = true
     botonCrear.disabled = true
-    botonCrear.textContent = 'Creando cuenta...'
+    botonCrear.textContent = 'Creando...'
     formulario.setAttribute('aria-busy', 'true')
     camposAlta.forEach((campo) => { campo.disabled = true })
 
@@ -654,7 +905,7 @@ function prepararCuentas(usuarioActualId: string): void {
     } finally {
       enviandoAlta = false
       botonCrear.disabled = false
-      botonCrear.textContent = 'Crear cuenta'
+      botonCrear.textContent = 'Crear'
       formulario.removeAttribute('aria-busy')
       camposAlta.forEach((campo) => { campo.disabled = false })
 
@@ -668,9 +919,39 @@ function prepararCuentas(usuarioActualId: string): void {
     void cargarCuentas()
   })
 
-  busqueda.addEventListener('input', aplicarFiltros)
-  filtroRol.addEventListener('change', aplicarFiltros)
-  filtroEstado.addEventListener('change', aplicarFiltros)
+  /* Una busqueda nueva empieza desde la primera pagina. */
+  busqueda.addEventListener('input', () => aplicarFiltros(true))
+  filtroRol.addEventListener('change', () => aplicarFiltros(true))
+  filtroEstado.addEventListener('change', () => aplicarFiltros(true))
+
+  paginaAnterior.addEventListener('click', () => {
+    if (paginaActual <= 1) return
+
+    paginaActual--
+    dibujarPagina()
+  })
+
+  paginaSiguiente.addEventListener('click', () => {
+    const cantidadPaginas = Math.ceil(
+      cuentasFiltradas.length / cuentasPorPagina,
+    )
+
+    if (paginaActual >= cantidadPaginas) return
+
+    paginaActual++
+    dibujarPagina()
+  })
+
+  /* Ajustamos la cantidad de numeros al cambiar el ancho
+   sin reconstruir las filas ni perder una edicion abierta. */
+  vistaCompacta.addEventListener('change', () => {
+    const total = Math.max(
+      1,
+      Math.ceil(cuentasFiltradas.length / cuentasPorPagina),
+    )
+
+    dibujarNumerosPagina(total)
+  })
 
   void cargarCuentas()
 }

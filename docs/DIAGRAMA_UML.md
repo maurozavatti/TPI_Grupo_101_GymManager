@@ -46,7 +46,7 @@ classDiagram
         +String apellido
         +String email
         +String passwordHash
-        +Rol rol
+        +Rol[] rol
         +ObjectId clienteId
         +Boolean activo
         +Date fechaCreacion
@@ -97,17 +97,52 @@ classDiagram
         +String observaciones
     }
 
+    class HistorialClientes {
+        <<embedded>>
+        +ObjectId clienteId
+        +String accion
+        +Date fecha
+        +ObjectId usuarioId
+    }
+
+    class FranjaHoraria {
+        <<embedded>>
+        +String inicio
+        +String fin
+    }
+
+    class Trabajo {
+        <<embedded>>
+        +ObjectId entrenadorId
+        +String[] dias
+    }
+
     class pagos {
         <<collection>>
         +ObjectId _id
         +ObjectId clienteId
         +TipoPago tipo
-        +Decimal128 monto
+        +Number monto
         +Date fechaPago
         +Date fechaVencimiento
         +EstadoPago estado
         +String observaciones
         +ObjectId usuarioRegistroId
+    }
+
+    class configuracion {
+        <<collection>>
+        +ObjectId _id
+        +Date fechaModificacion
+    }
+
+    class sesiones {
+        <<collection>>
+        +ObjectId _id
+        +ObjectId usuarioId
+        +String tokenHash
+        +Date fechaCreacion
+        +Date fechaVencimiento
     }
 
 
@@ -191,6 +226,12 @@ classDiagram
 
     Rutina "1" *-- "1..*" EjercicioRutina : ejercicios[]
 
+    turnos "1" *-- "0..*" HistorialClientes : historialClientes[]
+
+    configuracion "1" *-- "0..*" FranjaHoraria : franjas[]
+
+    configuracion "1" *-- "0..*" Trabajo : trabajos[]
+
 
     %% =====================================================
     %% REFERENCIAS MEDIANTE OBJECTID
@@ -200,13 +241,21 @@ classDiagram
 
     clientes "1" <-- "0..*" pagos : clienteId
 
+    usuarios "1" <-- "0..*" pagos : usuarioRegistroId
+
     usuarios "1" <-- "0..*" turnos : entrenadorId
 
     clientes "0..*" -- "0..*" turnos : clientes[]
 
+    usuarios "1" <-- "0..*" HistorialClientes : usuarioId
+
     usuarios "1" <-- "0..*" Rutina : entrenadorId
 
     ejercicios "1" <-- "0..*" EjercicioRutina : ejercicioId
+
+    usuarios "1" <-- "0..*" sesiones : usuarioId
+
+    usuarios "1" <-- "0..*" Trabajo : entrenadorId
 
 
     %% =====================================================
@@ -225,4 +274,8 @@ classDiagram
     %% =====================================================
 
     note for Rutina "Regla de negocio: en el arreglo rutinas[] de un mismo cliente, solo una Rutina puede tener activo = true a la vez (la vigente). El historial se limita a 12 rutinas por cliente; al superar ese límite se elimina físicamente la más antigua entre las inactivas."
+
+    note for usuarios "rol siempre se almacena como arreglo (Rol[]), incluso con un solo valor, para soportar cuentas con mas de un rol a la vez (por ejemplo ADMIN y ENTRENADOR). Una cuenta ADMIN + ENTRENADOR se trata como Administrador: no aplican sobre ella las restricciones propias del Entrenador."
+
+    note for pagos "monto se almacena como Number entero (pesos sin centavos), no como Decimal128: al no admitir decimales no hay riesgo de errores de precision por punto flotante."
 ```
