@@ -277,10 +277,51 @@ export function crearGestorTurnos(dependencias: Dependencias = {
         try {
             const personal = await dependencias.usuario(solicitud)
             if (!personal) throw new ErrorHTTP(401, 'Iniciá sesión para continuar.')
+            const ruta = solicitud.url?.split('?')[0]
+            const consultaPropia = solicitud.method === 'GET' && ruta === '/api/turnos/mi'
+
+            if (consultaPropia && incluyeRol(personal.rol, ['USUARIO'])) {
+                if (!personal.clienteId) {
+                    responder(respuesta, 200, { turnos: [] })
+                    return
+                }
+                const db = await dependencias.conectar()
+                const clienteId = new ObjectId(personal.clienteId)
+                const turnos = await db.collection<Turno>('turnos')
+                    .find({ clientes: clienteId, activo: true })
+                    .toArray()
+                turnos.sort((a, b) =>
+                    diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia)
+                    || a.horaInicio.localeCompare(b.horaInicio),
+                )
+                const entrenadorIds = [...new Map(
+                    turnos.map(turno => [turno.entrenadorId.toHexString(), turno.entrenadorId]),
+                ).values()]
+                const entrenadores = entrenadorIds.length
+                    ? await db.collection('usuarios')
+                        .find({ _id: { $in: entrenadorIds } })
+                        .project({ nombre: 1, apellido: 1 })
+                        .toArray()
+                    : []
+                const nombres = new Map(entrenadores.map(entrenador => [
+                    entrenador._id.toHexString(),
+                    `${entrenador.nombre ?? ''} ${entrenador.apellido ?? ''}`.trim(),
+                ]))
+                responder(respuesta, 200, {
+                    turnos: turnos.map(turno => ({
+                        id: turno._id.toHexString(),
+                        dia: turno.dia,
+                        horaInicio: turno.horaInicio,
+                        horaFin: turno.horaFin,
+                        entrenador: nombres.get(turno.entrenadorId.toHexString()) ?? 'Sin nombre',
+                    })),
+                })
+                return
+            }
+
             if (!incluyeRol(personal.rol, ['ADMIN', 'ENTRENADOR']))
                 throw new ErrorHTTP(403, 'No tenés permiso para acceder a turnos.')
 
-            const ruta = solicitud.url?.split('?')[0]
             const db = await dependencias.conectar()
 
             if (solicitud.method === 'GET' && ruta === '/api/turnos') {

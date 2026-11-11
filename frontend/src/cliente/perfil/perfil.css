@@ -1,0 +1,40 @@
+.contenido-perfil {
+  display: grid;
+  gap: var(--espacio-grande);
+}
+
+.datos-perfil {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--espacio-mediano);
+  margin: var(--espacio-grande) 0 0;
+}
+
+.datos-perfil div {
+  padding: var(--espacio-mediano);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-mediano);
+}
+
+.datos-perfil dt {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+.datos-perfil dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.lista-turnos {
+  display: grid;
+  gap: var(--espacio-pequeno);
+  padding-left: 1.25rem;
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  #detalle-rutina, #detalle-rutina * { visibility: visible !important; }
+  #detalle-rutina { position: absolute; inset: 0; display: block !important; width: 100%; }
+  #detalle-rutina .tabla-datos { font-size: 10pt; }
+}
