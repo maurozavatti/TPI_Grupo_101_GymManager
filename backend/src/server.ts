@@ -11,6 +11,9 @@ import { gestionarResumen } from './controladores/resumen.ts'
 import { cambiarContrasena } from './controladores/cuenta.ts'
 import { gestionarCuentas } from './controladores/cuentas.ts'
 import { gestionarEjercicios } from './controladores/ejercicios.ts'
+import { gestionarRutinas } from './controladores/rutinas.ts'
+import { gestionarPerfil } from './controladores/perfil.ts'
+import { gestionarHistoria } from './controladores/historia.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -99,6 +102,25 @@ const servidor = createServer(async (peticion, respuesta) => {
     || ruta.startsWith('/api/ejercicios/')
   ) {
     await gestionarEjercicios(peticion, respuesta)
+    return
+  }
+
+  // Delegamos las operaciones de rutinas a su controlador.
+  if (
+    ruta === '/api/rutinas'
+    || ruta.startsWith('/api/rutinas/')
+  ) {
+    await gestionarRutinas(peticion, respuesta)
+    return
+  }
+
+  if (ruta === '/api/perfil') {
+    await gestionarPerfil(peticion, respuesta)
+    return
+  }
+
+  if (ruta === '/api/historia') {
+    await gestionarHistoria(peticion, respuesta)
     return
   }
 

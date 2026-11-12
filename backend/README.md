@@ -129,7 +129,7 @@ npm --prefix backend run build
 npm --prefix backend start
 ```
 
-Al abrir `http://localhost:3000/`, la página inicial consulta la sesión. Si no hay una sesión válida, dirige al login. Si la cuenta posee `ADMIN` o `ENTRENADOR`, dirige al inicio del panel. Las cuentas que solo poseen `USUARIO` se dirigen a Mi cuenta. Esta página tiene su propio HTML y permite consultar los datos de sesión y cambiar la contraseña.
+Al abrir `http://localhost:3000/`, la página inicial consulta la sesión. Si no hay una sesión válida, dirige al login. Si la cuenta posee `ADMIN` o `ENTRENADOR`, dirige al inicio del panel. Las cuentas que solo poseen `USUARIO` se dirigen a Mi perfil; desde allí consultan su ficha, rutina vigente y turno asignado.
 
 La comprobación de funcionamiento del servidor se conserva en `http://localhost:3000/api/salud`, con el mensaje `Backend de GymManager funcionando`.
 
@@ -158,6 +158,10 @@ La ejecución de Vite y el backend en terminales separadas se describe en el [RE
 | `src/controladores/cuenta.ts` | Cambia la contraseña de la cuenta autenticada, cierra sus sesiones anteriores y crea una nueva para mantener abierto el navegador actual. |
 | `src/controladores/cuentas.ts` | Lista y crea cuentas; modifica sus roles; aplica baja lógica o reactivación. Todas sus operaciones requieren `ADMIN`. |
 | `src/controladores/clientes.ts` | Lista, crea y edita fichas; aplica baja lógica o reactivación y vincula una cuenta con una ficha. La baja libera los turnos asignados. |
+| `src/controladores/ejercicios.ts` | Administra el catálogo, con consulta para `ADMIN`/`ENTRENADOR` y cambios exclusivos de `ADMIN`. |
+| `src/controladores/rutinas.ts` | Asigna y edita rutinas embebidas, conserva hasta 12 por cliente y prepara consultas para personal o titular. |
+| `src/controladores/perfil.ts` | Devuelve al titular únicamente los datos de su ficha vinculada. |
+| `src/controladores/historia.ts` | Consulta y actualiza historias clínicas con autorización por rol y titularidad. |
 | `src/controladores/turnos.ts` | Gestiona turnos semanales, configuración de agenda, generación por horas, asignación/retiro de clientes y operaciones en lote. |
 | `src/controladores/pagos.ts` | Lista pagos, registra inscripciones o cuotas pagadas/pendientes y marca una obligación como pagada. Actualiza los pendientes vencidos al listar. |
 | `src/controladores/resumen.ts` | Consulta ocupación y turnos del día, clientes activos, ingresos del mes y cuotas vencidas o próximas a vencer. |
@@ -305,6 +309,11 @@ Estas rutas ya están conectadas. Los permisos descritos son el alcance de cada 
 | Método | Ruta | Operación y acceso |
 |---|---|---|
 | `GET` | `/api/clientes` | Listado para `ADMIN` y `ENTRENADOR`, sin historia clínica. |
+| `GET` | `/api/perfil` | `USUARIO`: ficha propia; responde `cliente: null` cuando todavía no hay una ficha vinculada. |
+| `GET` | `/api/historia` | Cliente: historia propia. Personal: requiere `?clienteId=...`. Respuesta específica, no incluida en listados. |
+| `POST` | `/api/historia` | Actualiza la historia propia del cliente o la ficha seleccionada por personal; guarda fecha y usuario de modificación. |
+| `GET` | `/api/rutinas/mi` | `USUARIO`: rutina vigente de su ficha vinculada. |
+| `GET` | `/api/turnos/mi` | `USUARIO`: turnos activos asignados a su ficha. |
 | `POST` | `/api/clientes` | Alta de ficha por `ADMIN`. |
 | `POST` | `/api/clientes/editar` | Edición por `ADMIN`, usando `clienteId`. |
 | `POST` | `/api/clientes/desactivar` / `/api/clientes/reactivar` | Cambio de estado por `ADMIN`. La baja libera cupos de turnos dentro de la misma transacción. |
@@ -346,7 +355,7 @@ rol: ['ADMIN', 'ENTRENADOR']
 
 `esRolCuenta` valida los valores; `obtenerRoles` devuelve una lista y `incluyeRol` comprueba si alguno coincide con los permitidos. No se agrega un campo separado para indicar que un administrador también es entrenador. Una cuenta que posee `ADMIN` conserva el alcance administrativo aunque también tenga `ENTRENADOR`.
 
-**La adaptación aún no está completa en todos los módulos.** Login, consulta de sesión, permisos comunes, cuenta propia y administración de cuentas ya reconocen arrays. En clientes, turnos, pagos y resumen aún existen comparaciones JavaScript directas como `personal.rol === 'ADMIN'`. Estas comparaciones no reconocen arrays, ni siquiera `['ADMIN']`; requieren usar las funciones compartidas y preservar las restricciones sobre recursos propios cuando la cuenta no posee `ADMIN`.
+Login, consulta de sesión, permisos comunes, cuentas, clientes, turnos, pagos, resumen, ejercicios y rutinas reconocen roles escalares o arrays mediante las funciones compartidas. Una cuenta con `ADMIN` conserva el alcance administrativo aunque también tenga `ENTRENADOR`.
 
 Los filtros de MongoDB como `{ rol: 'ENTRENADOR' }` sí coinciden con un texto o con un elemento de un array. No deben confundirse con las comparaciones directas de JavaScript ni reescribirse automáticamente.
 
