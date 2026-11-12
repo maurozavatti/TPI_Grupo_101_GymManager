@@ -8,11 +8,11 @@
 
 Esta carpeta contiene el frontend de **Gym Manager**, desarrollado con HTML, CSS y TypeScript mediante Vite y su plantilla `vanilla-ts`.
 
-La página inicial es un documento mínimo que consulta la sesión y redirige. Sin una sesión válida dirige al login; con `ADMIN` o `ENTRENADOR` dirige al inicio del panel. Las cuentas que solo tienen `USUARIO` se dirigen a la página independiente Mi cuenta. Si existen varios roles, los del personal tienen prioridad para este destino inicial.
+La página inicial es un documento mínimo que consulta la sesión y redirige. Sin una sesión válida dirige al login; con `ADMIN` o `ENTRENADOR` dirige al inicio del panel. Las cuentas que solo tienen `USUARIO` se dirigen a Mi perfil. Si existen varios roles, los del personal tienen prioridad para este destino inicial.
 
 La carpeta `src/autenticacion` contiene login y registro con formularios, validaciones, mensajes propios y comunicación con el backend. Sus enlaces permiten navegar entre ambas páginas cuando no hay sesión; si ya existe una sesión, dirigen al inicio autenticado. Los colores, fuentes, espaciados y estilos generales de la web se definen en `src/style.css`.
 
-La carpeta `src/servicios` centraliza la comunicación con la API, la consulta de sesiones y los permisos de navegación para uno o varios roles. `src/cuenta` contiene los datos de la cuenta propia y el cambio de contraseña. `src/panel` reúne la estructura compartida y las pantallas de inicio, cuentas, clientes, turnos y pagos.
+La carpeta `src/servicios` centraliza la comunicación con la API, la consulta de sesiones y los permisos de navegación para uno o varios roles. `src/cuenta` contiene los datos de la cuenta propia y el cambio de contraseña. `src/panel` reúne la estructura compartida y las pantallas de inicio, cuentas, clientes, ejercicios, rutinas, turnos y pagos. `src/cliente` contiene el perfil y la historia clínica.
 
 Las peticiones se envían a la API. El backend concentra el acceso a MongoDB Atlas y mantiene las credenciales de la base fuera del frontend.
 
@@ -72,7 +72,7 @@ npm --prefix frontend run dev
 
 La dirección para abrir en el navegador es la que informa Vite en la terminal. Normalmente es `http://localhost:5173/`. Si ese puerto está ocupado, Vite puede elegir otro.
 
-Con ambos procesos funcionando, abrir la raíz de la web dirige al login si no hay sesión. Si existe una sesión válida, `main.ts` decide el destino: inicio del panel para el personal y Mi cuenta para `USUARIO`. Registro y login correctos vuelven a la raíz para resolver ese mismo recorrido.
+Con ambos procesos funcionando, abrir la raíz de la web dirige al login si no hay sesión. Si existe una sesión válida, `main.ts` decide el destino: inicio del panel para el personal y Mi perfil para `USUARIO`. Registro y login correctos vuelven a la raíz para resolver ese mismo recorrido.
 
 La comprobación directa del servidor se conserva en `http://localhost:5173/api/salud`, ajustando el puerto al informado por Vite. Devuelve el mensaje `Backend de GymManager funcionando`.
 
@@ -122,10 +122,10 @@ Con ambos servidores funcionando:
 
 1. Sin sesión, abrir la raíz y comprobar que dirige al login.
 2. Probar campos vacíos, correo inválido y contraseñas que no coincidan en el registro. Los campos incorrectos deben marcarse y mostrar mensajes propios.
-3. Registrar una cuenta de prueba. La operación guarda la cuenta en la base configurada, crea su sesión y dirige a Mi cuenta.
+3. Registrar una cuenta de prueba. La operación guarda la cuenta en la base configurada, crea su sesión y dirige a Mi perfil.
 4. Cerrar sesión e intentar registrar el mismo correo. Debe mostrar el error de duplicado y marcar el correo.
 5. Probar el login con credenciales incorrectas y con un correo inexistente. Ambos casos deben mostrar el mismo mensaje de credenciales incorrectas.
-6. Iniciar sesión correctamente, recargar Mi cuenta y comprobar que se conserva la sesión.
+6. Iniciar sesión correctamente, recargar Mi perfil y comprobar que se conserva la sesión.
 7. Con sesión iniciada, abrir directamente login y registro. Deben volver al inicio autenticado.
 8. Cerrar sesión y volver a abrir la raíz. Debe dirigir al login.
 9. Achicar la ventana y comprobar que el menú pasa arriba del contenido y conserva la separación visual de sus opciones.
@@ -223,7 +223,7 @@ frontend/
 | Archivo | Objetivo |
 |---|---|
 | `index.html` | Define el documento inicial mínimo en español y el mensaje de comprobación de sesión; carga `src/main.ts`. |
-| `src/main.ts` | Consulta la sesión y redirige al login, al inicio del personal o a Mi cuenta; da prioridad a los roles del personal cuando hay varios. |
+| `src/main.ts` | Consulta la sesión y redirige al login, al inicio del personal o a Mi perfil; da prioridad a los roles del personal cuando hay varios. |
 | `src/style.css` | Define variables y estilos globales de colores, fondos, tipografía, espaciados, bordes y estados de los elementos. |
 | `src/autenticacion/login/login.html` | Define correo, contraseña, mensajes, botón de ingreso y enlace hacia el registro. |
 | `src/autenticacion/login/login.ts` | Valida el formulario, envía las credenciales al backend, marca los errores y dirige al inicio después del ingreso correcto. |
@@ -274,7 +274,7 @@ http://localhost:3000/src/autenticacion/login/login.html
 http://localhost:3000/src/autenticacion/register/register.html
 ```
 
-Los enlaces relativos permiten pasar del login al registro y regresar cuando no hay sesión. Antes de habilitar cada formulario se consulta la sesión. Si ya existe una sesión válida, se dirige a `/`; el ingreso y el registro correctos también dirigen a esa raíz, donde `main.ts` decide entre el inicio del personal y Mi cuenta.
+Los enlaces relativos permiten pasar del login al registro y regresar cuando no hay sesión. Antes de habilitar cada formulario se consulta la sesión. Si ya existe una sesión válida, se dirige a `/`; el ingreso y el registro correctos también dirigen a esa raíz, donde `main.ts` decide entre el inicio del personal y Mi perfil.
 
 Durante la consulta o el envío se bloquean los envíos repetidos y se muestra el estado de espera. Los errores conservan los datos del formulario para corregirlos y marcan los campos que indique el backend. El mensaje de éxito se muestra después de recibir una respuesta correcta del servidor.
 
@@ -337,7 +337,7 @@ if (usuario) {
 
 Una página exclusiva de administrador utiliza `prepararPanel('Titulo', ['ADMIN'])`. Mi cuenta admite los tres roles. El componente incorpora los estilos globales y del panel, por lo que cada módulo solo necesita agregar su CSS particular cuando corresponda.
 
-El menú utiliza una lista común de opciones y filtra por pertenencia a los roles permitidos. Además, detecta los HTML existentes dentro de `src` mediante Vite para evitar enlaces a páginas ausentes. Mi cuenta está disponible en `/src/cuenta/cuenta.html`. La marca dirige a `/`, que resuelve el destino inicial. Para incorporar un módulo al menú, su ruta debe coincidir con una opción definida en `opcionesMenu`; la detección de archivos se actualiza al ejecutar o recompilar el frontend.
+El menú utiliza una lista común de opciones y filtra por pertenencia a los roles permitidos. Además, detecta los HTML existentes dentro de `src` mediante Vite para evitar enlaces a páginas ausentes. Mi cuenta está disponible en `/src/cuenta/cuenta.html` y Mi perfil en `/src/cliente/perfil/perfil.html`. La marca dirige a `/`, que resuelve el destino inicial. Para incorporar un módulo al menú, su ruta debe coincidir con una opción definida en `opcionesMenu`; la detección de archivos se actualiza al ejecutar o recompilar el frontend.
 
 La opción actual se identifica mediante `aria-current="page"`. Los nombres y roles se incorporan como texto. Al volver a una página del panel desde el historial del navegador se vuelve a cargar para comprobar la sesión. En escritorio la barra lateral permanece visible al desplazar una página larga y permite desplazamiento interno si no cabe. En pantallas de hasta 800 px, el menú pasa a la parte superior con fondo celeste.
 
@@ -377,6 +377,10 @@ El frontend envía los roles como array a `/api/cuentas` o `/api/cuentas/roles`.
 | Clientes | `/src/panel/clientes/clientes.html` | Listado con estado y vinculación. Para administración, formularios de alta/edición, baja/reactivación y vinculación por correo con confirmación de identidad. |
 | Turnos | `/src/panel/turnos/turnos.html` | Listado con día, horario, identificador de entrenador, capacidad, ocupación y estado. Incluye edición, asignación/retiro de clientes, generación de agenda y selección en lote para administración. |
 | Pagos | `/src/panel/pagos/pagos.html` | Pantalla administrativa con filtro por cliente, registro de inscripción o cuota, estado pagado/pendiente y acción para marcar un pendiente como pagado. |
+| Ejercicios | `/src/panel/ejercicios/ejercicios.html` | Catálogo con consulta para personal, mantenimiento e importación Excel para `ADMIN`. |
+| Rutinas | `/src/panel/rutinas/rutinas.html` | Creación, asignación, edición, historial limitado a 12 y vista imprimible para personal. |
+| Mi perfil | `/src/cliente/perfil/perfil.html` | `USUARIO`: ficha vinculada, rutina vigente imprimible y turnos asignados; informa si todavía no tiene ficha. |
+| Historia clínica | `/src/cliente/historia/historia.html` | Cliente titular y personal consultan o actualizan antecedentes, lesiones y observaciones. |
 
 Turnos reutiliza una sola pantalla para personal administrativo y entrenadores. En la implementación actual se ingresa el identificador del entrenador en los formularios de turno y agenda; no hay un selector de cuentas por nombre. La capacidad se envía como número. El formulario de pagos también convierte el monto a número antes de enviarlo.
 
@@ -384,11 +388,11 @@ Los pendientes de pagos se registran desde el formulario; no hay generación aut
 
 ### 8.8 Estado de integración de roles múltiples
 
-Los servicios comunes, la entrada principal, el panel compartido, Mi cuenta y Cuentas interpretan texto o arrays. **Clientes, Turnos e Inicio conservan comprobaciones directas como `usuario.rol === 'ADMIN'` que requieren adaptación.** Sus controladores de backend, junto con Pagos, también conservan comprobaciones escalares; pueden rechazar incluso una cuenta con `rol: ['ADMIN']`.
+Los módulos del panel, el catálogo y las rutinas usan los servicios comunes para interpretar roles escalares o arrays. El acceso a la historia clínica y a los datos de perfil también se comprueba en el backend por titularidad y rol.
 
 Para completar la integración se deben reutilizar `tieneRol` o `incluyeRol` en cada módulo y dar prioridad al alcance administrativo cuando una cuenta tiene `ADMIN` y `ENTRENADOR`. No basta con que el menú muestre el enlace. El detalle del backend y de la validación de MongoDB está en su README.
 
-Esta carpeta no contiene todavía las pantallas de ejercicios, rutinas, perfil del cliente ni historia clínica. El menú no muestra enlaces a sus HTML mientras no existan. El destino de las cuentas que solo poseen `USUARIO` permanece en Mi cuenta.
+El menú incluye ejercicios, rutinas, perfil e historia clínica cuando las rutas corresponden al rol de la persona. Las cuentas que solo poseen `USUARIO` llegan a Mi perfil después del login.
 
 ---
 

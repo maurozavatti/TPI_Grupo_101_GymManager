@@ -1,0 +1,141 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejercicios — GymManager</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../estructura.css">
+  <link rel="stylesheet" href="./ejercicios.css">
+</head>
+<body>
+  <section id="vista" hidden>
+    <div class="cabecera-modulo">
+      <div>
+        <h2>Catálogo de ejercicios</h2>
+        <p class="nota-modulo">
+          Administrá los ejercicios disponibles para crear rutinas.
+        </p>
+      </div>
+    </div>
+
+    <p id="mensaje-ejercicios" class="mensaje-panel" role="status"></p>
+
+    <section id="tarjeta-editor" class="tarjeta-panel" hidden>
+      <h3 id="titulo-editor">Nuevo ejercicio</h3>
+
+      <form id="formulario-ejercicio">
+        <input type="hidden" name="id">
+
+        <div class="rejilla-campos">
+          <div class="campo-formulario">
+            <label for="codigo">Código *</label>
+            <input id="codigo" name="codigo" maxlength="30"
+              placeholder="EJ-0001" required>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="nombre">Nombre *</label>
+            <input id="nombre" name="nombre" maxlength="120"
+              placeholder="Sentadilla" required>
+          </div>
+
+          <div class="campo-formulario">
+            <label for="grupoMuscular">Grupo muscular *</label>
+            <input id="grupoMuscular" name="grupoMuscular"
+              maxlength="100" placeholder="Piernas" required>
+          </div>
+
+          <div class="campo-formulario campo-ancho">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion"
+              maxlength="2000" rows="3"></textarea>
+          </div>
+        </div>
+
+        <p id="mensaje-formulario" class="mensaje-formulario"
+          role="status"></p>
+
+        <div class="acciones-formulario">
+          <button id="guardar-ejercicio" class="boton-panel"
+            type="submit">Guardar ejercicio</button>
+          <button id="cancelar-edicion" class="boton-secundario"
+            type="button" hidden>Cancelar edición</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="tarjeta-importacion" class="tarjeta-panel" hidden>
+      <h3>Importación desde Excel</h3>
+
+      <p class="nota-modulo">
+        Importá archivos .xlsx de hasta 2 MB y 1000 ejercicios.
+        Los códigos existentes actualizarán sus ejercicios;
+        los códigos nuevos crearán ejercicios.
+      </p>
+
+      <div class="campo-formulario">
+        <label for="archivo-ejercicios">Seleccionar archivo Excel</label>
+        <input id="archivo-ejercicios" type="file"
+          accept=".xlsx">
+      </div>
+
+      <div class="acciones-formulario">
+        <button id="plantilla-excel" type="button"
+          class="boton-secundario">Descargar plantilla</button>
+
+        <button id="importar-ejercicios" type="button"
+          class="boton-panel" disabled>
+          Confirmar importación
+        </button>
+      </div>
+
+      <p id="estado-importacion" role="status"
+        class="nota-modulo"></p>
+
+      <div id="vista-importacion" class="tabla-contenedor"></div>
+    </section>
+
+    <section class="tarjeta-panel">
+      <h3>Ejercicios registrados</h3>
+
+      <div class="barra-filtros">
+        <div class="campo-formulario">
+          <label for="buscar">Buscar</label>
+          <input id="buscar" type="search"
+            placeholder="Código, nombre o grupo muscular...">
+        </div>
+
+        <div class="campo-formulario">
+          <label for="filtro-grupo">Grupo muscular</label>
+          <select id="filtro-grupo">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <button id="actualizar" type="button"
+          class="boton-secundario">Actualizar</button>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table class="tabla-datos">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Ejercicio</th>
+              <th>Grupo muscular</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla-ejercicios"></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <script type="module" src="./ejercicios.ts"></script>
+</body>
+</html>

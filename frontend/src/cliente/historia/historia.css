@@ -1,0 +1,22 @@
+#formulario-historia {
+  display: grid;
+  gap: var(--espacio-mediano);
+}
+
+#formulario-historia textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+#formulario-historia button {
+  justify-self: start;
+}
+
+#fecha-historia {
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .cabecera-seccion { align-items: flex-start; flex-direction: column; }
+  #fecha-historia { text-align: left; }
+}

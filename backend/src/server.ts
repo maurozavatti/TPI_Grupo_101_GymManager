@@ -10,6 +10,10 @@ import { gestionarPagos } from './controladores/pagos.ts'
 import { gestionarResumen } from './controladores/resumen.ts'
 import { cambiarContrasena } from './controladores/cuenta.ts'
 import { gestionarCuentas } from './controladores/cuentas.ts'
+import { gestionarEjercicios } from './controladores/ejercicios.ts'
+import { gestionarRutinas } from './controladores/rutinas.ts'
+import { gestionarPerfil } from './controladores/perfil.ts'
+import { gestionarHistoria } from './controladores/historia.ts'
 
 const puerto = Number(process.env.PORT ?? 3000)
 
@@ -92,6 +96,34 @@ const servidor = createServer(async (peticion, respuesta) => {
     return
   }
   
+  // Derivamos las solicitudes del catálogo de ejercicios a su controlador.
+  if (
+    ruta === '/api/ejercicios'
+    || ruta.startsWith('/api/ejercicios/')
+  ) {
+    await gestionarEjercicios(peticion, respuesta)
+    return
+  }
+
+  // Delegamos las operaciones de rutinas a su controlador.
+  if (
+    ruta === '/api/rutinas'
+    || ruta.startsWith('/api/rutinas/')
+  ) {
+    await gestionarRutinas(peticion, respuesta)
+    return
+  }
+
+  if (ruta === '/api/perfil') {
+    await gestionarPerfil(peticion, respuesta)
+    return
+  }
+
+  if (ruta === '/api/historia') {
+    await gestionarHistoria(peticion, respuesta)
+    return
+  }
+
   // Las rutas de API que todavia no existen devuelven un error.
   if (ruta === '/api' || ruta.startsWith('/api/')) {
     respuesta.writeHead(404, {

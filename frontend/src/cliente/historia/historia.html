@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historia clínica — GymManager</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../../panel/estructura.css">
+  <link rel="stylesheet" href="./historia.css">
+</head>
+<body>
+  <section id="vista" hidden>
+    <div class="cabecera-modulo">
+      <div>
+        <h2>Historia clínica</h2>
+        <p class="nota-modulo">Información de salud relevante para un entrenamiento seguro.</p>
+      </div>
+    </div>
+    <p id="mensaje-historia" class="mensaje-panel" role="status"></p>
+
+    <section id="selector-seccion" class="tarjeta-panel" hidden>
+      <div class="campo-formulario">
+        <label for="selector-cliente">Seleccionar cliente</label>
+        <select id="selector-cliente"><option value="">Cargando clientes...</option></select>
+      </div>
+    </section>
+
+    <section id="tarjeta-historia" class="tarjeta-panel" hidden>
+      <div class="cabecera-seccion">
+        <div>
+          <h3 id="nombre-cliente"></h3>
+          <p id="estado-historia" class="nota-modulo"></p>
+        </div>
+        <p id="fecha-historia" class="nota-modulo"></p>
+      </div>
+      <form id="formulario-historia">
+        <div class="campo-formulario">
+          <label for="antecedentes">Antecedentes</label>
+          <textarea id="antecedentes" name="antecedentes" maxlength="4000" rows="4"></textarea>
+        </div>
+        <div class="campo-formulario">
+          <label for="lesiones">Lesiones</label>
+          <textarea id="lesiones" name="lesiones" maxlength="4000" rows="4"></textarea>
+        </div>
+        <div class="campo-formulario">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" name="observaciones" maxlength="4000" rows="4"></textarea>
+        </div>
+        <p class="nota-modulo">La historia es opcional. Ingresá solo la información relevante para el entrenamiento.</p>
+        <button id="guardar-historia" class="boton-panel" type="submit">Guardar historia clínica</button>
+      </form>
+    </section>
+  </section>
+  <script type="module" src="./historia.ts"></script>
+</body>
+</html>

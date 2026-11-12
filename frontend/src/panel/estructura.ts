@@ -24,6 +24,7 @@ const opcionesMenu: {
   { texto: 'Pagos', ruta: '/src/panel/pagos/pagos.html', roles: ['ADMIN'] },
   { texto: 'Cuentas', ruta: '/src/panel/cuentas/cuentas.html', roles: ['ADMIN'] },
   { texto: 'Mi perfil', ruta: '/src/cliente/perfil/perfil.html', roles: ['USUARIO'] },
+  { texto: 'Historia clínica', ruta: '/src/cliente/historia/historia.html', roles: ['ADMIN', 'ENTRENADOR', 'USUARIO'] },
   {texto: 'Mi cuenta', ruta: '/src/cuenta/cuenta.html', roles: ['ADMIN', 'ENTRENADOR', 'USUARIO'],},
 ]
 

@@ -1,0 +1,328 @@
+.cabecera-modulo,
+.cabecera-seccion,
+.cabecera-ejercicios {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+}
+
+.cabecera-modulo {
+  margin-bottom: var(--espacio-grande);
+}
+
+.cabecera-seccion {
+  margin-bottom: var(--espacio-mediano);
+}
+
+.cabecera-ejercicios {
+  margin: var(--espacio-grande) 0 var(--espacio-mediano);
+}
+
+.nota-modulo {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+}
+
+.tarjeta-selector,
+#tarjeta-historial,
+#tarjeta-editor,
+#tarjeta-detalle {
+  margin-bottom: var(--espacio-grande);
+}
+
+.tarjeta-selector {
+  display: grid;
+  grid-template-columns: minmax(15rem, 1fr) minmax(15rem, 1fr);
+  align-items: end;
+  gap: var(--espacio-grande);
+}
+
+.campo-formulario {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.campo-formulario label,
+.campo-ejercicio span {
+  font-weight: var(--peso-medio);
+}
+
+.campo-formulario input,
+.campo-formulario select,
+.campo-formulario textarea,
+.campo-ejercicio input,
+.campo-ejercicio select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.campo-formulario input:focus,
+.campo-formulario select:focus,
+.campo-formulario textarea:focus,
+.campo-ejercicio input:focus,
+.campo-ejercicio select:focus {
+  border-color: var(--color-foco);
+}
+
+#datos-cliente {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+#datos-cliente h3 {
+  font-size: var(--texto-subtitulo);
+}
+
+.etiqueta-estado {
+  width: fit-content;
+  padding: 0.15rem var(--espacio-pequeno);
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.etiqueta-activo {
+  color: var(--color-exito);
+  background: #e3f6ec;
+}
+
+.etiqueta-inactivo {
+  color: var(--color-error);
+  background: #fbe9e7;
+}
+
+.lista-historial {
+  display: grid;
+  gap: var(--espacio-pequeno);
+}
+
+.item-historial {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  padding: var(--espacio-mediano);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.item-historial-seleccionado {
+  border-color: var(--color-principal);
+  background: var(--color-principal-claro);
+}
+
+.informacion-historial {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+}
+
+.fila-ejercicio {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) repeat(4, minmax(5rem, 1fr)) minmax(12rem, 2fr) auto;
+  align-items: end;
+  gap: var(--espacio-mediano);
+  padding: var(--espacio-mediano);
+  margin-bottom: var(--espacio-mediano);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-mediano);
+}
+
+.campo-ejercicio {
+  display: grid;
+  gap: var(--espacio-pequeno);
+  min-width: 0;
+}
+
+.campo-ejercicio span {
+  font-size: var(--texto-pequeno);
+}
+
+.boton-secundario,
+.boton-fila,
+.boton-peligro {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  border-radius: var(--radio-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.boton-secundario {
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+}
+
+.boton-secundario:hover:not(:disabled) {
+  color: var(--color-principal);
+  border-color: var(--color-principal);
+}
+
+.boton-fila {
+  color: var(--color-principal);
+  background: transparent;
+  border: 1px solid var(--color-principal);
+}
+
+.boton-fila:hover:not(:disabled) {
+  background: var(--color-principal-claro);
+}
+
+.boton-peligro {
+  color: var(--color-error);
+  background: transparent;
+  border: 1px solid var(--color-error);
+}
+
+.boton-peligro:hover:not(:disabled) {
+  background: #fbe9e7;
+}
+
+.boton-peligro:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.acciones-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-mediano);
+  margin-top: var(--espacio-grande);
+}
+
+.mensaje-formulario {
+  color: var(--color-error);
+}
+
+.mensaje-formulario:empty {
+  display: none;
+}
+
+.encabezado-impresion {
+  margin-bottom: var(--espacio-grande);
+  padding-bottom: var(--espacio-mediano);
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.encabezado-impresion h2 {
+  color: var(--color-principal);
+  margin-bottom: var(--espacio-pequeno);
+}
+
+.encabezado-impresion h3 {
+  margin-bottom: var(--espacio-pequeno);
+}
+
+.observaciones-impresion {
+  margin-bottom: var(--espacio-grande);
+}
+
+.observaciones-impresion p {
+  margin-top: var(--espacio-pequeno);
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+}
+
+.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-datos th,
+.tabla-datos td {
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  text-align: left;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+#cuerpo-ejercicios-detalle tr:hover {
+  background: var(--color-principal-claro);
+}
+
+@media (max-width: 1100px) {
+  .fila-ejercicio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .campo-ejercicio-nombre,
+  .campo-ejercicio-observaciones {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .tarjeta-selector {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fila-ejercicio {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .campo-ejercicio-nombre,
+  .campo-ejercicio-observaciones {
+    grid-column: 1 / -1;
+  }
+
+  .fila-ejercicio .boton-peligro {
+    grid-column: 1 / -1;
+  }
+
+  .informacion-historial {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--espacio-pequeno);
+  }
+}
+
+/* Al imprimir, mostramos solamente la rutina seleccionada. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 15mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #area-impresion,
+  #area-impresion * {
+    visibility: visible !important;
+  }
+
+  #area-impresion {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: white;
+  }
+
+  #area-impresion .tabla-datos {
+    font-size: 10pt;
+  }
+
+  #area-impresion .tabla-datos th,
+  #area-impresion .tabla-datos td {
+    padding: 6px;
+  }
+
+  #area-impresion tr {
+    break-inside: avoid;
+  }
+}

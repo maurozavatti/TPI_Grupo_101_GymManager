@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi perfil — GymManager</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../../panel/estructura.css">
+  <link rel="stylesheet" href="./perfil.css">
+</head>
+<body>
+  <section id="vista" hidden>
+    <div class="cabecera-modulo">
+      <div>
+        <h2>Mi perfil</h2>
+        <p class="nota-modulo">Consultá tu ficha, rutina vigente y turno semanal.</p>
+      </div>
+    </div>
+    <p id="mensaje-perfil" class="mensaje-panel" role="status"></p>
+
+    <section id="sin-ficha" class="tarjeta-panel" hidden>
+      <h3>Tu cuenta todavía no tiene una ficha de cliente</h3>
+      <p>Cuando el gimnasio vincule tu cuenta con tu ficha, vas a poder consultar acá tu información.</p>
+    </section>
+
+    <div id="contenido-perfil" class="contenido-perfil" hidden>
+      <section class="tarjeta-panel">
+        <div class="cabecera-seccion">
+          <div>
+            <h3 id="nombre-cliente"></h3>
+            <p id="estado-cliente" class="nota-modulo"></p>
+          </div>
+          <a class="boton-secundario" href="../historia/historia.html">Mi historia clínica</a>
+        </div>
+        <dl class="datos-perfil">
+          <div><dt>DNI</dt><dd id="dni-cliente"></dd></div>
+          <div><dt>Fecha de nacimiento</dt><dd id="nacimiento-cliente"></dd></div>
+          <div><dt>Teléfono</dt><dd id="telefono-cliente"></dd></div>
+          <div><dt>Correo</dt><dd id="email-cliente"></dd></div>
+          <div><dt>Dirección</dt><dd id="direccion-cliente"></dd></div>
+        </dl>
+      </section>
+
+      <section class="tarjeta-panel">
+        <div class="cabecera-seccion">
+          <div><h3>Rutina vigente</h3><p id="fecha-rutina" class="nota-modulo"></p></div>
+          <button id="imprimir-rutina" class="boton-secundario" type="button" hidden>Imprimir rutina</button>
+        </div>
+        <p id="mensaje-rutina" class="nota-modulo"></p>
+        <div id="detalle-rutina" hidden>
+          <p id="observaciones-rutina"></p>
+          <div class="tabla-contenedor">
+            <table class="tabla-datos">
+              <thead><tr><th>#</th><th>Ejercicio</th><th>Series</th><th>Repeticiones</th><th>Peso</th><th>Descanso</th><th>Observaciones</th></tr></thead>
+              <tbody id="ejercicios-rutina"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="tarjeta-panel">
+        <h3>Mi turno semanal</h3>
+        <p id="mensaje-turno" class="nota-modulo"></p>
+        <ul id="lista-turnos" class="lista-turnos"></ul>
+      </section>
+    </div>
+  </section>
+  <script type="module" src="./perfil.ts"></script>
+</body>
+</html>

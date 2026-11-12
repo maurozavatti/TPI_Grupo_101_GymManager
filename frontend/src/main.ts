@@ -16,8 +16,7 @@ async function iniciarWeb(): Promise<void> {
     }
 
     /* Los roles del personal tienen prioridad cuando una cuenta
-     tiene varios roles. El perfil del usuario se conectara
-     cuando esa pantalla este incorporada. */
+     tiene varios roles. */
     const esPersonal = incluyeRol(
       usuario.rol,
       ['ADMIN', 'ENTRENADOR'],
@@ -25,7 +24,9 @@ async function iniciarWeb(): Promise<void> {
 
     const destino = esPersonal
       ? '/src/panel/inicio/inicio.html'
-      : '/src/cuenta/cuenta.html'
+      : incluyeRol(usuario.rol, ['USUARIO'])
+        ? '/src/cliente/perfil/perfil.html'
+        : '/src/cuenta/cuenta.html'
 
     window.location.replace(destino)
   } catch {
