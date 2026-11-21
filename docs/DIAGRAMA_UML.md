@@ -6,9 +6,7 @@ El diseño detallado y la definición de los campos se encuentran en `ESQUEMA_NO
 
 ### Visualización
 
-También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_UML.png`:
-
-![Diagrama UML del modelo NoSQL](DIAGRAMA_UML.png)
+El bloque Mermaid representa el modelo documental y se visualiza directamente en GitHub. El detalle de tipos, opcionalidad e índices se encuentra en [ESQUEMA_NOSQL.md](ESQUEMA_NOSQL.md).
 
 ### Cómo leer el diagrama
 
@@ -20,7 +18,7 @@ También se incluye una versión en imagen del diagrama que seria el `DIAGRAMA_U
 * Las multiplicidades (`1`, `0..1`, `0..*`, `1..*`, etc.) indican cuántos elementos pueden relacionarse entre sí.
 * Las clases marcadas como `<<enumeration>>` representan **valores posibles de determinados campos** y no colecciones de MongoDB.
 * Las relaciones punteadas (`..>`) indican que una colección utiliza una de estas enumeraciones como tipo de un campo.
-* La relación `usuarios -- clientes` indica además que `clienteId` (en `usuarios`) y `usuarioId` (en `clientes`) son campos `UNIQUE`, lo que garantiza que la relación sea realmente uno a uno (ver `ESQUEMA_NOSQL.md`, sección "Índices únicos").
+* La relación `usuarios -- clientes` indica además que `clienteId` (en `usuarios`) y `usuarioId` (en `clientes`) son campos `UNIQUE`, lo que evita referencias duplicadas presentes; la aplicación mantiene además su reciprocidad (ver `ESQUEMA_NOSQL.md`, sección "Índices únicos").
 * Las **notas** (`note for ...`) documentan reglas de negocio que no se pueden representar únicamente con cardinalidades (por ejemplo, que solo una rutina puede estar activa a la vez).
 
 De esta forma, el diagrama permite distinguir visualmente entre:
@@ -32,7 +30,9 @@ De esta forma, el diagrama permite distinguir visualmente entre:
 
 ### Diagrama
 
-```text
+[Ver diagrama en PNG](DIAGRAMA_UML.png)
+
+```mermaid
 classDiagram
 
     %% =====================================================
@@ -90,7 +90,7 @@ classDiagram
         +String dia
         +String horaInicio
         +String horaFin
-        +Number capacidad
+        +Int32 capacidad
         +ObjectId entrenadorId
         +ObjectId[] clientes
         +Boolean activo
@@ -122,7 +122,7 @@ classDiagram
         +ObjectId _id
         +ObjectId clienteId
         +TipoPago tipo
-        +Number monto
+        +Decimal128 monto
         +Date fechaPago
         +Date fechaVencimiento
         +EstadoPago estado
@@ -133,6 +133,7 @@ classDiagram
     class configuracion {
         <<collection>>
         +ObjectId _id
+        +Int32 capacidad
         +Date fechaModificacion
     }
 
@@ -165,11 +166,11 @@ classDiagram
     class EjercicioRutina {
         <<embedded>>
         +ObjectId ejercicioId
-        +Number series
-        +Number repeticiones
+        +Int32 series
+        +Int32 repeticiones
         +Number peso
-        +Number descanso
-        +Number orden
+        +Int32 descanso
+        +Int32 orden
         +String observaciones
     }
 
@@ -179,6 +180,7 @@ classDiagram
         +String lesiones
         +String observaciones
         +Date fechaActualizacion
+        +ObjectId usuarioModificacionId
     }
 
     class ContactoEmergencia {
@@ -255,6 +257,8 @@ classDiagram
 
     usuarios "1" <-- "0..*" sesiones : usuarioId
 
+    usuarios "0..1" <-- "0..*" HistoriaClinica : usuarioModificacionId
+
     usuarios "1" <-- "0..*" Trabajo : entrenadorId
 
 
@@ -277,5 +281,16 @@ classDiagram
 
     note for usuarios "rol siempre se almacena como arreglo (Rol[]), incluso con un solo valor, para soportar cuentas con mas de un rol a la vez (por ejemplo ADMIN y ENTRENADOR). Una cuenta ADMIN + ENTRENADOR se trata como Administrador: no aplican sobre ella las restricciones propias del Entrenador."
 
-    note for pagos "monto se almacena como Number entero (pesos sin centavos), no como Decimal128: al no admitir decimales no hay riesgo de errores de precision por punto flotante."
+    note for pagos "monto utiliza BSON Decimal128 conforme al modelo de Atlas y conserva precision monetaria."
 ```
+
+
+### Tipos, opcionalidad y alcance
+
+El diagrama representa siete colecciones y sus documentos embebidos. `Rutina`, `EjercicioRutina`, `HistoriaClinica`, `ContactoEmergencia`, `HistorialClientes`, `FranjaHoraria` y `Trabajo` se almacenan dentro de otros documentos. Las enumeraciones expresan valores permitidos.
+
+Las referencias entre cuenta y ficha son opcionales y únicas con índices sparse. Cuando no hay vínculo, se omiten en persistencia. Las fechas de baja pueden estar ausentes o ser nulas en registros anteriores. El validador de pagos compartido exige `fechaPago` y `fechaVencimiento` como BSON Date, sin valores nulos ni omisiones. La distinción entre esa restricción y el comportamiento de obligaciones pendientes se explica en [ESQUEMA_NOSQL.md](ESQUEMA_NOSQL.md).
+
+`usuarioModificacionId` identifica la última modificación clínica cuando existe. La cardinalidad opcional permite consultar información anterior sin autor registrado. Los metadatos de ciclos descritos en el esquema no generan obligaciones por sí mismos.
+
+El esquema define los tipos y restricciones del modelo; el diagrama complementa esa definición mediante sus relaciones y cardinalidades.

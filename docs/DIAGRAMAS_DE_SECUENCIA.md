@@ -4,20 +4,22 @@
 
 **Casos de uso:** CU-09 y CU-10.
 
-El diagrama representa el recorrido desde la solicitud del usuario hasta la autorización y el acceso a los datos. Los nombres de los componentes son conceptuales y deberán adaptarse a las clases y controladores que se implementen.
+El diagrama representa el recorrido desde la solicitud del usuario hasta la autorización y el acceso a los datos. Los participantes representan el frontend, las funciones de sesión, el controlador y MongoDB; no implican clases adicionales. Los diagramas se presentan como bloques Mermaid, visibles directamente en GitHub.
 
-```text
+[Ver diagrama en PNG](diagramas/secuencia_01_historia_clinica.png)
+
+```mermaid
 sequenceDiagram
     actor U as Usuario
     participant F as Frontend
-    participant S as Middleware de sesion
+    participant S as Funciones de sesión
     participant C as Controlador de historia clínica
-    participant P as Servicio de historia clínica
+    participant P as Validaciones del controlador historia.ts
     participant DB as MongoDB
 
     U->>F: Solicitar carga o consulta
     F->>S: Enviar solicitud autenticada
-    S->>S: Validar token y rol
+    S->>S: Comprobar hash del token, vencimiento y cuenta activa
     alt Token inválido o ausente
         S-->>F: Rechazar acceso
         F-->>U: Mostrar error de autenticación
@@ -31,7 +33,7 @@ sequenceDiagram
             F-->>U: Mostrar acceso denegado
         else Usuario autorizado
             alt Cargar o actualizar historia
-                P->>DB: Guardar historiaClinica y fecha de actualización
+                P->>DB: Guardar historiaClinica, fecha y usuario de modificación
                 DB-->>P: Confirmación
                 P-->>C: Operación completada
             else Consultar historia
@@ -58,17 +60,20 @@ sequenceDiagram
 
 El flujo contempla las validaciones previas, la desactivación de la rutina anterior y la aplicación del límite de historial.
 
-```text
+[Ver diagrama en PNG](diagramas/secuencia_02_asignacion_rutina.png)
+
+```mermaid
 sequenceDiagram
-    actor T as Entrenador
+    actor T as Administrador o entrenador
     participant F as Frontend
     participant C as Controlador de rutinas
-    participant S as Servicio de rutinas
+    participant S as Lógica de rutinas.ts
     participant DB as MongoDB
 
     T->>F: Seleccionar cliente y ejercicios
     F->>C: Solicitar asignación de rutina
-    C->>S: asignarRutina(clienteId, ejercicios)
+    C->>C: Exigir sesión y ADMIN o ENTRENADOR
+    C->>S: Validar asignación y ejecutar transacción
     S->>DB: Consultar cliente y estado
     DB-->>S: Datos del cliente
 
@@ -77,7 +82,7 @@ sequenceDiagram
         C-->>F: Error de validación
         F-->>T: Mostrar error
     else Cliente válido
-        S->>DB: Verificar existencia de ejercicios
+        S->>DB: Verificar ejercicios activos
         DB-->>S: Resultado de validación
 
         alt Ejercicios inválidos
@@ -88,16 +93,9 @@ sequenceDiagram
             S->>DB: Consultar rutinas del cliente
             DB-->>S: Rutinas actuales
 
-            opt Existe una rutina activa
-                S->>DB: Marcar rutina anterior como inactiva
-                S->>DB: Registrar fecha de baja
-            end
-
-            opt Se alcanzó el límite de 12 rutinas
-                S->>DB: Eliminar la rutina inactiva más antigua
-            end
-
-            S->>DB: Guardar nueva rutina activa
+            S->>S: Preparar historial, desactivar anterior y agregar nueva
+            S->>S: Si supera 12, retirar la inactiva más antigua
+            S->>DB: Actualizar array de rutinas en la transacción
             DB-->>S: Confirmación
             S-->>C: Asignación completada
             C-->>F: Resultado exitoso
@@ -110,49 +108,41 @@ sequenceDiagram
 
 - La operación debe garantizar que no queden dos rutinas activas para el mismo cliente.
 - Solo se elimina físicamente la rutina inactiva más antigua cuando se alcanzó el límite de 12.
-- Los nombres de métodos y componentes son ilustrativos; no implican que esas clases ya estén implementadas.
+- Las modificaciones del historial se preparan en memoria y se guardan en una actualización dentro de la transacción de MongoDB.
 
 ## 3. Detección de cuotas vencidas
 
 **Caso de uso:** CU-14 — Detectar cuotas vencidas.
 
-Este diagrama representa un proceso automático que se ejecuta periódicamente, sin necesidad de que el administrador inicie manualmente la evaluación.
+La consulta administrativa de pagos actualiza los pendientes vencidos antes de devolver el listado. No existe un programador periódico en esta versión.
 
-```text
+[Ver diagrama en PNG](diagramas/secuencia_03_cuotas_vencidas.png)
+
+```mermaid
 sequenceDiagram
-    participant CRON as Programador periódico
-    participant S as Servicio de pagos
-    participant DB as MongoDB
     actor A as Administrador
     participant F as Frontend
-    participant C as Controlador de pagos
-
-    CRON->>S: Ejecutar evaluación de vencimientos
-    S->>DB: Obtener cuotas que deben evaluarse
-    DB-->>S: Cuotas registradas
-
-    loop Por cada cuota
-        S->>S: Evaluar vencimiento y estado de pago
-        alt Venció y continúa impaga
-            S->>DB: Actualizar estado a VENCIDO
-            DB-->>S: Confirmar actualización
-        else No corresponde marcarla vencida
-            S->>S: Mantener el estado correspondiente
-        end
+    participant C as pagos.ts
+    participant S as Funciones de sesión y permisos
+    participant DB as MongoDB
+    A->>F: Consultar pagos
+    F->>C: GET /api/pagos
+    C->>S: Exigir sesión y rol ADMIN
+    alt Sin sesión o permiso
+        S-->>C: Error 401 o 403
+        C-->>F: Rechazar consulta
+    else Acceso permitido
+        C->>DB: Actualizar PENDIENTE con vencimiento pasado a VENCIDO
+        DB-->>C: Actualización terminada
+        C->>DB: Consultar listado y filtro por cliente
+        DB-->>C: Pagos
+        C-->>F: Respuesta JSON
+        F-->>A: Mostrar estados
     end
-
-    A->>F: Consultar cuotas vencidas
-    F->>C: Solicitar listado de cuotas vencidas
-    C->>S: Consultar cuotas vencidas
-    S->>DB: Buscar obligaciones con estado VENCIDO
-    DB-->>S: Resultado de la consulta
-    S-->>C: Listado de cuotas vencidas
-    C-->>F: Respuesta con resultados
-    F-->>A: Mostrar cuotas vencidas
 ```
 
 **Consideraciones:**
 
-- El proceso periódico debe ejecutarse con una frecuencia que se defina durante la implementación.
-- El sistema no debe marcar como vencida una obligación que ya fue pagada.
-- Los indicadores de próximos vencimientos del dashboard son una consulta distinta, correspondiente a CU-15 y RN-13.
+- Una obligación PAGADO conserva su estado aunque pase su fecha de vencimiento.
+- Registrar una cuota nueva no cancela una obligación anterior.
+- El resumen consulta vencidos y próximos vencimientos para sus indicadores; no ejecuta un proceso periódico ni genera cuotas nuevas.
