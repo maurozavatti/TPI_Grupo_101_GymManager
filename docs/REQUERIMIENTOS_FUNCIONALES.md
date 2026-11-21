@@ -2,8 +2,8 @@
 
 **Proyecto:** Gym Manager · Grupo 101  
 **Documento:** Especificación de requerimientos funcionales  
-**Versión:** 1.0 — Propuesta para validación del equipo  
-**Estado:** Borrador; debe aprobarse y contrastarse con la implementación
+**Versión:** 1.1 — MVP
+**Alcance:** MVP para un gimnasio. Primeras dos entregas académicas aprobadas.
 
 ## 1. Propósito
 
@@ -27,8 +27,7 @@ Un cliente puede existir sin una cuenta de usuario. La relación entre una cuent
 ## 4. Convenciones
 
 - **Prioridad Alta:** capacidad central del MVP.
-- **Prioridad Media:** documentada en el alcance, pero requiere confirmar detalle o implementación.
-- **Pendiente de decisión:** el repositorio no define aún un comportamiento con precisión suficiente; el equipo debe resolverlo antes de aprobar el requisito.
+- **Prioridad Media:** función complementaria del MVP.
 - Los requisitos especifican comportamiento deseado. Su inclusión aquí no implica que ya se encuentren implementados.
 
 ## 5. Requerimientos funcionales
@@ -39,12 +38,12 @@ Un cliente puede existir sin una cuenta de usuario. La relación entre una cuent
 |---|---|---|
 | RF-001 | El sistema deberá permitir que una persona con cuenta activa inicie sesión con sus credenciales. | Alta |
 | RF-002 | El sistema deberá rechazar credenciales incorrectas y cuentas dadas de baja, sin crear una sesión autenticada. | Alta |
-| RF-003 | El sistema deberá identificar el rol de la cuenta autenticada y aplicar los permisos asociados a ese rol. | Alta |
+| RF-003 | El sistema deberá interpretar el arreglo de roles de la cuenta autenticada y autorizar por pertenencia a los roles permitidos, conservando el alcance de ADMIN cuando también posea ENTRENADOR. | Alta |
 | RF-004 | El sistema deberá permitir que un usuario autenticado cierre su sesión. | Alta |
-| RF-005 | El sistema deberá permitir que un usuario autenticado cambie su contraseña validando la contraseña actual antes de aceptar la nueva. | Media |
+| RF-005 | El sistema deberá permitir que un usuario autenticado cambie su contraseña validando la actual y la confirmación, renovando la sesión actual y eliminando las anteriores. | Alta |
 | RF-006 | Cuando un cliente con ficha existente obtenga una cuenta, el sistema deberá permitir vincularla al cliente correspondiente sin duplicar la ficha y respetando la relación uno a uno. | Alta |
 
-**Fuera del MVP:** recuperar contraseñas mediante enlaces por email e iniciar sesión con Google. El alta inicial de cuentas de `ADMIN` y `ENTRENADOR`, así como el flujo exacto de registro de clientes, requiere confirmación del equipo.
+**Cuentas:** el registro público crea cuenta y sesión con `['USUARIO']`, sin generar ficha. ADMIN crea cuentas y modifica sus roles desde Cuentas. La primera cuenta administrativa se prepara manualmente. Google, recuperación por email y verificación del correo mediante códigos quedan fuera del MVP.
 
 ### 5.2 Gestión de clientes
 
@@ -71,8 +70,8 @@ El Entrenador puede consultar el catálogo, pero no crear, modificar ni dar de b
 
 | ID | Requerimiento | Prioridad |
 |---|---|---|
-| RF-016 | El sistema deberá permitir al Entrenador crear y asignar una rutina a un cliente existente y activo. | Alta |
-| RF-017 | El sistema deberá permitir incorporar a la rutina ejercicios existentes en el catálogo y registrar, para cada ejercicio, orden, series, repeticiones, peso y observaciones; el descanso se conservará si está contemplado en el modelo aprobado. | Alta |
+| RF-016 | El sistema deberá permitir al Administrador o Entrenador crear y asignar una rutina a un cliente existente y activo. | Alta |
+| RF-017 | El sistema deberá permitir incorporar a la rutina ejercicios existentes en el catálogo y registrar, para cada ejercicio, orden, series, repeticiones, peso, descanso y observaciones. | Alta |
 | RF-018 | El sistema deberá permitir consultar la rutina vigente de un cliente con cuenta desde su perfil. | Alta |
 | RF-019 | Cuando se asigne una nueva rutina, el sistema deberá marcar la rutina anterior como inactiva y conservar la nueva como única rutina activa del cliente. | Alta |
 | RF-020 | El sistema deberá conservar como máximo 12 rutinas por cliente, eliminando del historial la rutina inactiva más antigua cuando corresponda, sin eliminar la rutina vigente. | Alta |
@@ -83,7 +82,7 @@ El Entrenador puede consultar el catálogo, pero no crear, modificar ni dar de b
 | ID | Requerimiento | Prioridad |
 |---|---|---|
 | RF-022 | El sistema deberá permitir registrar de forma opcional una historia clínica básica que contenga antecedentes, lesiones y observaciones relevantes para el entrenamiento. | Alta |
-| RF-023 | El sistema deberá permitir actualizar la historia clínica conforme a las reglas de permisos del proyecto y registrar su fecha de actualización. | Alta |
+| RF-023 | El sistema deberá permitir actualizar la historia clínica conforme a las reglas de permisos del proyecto y registrar su fecha de actualización y el usuario que la modificó. | Alta |
 | RF-024 | El sistema deberá permitir consultar la historia clínica al Administrador, al Entrenador y al cliente titular, según los permisos definidos. | Alta |
 | RF-025 | El sistema deberá impedir que un cliente consulte o modifique la historia clínica de otro cliente y deberá evitar exponer esos datos en respuestas generales no autorizadas. | Alta |
 
@@ -99,7 +98,7 @@ No forman parte del MVP los adjuntos, estudios, recetas, certificados, imágenes
 | RF-029 | El sistema deberá rechazar una asignación cuando el turno haya alcanzado su capacidad máxima. | Alta |
 | RF-030 | El sistema deberá permitir al Administrador y al Entrenador retirar a un cliente de un turno. | Media |
 
-Los turnos del MVP representan franjas recurrentes semanales. No se incluyen clases especiales ni reservas puntuales con fecha específica. La cancelación completa de un turno, la reasignación automática de clientes a otro turno y la detección de solapamiento de horarios de un mismo entrenador quedan fuera de este MVP (ver RN-14).
+Los turnos del MVP son recurrentes semanales y duran una hora (RN-19). Se incluyen edición, baja, reactivación y control de solapamientos. El entrenador administra únicamente los propios; ADMIN administra todos. Se excluyen las reservas puntuales y la reasignación automática de clientes.
 
 ### 5.7 Gestión de pagos
 
@@ -112,7 +111,7 @@ Los turnos del MVP representan franjas recurrentes semanales. No se incluyen cla
 | RF-035 | El sistema deberá detectar las obligaciones impagas cuya fecha de vencimiento haya pasado y actualizar su estado a `VENCIDO`, conforme a la regla de negocio aprobada. | Alta |
 | RF-036 | El sistema deberá permitir al Administrador consultar desde el dashboard los pagos próximos a vencer. Esta consulta no deberá enviar notificaciones automáticas al cliente. | Alta |
 
-Los pagos en línea, las pasarelas de pago, la facturación, los comprobantes y las notificaciones externas quedan fuera del MVP. La regla exacta que relaciona una cuota vencida con el registro de una cuota posterior debe validarse antes de implementar el proceso automático.
+Los pagos en línea, la facturación, los comprobantes y las notificaciones externas quedan fuera del MVP. El modelo de Atlas conserva montos Decimal128. Una deuda impaga mantiene su estado aunque se registre otra cuota; su cobro se registra expresamente. Las obligaciones se registran manualmente; la reactivación no genera cuotas por sí misma.
 
 ### 5.8 Dashboard
 
@@ -124,7 +123,21 @@ Los pagos en línea, las pasarelas de pago, la facturación, los comprobantes y 
 | RF-040 | El sistema deberá mostrar la ocupación de cada turno en relación con su capacidad máxima. | Alta |
 | RF-041 | El sistema deberá mostrar al Administrador un indicador de ingresos mensuales calculado a partir de los pagos registrados. | Media |
 
-**Pendiente de decisión:** definir exactamente qué estado convierte a un cliente en “activo”, cómo se calcula el ingreso mensual y si se excluyen pagos pendientes o vencidos de dicho cálculo.
+**Criterio de indicadores:** los clientes activos se cuentan por `clientes.activo: true`. Los ingresos mensuales corresponden a cobros registrados como `PAGADO` según `fechaPago`; los pendientes y vencidos impagos se excluyen.
+
+### 5.9 Operaciones complementarias del alcance
+
+| ID | Requerimiento | Prioridad |
+|---|---|---|
+| RF-042 | El sistema deberá registrar una cuenta con `['USUARIO']` y crear su sesión, sin generar automáticamente una ficha de cliente. | Alta |
+| RF-043 | El Administrador deberá poder consultar, crear, buscar y filtrar cuentas, asignar roles y aplicar baja lógica o reactivación. | Alta |
+| RF-044 | El Administrador deberá poder reactivar fichas de clientes; la reactivación conserva sus datos y no restituye automáticamente turnos. | Alta |
+| RF-045 | El personal deberá poder editar la rutina vigente y consultar el historial conservado, incluida su impresión. | Alta |
+| RF-046 | El sistema deberá permitir generar turnos de una hora desde franjas y días de trabajo; ADMIN configura apertura/cupo y el entrenador opera su agenda propia. | Alta |
+| RF-047 | El Administrador deberá poder dar de baja o eliminar turnos seleccionados en lote mediante confirmación explícita. | Media |
+| RF-048 | El Administrador deberá poder registrar el cobro de una obligación pendiente o vencida, actualizando su estado y fecha de pago. | Alta |
+
+Los identificadores RF-001 a RF-041 conservan su numeración. Estas entradas hacen explícitas operaciones ya incluidas en los módulos del MVP.
 
 ## 6. Exclusiones del MVP
 
@@ -132,7 +145,7 @@ No se consideran requisitos comprometidos de esta entrega:
 
 - gestión de múltiples gimnasios, multi-tenancy y rol Súper Administrador;
 - suscripciones comerciales y personalización por gimnasio;
-- login con Google y recuperación de contraseña por correo;
+- login con Google, recuperación de contraseña por correo y verificación del correo mediante códigos;
 - avisos automáticos por email, SMS, WhatsApp o notificaciones push;
 - pagos en línea, integración con pasarelas, facturación y comprobantes;
 - documentación médica adjunta;
@@ -145,9 +158,11 @@ Cada requisito deberá poder vincularse a uno o más casos de uso y casos de pru
 
 La matriz `MATRIZ_DE_TRAZABILIDAD.md` conserva los enlaces entre identificadores y las verificaciones previstas. La existencia de una prueba prevista no implica que ya haya sido ejecutada.
 
-## 8. Validaciones pendientes
+## 8. Delimitación del alcance
 
-Antes de aprobar esta especificación, el equipo debe cerrar: (1) alta de cuentas y vinculación cliente-usuario; (2) permiso de modificación de ejercicios; (3) criterios de búsqueda; (4) formato imprimible de rutina; (5) regla de vencimiento y regularización de pagos; (6) definición de cliente activo e ingreso mensual. Los casos de uso existentes deberán alinearse a estas decisiones.
+El registro público, la vinculación de fichas y cuentas, los permisos y el estado activo se rigen por las reglas del MVP. El cobro de obligaciones es una operación administrativa; no se incluyen la generación periódica automática ni la cancelación de deudas anteriores por registrar una cuota nueva.
+
+Las funciones imprimibles utilizan el navegador. Las restricciones operativas se describen en las [limitaciones del MVP](../README.md#6-limitaciones-del-mvp).
 
 ## 9. Relación con otros documentos
 
