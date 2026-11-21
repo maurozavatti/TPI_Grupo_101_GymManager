@@ -10,7 +10,7 @@ Esta carpeta contiene el backend de **Gym Manager**, desarrollado con TypeScript
 
 Incluye una conexión reutilizable a la base de datos, ejecución de transacciones, una prueba de conexión y la ruta `GET /api/salud`. También incorpora registro, login, consulta y cierre de sesión, cambio de contraseña propia, administración de cuentas y funciones comunes para comprobar uno o varios roles. Entrega los archivos del frontend compilado desde la misma dirección que la API.
 
-Los controladores de clientes, turnos, pagos y resumen del inicio también están incorporados y conectados en `server.ts`. Sus operaciones y el estado de integración de roles múltiples se describen en las secciones 13 y 14.
+Los controladores de clientes, turnos, pagos, resumen, ejercicios, rutinas, perfil e historia clínica están conectados en `server.ts`. Sus operaciones y el contrato de roles se describen en las secciones 13 y 14.
 
 Las dependencias de ejecución declaradas son `mongodb` y `bcryptjs`. La compilación y comprobación del código se realizan con TypeScript.
 
@@ -42,7 +42,7 @@ Se debe copiar `.env.ejemplo` dentro de la misma carpeta, renombrar la copia com
 
 ```dotenv
 MONGODB_URI=mongodb+srv://USUARIO:CONTRASENA@CLUSTER/
-MONGODB_DB=NOMBRE_REAL_DE_LA_BASE
+MONGODB_DB=gym_manager
 PORT=3000
 ```
 
@@ -143,14 +143,14 @@ La ejecución de Vite y el backend en terminales separadas se describe en el [RE
 
 | Archivo | Objetivo |
 |---|---|
-| `src/server.ts` | Inicia el servidor después de conectar a Atlas. Conecta salud, autenticación, cuenta propia, administración de cuentas, clientes, turnos, pagos y resumen; responde a rutas de API inexistentes y delega la entrega de la web. |
+| `src/server.ts` | Inicia el servidor después de conectar a Atlas. Conecta salud, autenticación, cuenta propia, administración de cuentas, clientes, turnos, pagos, resumen, ejercicios, rutinas, perfil e historia; responde a rutas de API inexistentes y delega la entrega de la web. |
 | `src/db.ts` | Comparte un solo `MongoClient`, conecta y cierra la conexión, y permite ejecutar varias operaciones dentro de una transacción con `ejecutarTransaccion`. |
 | `src/check-connection.ts` | Comprueba la conexión a Atlas con un ping y cierra la conexión al finalizar. |
 | `src/servicios/archivos.ts` | Entrega HTML, CSS, JavaScript e imágenes del frontend compilado. Limita el acceso a `frontend/dist` y a las extensiones permitidas. |
 | `src/compartidos/http.ts` | Lee objetos JSON con límite de tamaño, envía respuestas JSON y define `ErrorHTTP`. También valida textos, identificadores, enteros y fechas de Argentina. |
 | `src/compartidos/modelos.ts` | Define los tipos `ConfiguracionAgenda` y `Turno`, con franjas, cupos, entrenador, clientes e historial de asignaciones. |
 | `src/compartidos/reglas.ts` | Define los días de la semana admitidos y comprueba el formato y orden de los horarios. |
-| `src/controladores/register.ts` | Valida el registro, normaliza el correo y crea una cuenta con rol `USUARIO` junto con su sesión dentro de una transacción. |
+| `src/controladores/register.ts` | Valida el registro, normaliza el correo y crea una cuenta con `rol: ['USUARIO']` junto con su sesión dentro de una transacción. |
 | `src/controladores/login.ts` | Comprueba correo, contraseña, cuenta activa y formato de uno o varios roles; crea una sesión cuando las credenciales son correctas. |
 | `src/controladores/sesion.ts` | Identifica al usuario mediante la cookie y la base de datos, responde la consulta de sesión y permite cerrarla. |
 | `src/servicios/contrasenas.ts` | Genera hashes bcrypt y compara contraseñas sin guardar el valor original. Comprueba los límites de las nuevas contraseñas. |
@@ -166,7 +166,7 @@ La ejecución de Vite y el backend en terminales separadas se describe en el [RE
 | `src/controladores/pagos.ts` | Lista pagos, registra inscripciones o cuotas pagadas/pendientes y marca una obligación como pagada. Actualiza los pendientes vencidos al listar. |
 | `src/controladores/resumen.ts` | Consulta ocupación y turnos del día, clientes activos, ingresos del mes y cuotas vencidas o próximas a vencer. |
 | `src/servicios/permisos.ts` | Define `tieneRol`, `exigirSesion` y `exigirRol`; comprueba pertenencia a los roles permitidos y rechaza con `401` o `403`. |
-| `src/servicios/roles.ts` | Define `RolesCuenta` y las funciones `esRolCuenta`, `obtenerRoles` e `incluyeRol` para interpretar un rol como texto o varios como array. |
+| `src/servicios/roles.ts` | Define `RolesCuenta` y las funciones `esRolCuenta`, `obtenerRoles` e `incluyeRol` para validar e interpretar los roles de las cuentas. |
 | `pruebas/permisos.test.mjs` | Comprueba la lógica de sesiones y roles con consultas simuladas, sin acceder a Atlas. |
 | `.env.ejemplo` | Contiene la plantilla para crear la configuración local sin publicar credenciales. |
 | `tsconfig.json` | Configura TypeScript para compilar desde `src` hacia `dist`. |
@@ -199,6 +199,8 @@ El comando `start` permite que el archivo `.env` no exista, pero los datos reale
 
 Para que la cookie exija HTTPS se configura también `NODE_ENV=production`.
 
+La demostración está en [Gym Manager en Render](https://gymmanager-grupo-101.onrender.com/). El equipo selecciona manualmente las versiones que despliega.
+
 ---
 
 ## 10. Registro, login y sesiones
@@ -215,7 +217,7 @@ Las peticiones POST utilizan `Content-Type: application/json`. Registro y login 
 
 ### 10.1 Registro y contraseñas
 
-El registro público siempre asigna el rol `USUARIO` y no crea una ficha de cliente. Nombre y apellido son obligatorios y admiten hasta 100 caracteres cada uno. El correo admite hasta 254 caracteres; se guarda sin espacios en los extremos y en minúsculas. Su índice único evita duplicados incluso ante registros simultáneos. Si el correo ya existe, la API responde `409` e indica el campo `correo`.
+El registro público siempre asigna `rol: ['USUARIO']` y no crea una ficha de cliente. Nombre y apellido son obligatorios y admiten hasta 100 caracteres cada uno. El correo admite hasta 254 caracteres; se guarda sin espacios en los extremos y en minúsculas. Su índice único evita duplicados incluso ante registros simultáneos. Si el correo ya existe, la API responde `409` e indica el campo `correo`.
 
 Las nuevas contraseñas requieren al menos 8 caracteres, no pueden contener solamente espacios y admiten hasta 72 bytes por el límite de bcrypt. Se genera un hash con costo 12; la contraseña original no se guarda, no se recorta ni se convierte a minúsculas.
 
@@ -229,7 +231,7 @@ Cada ingreso correcto genera una sesión nueva de 8 horas. El navegador recibe l
 
 La colección `sesiones` guarda `usuarioId`, `tokenHash`, `fechaCreacion` y `fechaVencimiento`. El token original no se guarda en la base ni se incluye como dato JSON. Un índice único protege el hash y un índice TTL permite limpiar sesiones vencidas.
 
-Cada consulta comprueba el vencimiento, que la cuenta siga activa y que el campo `rol` contenga un texto válido o un array no vacío de valores válidos y sin repetidos. Los valores admitidos son `ADMIN`, `ENTRENADOR` y `USUARIO`. La comprobación de vencimiento no depende de que el índice TTL ya haya eliminado el documento. La respuesta incluye únicamente datos públicos: identificador, nombre, apellido, correo, rol y cliente asociado.
+Cada consulta comprueba el vencimiento, que la cuenta siga activa y que sus roles sean válidos. El formato de persistencia es un array no vacío y sin repetidos. Los valores admitidos son `ADMIN`, `ENTRENADOR` y `USUARIO`. La comprobación de vencimiento no depende de que el índice TTL ya haya eliminado el documento. La respuesta incluye únicamente datos públicos: identificador, nombre, apellido, correo, rol y cliente asociado.
 
 ### 10.3 Cierre de sesión
 
@@ -269,7 +271,7 @@ Las pruebas se ejecutan con el módulo `node:test` y utilizan los archivos compi
 
 Estas pruebas no crean cuentas ni modifican Atlas. Las pruebas del flujo real se realizan con el servidor iniciado y el navegador: registro, ingreso, consulta de sesión, recarga y cierre.
 
-Las ocho pruebas actuales utilizan roles individuales como texto. No cubren todavía arrays de roles, altas administrativas, edición de roles, cambio de contraseña, baja/reactivación ni las reglas de clientes, turnos y pagos. Que estas pruebas pasen no certifica la integración completa de esos flujos.
+La suite se limita a sesiones y permisos con consultas simuladas. No sustituye las pruebas funcionales de los módulos ni demuestra por sí sola la integración completa.
 
 ---
 
@@ -292,7 +294,7 @@ Una transacción actualiza el hash, elimina las sesiones anteriores e inserta un
 
 ### 12.2 Alta, roles y estado
 
-El alta administrativa no inicia sesión como la cuenta creada ni modifica la sesión del administrador. Guarda `rol` como array, incluso si solo se seleccionó un rol. El registro público continúa guardando el texto `USUARIO`; ambos formatos son aceptados por los servicios comunes. El correo se normaliza y su índice único impide duplicados. No se crea una ficha de cliente ni se almacena `clienteId` hasta vincular una ficha.
+El alta administrativa no inicia sesión como la cuenta creada ni modifica la sesión del administrador. Guarda `rol` como array, incluso si solo se seleccionó un rol. El registro público también guarda `['USUARIO']`. El correo se normaliza y su índice único impide duplicados. No se crea una ficha de cliente ni se almacena `clienteId` hasta vincular una ficha.
 
 No se permite quitarse `ADMIN` ni desactivar la propia cuenta desde la sesión administrativa. Esos controles protegen la cuenta que realiza la operación; no implementan una garantía global sobre modificaciones concurrentes entre distintos administradores.
 
@@ -304,11 +306,15 @@ La primera cuenta administrativa se prepara manualmente en MongoDB con un hash c
 
 ## 13. Clientes, turnos, pagos e inicio
 
-Estas rutas ya están conectadas. Los permisos descritos son el alcance de cada módulo; las comprobaciones que aún requieren adaptación al formato array se detallan en la sección 14.
+Estas rutas están conectadas y utilizan las funciones compartidas de roles. Su existencia no reemplaza la comprobación funcional de cada flujo.
 
 | Método | Ruta | Operación y acceso |
 |---|---|---|
 | `GET` | `/api/clientes` | Listado para `ADMIN` y `ENTRENADOR`, sin historia clínica. |
+| `GET` | `/api/ejercicios` | Personal: consulta catálogo; `ADMIN` incluye inactivos. |
+| `POST` | `/api/ejercicios` / `/api/ejercicios/estado` | `ADMIN`: alta/edición y cambio de estado del catálogo. |
+| `GET` | `/api/rutinas` | Personal: consulta historial mediante `clienteId`. |
+| `POST` | `/api/rutinas` / `/api/rutinas/editar` | `ADMIN` o `ENTRENADOR`: asigna o edita rutina vigente del cliente activo. |
 | `GET` | `/api/perfil` | `USUARIO`: ficha propia; responde `cliente: null` cuando todavía no hay una ficha vinculada. |
 | `GET` | `/api/historia` | Cliente: historia propia. Personal: requiere `?clienteId=...`. Respuesta específica, no incluida en listados. |
 | `POST` | `/api/historia` | Actualiza la historia propia del cliente o la ficha seleccionada por personal; guarda fecha y usuario de modificación. |
@@ -336,27 +342,29 @@ Clientes exige nombre, apellido y DNI de siete u ocho dígitos. El DNI tiene ín
 
 La agenda guarda su configuración en `configuracion`, con un documento identificado por el backend. Contiene franjas de apertura, capacidad y días de trabajo por entrenador. La implementación actual admite de una a cuatro franjas, cupos enteros de 1 a 100 y hasta 50 entrenadores en una solicitud de generación. El entrenador debe estar activo y poseer `ENTRENADOR`. La agenda y los turnos generados se guardan en una transacción. La generación no elimina automáticamente otros horarios existentes.
 
-Las asignaciones comprueban cupo, cliente activo y superposición horaria antes de escribir; el chequeo y la escritura todavía están separados y no garantizan el cupo ante solicitudes simultáneas.
+Las asignaciones comprueban cupo, cliente activo y superposición horaria. Las [limitaciones de la versión](../README.md#6-limitaciones-del-mvp) incluyen el comportamiento ante asignaciones simultáneas y la compatibilidad de pagos con Decimal128.
 
-Pagos admite `INSCRIPCION` y `CUOTA`, montos enteros y estados `PAGADO`, `PENDIENTE` o `VENCIDO`. Las fechas ingresadas como día se interpretan en horario de Argentina. Al listar se promueven a vencidos los pendientes cuya fecha pasó. Las obligaciones se registran manualmente: no se generan cuotas nuevas automáticamente cada 30 días ni se limita el listado exclusivamente a clientes activos.
+El modelo de pagos contempla `INSCRIPCION` y `CUOTA`, monto BSON Decimal128 y estados `PAGADO`, `PENDIENTE` o `VENCIDO`. Las fechas ingresadas como día se interpretan en horario de Argentina. Al listar se promueven a vencidos los pendientes cuya fecha pasó. Las obligaciones se registran manualmente; no hay un generador periódico de nuevas cuotas. El listado no se limita a clientes activos.
 
-Resumen calcula el día de los turnos con la zona `America/Argentina/Buenos_Aires`, su ocupación total, clientes activos, ingresos del mes y obligaciones vencidas o próximas a vencer en siete días. El inicio de mes se construye con la zona horaria del proceso; conviene alinear ese cálculo con Argentina al desplegar.
+Los importes se describen en el [modelo NoSQL](../docs/ESQUEMA_NOSQL.md). El circuito utiliza la fecha de pago para los cobros y el vencimiento para las obligaciones impagas.
+
+Resumen calcula el día de los turnos con la zona `America/Argentina/Buenos_Aires`, su ocupación total, clientes activos, ingresos del mes y obligaciones vencidas o próximas a vencer en siete días. El indicador de ingresos considera cobros con estado `PAGADO` y fecha de pago dentro del mes.
 
 ---
 
 ## 14. Contrato de roles y compatibilidad de módulos
 
-El campo se sigue llamando `rol`. Los servicios comunes aceptan estos dos formatos:
+El campo se sigue llamando `rol` y el modelo acordado lo almacena exclusivamente como array no vacío, sin repetidos y con valores `ADMIN`, `ENTRENADOR` o `USUARIO`:
 
 ```js
-rol: 'ADMIN'
+rol: ['USUARIO']
 rol: ['ADMIN', 'ENTRENADOR']
 ```
 
-`esRolCuenta` valida los valores; `obtenerRoles` devuelve una lista y `incluyeRol` comprueba si alguno coincide con los permitidos. No se agrega un campo separado para indicar que un administrador también es entrenador. Una cuenta que posee `ADMIN` conserva el alcance administrativo aunque también tenga `ENTRENADOR`.
+Registro público, alta administrativa y edición de roles escriben arrays. `esRolCuenta` valida; `obtenerRoles` devuelve una lista; `incluyeRol` comprueba pertenencia. La autorización comprueba pertenencia a los roles permitidos.
 
-Login, consulta de sesión, permisos comunes, cuentas, clientes, turnos, pagos, resumen, ejercicios y rutinas reconocen roles escalares o arrays mediante las funciones compartidas. Una cuenta con `ADMIN` conserva el alcance administrativo aunque también tenga `ENTRENADOR`.
+Los controladores utilizan las funciones compartidas. `ADMIN` tiene prioridad sobre las restricciones del entrenador cuando una cuenta posee ambos roles. No se agrega otro campo para indicar esta combinación.
 
-Los filtros de MongoDB como `{ rol: 'ENTRENADOR' }` sí coinciden con un texto o con un elemento de un array. No deben confundirse con las comparaciones directas de JavaScript ni reescribirse automáticamente.
+Los filtros de MongoDB como `{ rol: 'ENTRENADOR' }` coinciden con un elemento del array; no equivalen a comparar directamente un array con un string en JavaScript.
 
-La validación real de `usuarios.rol` debe admitir ambos formatos. El script versionado `../database/crear_colecciones.js` todavía conserva el enum de texto y requiere actualización para reproducir el esquema compatible en otra base. Modificar el script no actualiza por sí solo una colección existente; su validator se administra en MongoDB. Los documentos del esquema y seguridad también deben alinearse con el contrato de roles múltiples.
+El modelo y el script de usuarios definen `rol` como array. Los scripts describen la creación de colecciones e índices; no modifican por sí solos una base ya existente.

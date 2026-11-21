@@ -43,7 +43,7 @@ npm --prefix backend ci
 
 Los archivos `package-lock.json` incluidos en el repositorio permiten reproducir la instalación.
 
-La instalación del frontend incluye `lucide`, que se utiliza para los iconos de acciones y paginación. No requiere agregar scripts externos al HTML.
+La instalación incluye `lucide` para iconos SVG y `exceljs` para importar el catálogo de ejercicios y descargar su plantilla Excel. No requiere agregar scripts externos al HTML.
 
 ---
 
@@ -149,7 +149,7 @@ También se comprueba el comportamiento visual y de navegación:
 5. Los botones con iconos muestran su descripción al pasar el mouse, recibir foco con teclado o mantenerlos pulsados en una pantalla táctil. La pulsación larga muestra la ayuda sin ejecutar la acción.
 6. Mi cuenta presenta las iniciales, el nombre, el correo y las etiquetas de roles. Cambiar contraseña abre el formulario; Cancelar lo cierra y limpia las claves. Después de un cambio correcto permanece abierto para mostrar la confirmación.
 
-Estas indicaciones describen comprobaciones manuales; no constituyen una suite automática del frontend. Las pantallas de clientes, turnos, pagos e inicio requieren los ajustes de roles descritos en la sección 8.8 antes de dar por correcto el flujo completo con cuentas que guardan arrays.
+Estas indicaciones son procedimientos de comprobación manual, no resultados de ejecución ni una suite automática del frontend.
 
 ---
 
@@ -200,8 +200,13 @@ frontend/
 │   │   ├── inicio/       (inicio.html, inicio.ts, inicio.css)
 │   │   ├── cuentas/      (cuentas.html, cuentas.ts, cuentas.css, formulario-cuentas.ts)
 │   │   ├── clientes/     (clientes.html, clientes.ts, clientes.css)
+│   │   ├── ejercicios/   (ejercicios.html, ejercicios.ts, ejercicios.css)
+│   │   ├── rutinas/      (rutinas.html, rutinas.ts, rutinas.css)
 │   │   ├── turnos/       (turnos.html, turnos.ts, turnos.css)
 │   │   └── pagos/        (pagos.html, pagos.ts, pagos.css)
+│   ├── cliente/
+│   │   ├── perfil/       (perfil.html, perfil.ts, perfil.css)
+│   │   └── historia/     (historia.html, historia.ts, historia.css)
 │   └── autenticacion/
 │       ├── acceso.ts
 │       ├── autenticacion.css
@@ -259,9 +264,21 @@ frontend/
 | `src/panel/pagos/pagos.html` | Define tabla, filtro por cliente y formulario para registrar inscripción o cuota. |
 | `src/panel/pagos/pagos.ts` | Consulta clientes y pagos, registra operaciones enviando el monto como número y permite marcar obligaciones como pagadas. |
 | `src/panel/pagos/pagos.css` | Diseña formulario, filtro, tabla y etiquetas de estado de pagos. |
+| `src/panel/ejercicios/ejercicios.html` | Define catálogo y formulario de ejercicio e importación. |
+| `src/panel/ejercicios/ejercicios.ts` | Consulta y mantiene el catálogo, valida el Excel y envía cada fila; descarga la plantilla. |
+| `src/panel/ejercicios/ejercicios.css` | Diseña catálogo, formulario e importación. |
+| `src/panel/rutinas/rutinas.html` | Define selección de cliente, historial y editor de rutina. |
+| `src/panel/rutinas/rutinas.ts` | Consulta, asigna y edita rutinas; prepara su impresión. |
+| `src/panel/rutinas/rutinas.css` | Distribuye el editor, historial y formato imprimible. |
+| `src/cliente/perfil/perfil.html` | Define ficha, rutina vigente y turnos del titular. |
+| `src/cliente/perfil/perfil.ts` | Consulta perfil, rutina y turnos propios; informa ausencia de vínculo y permite imprimir la rutina. |
+| `src/cliente/perfil/perfil.css` | Presenta la ficha y rutina, con estilos de impresión. |
+| `src/cliente/historia/historia.html` | Define campos clínicos y datos de última modificación. |
+| `src/cliente/historia/historia.ts` | Consulta y actualiza la historia propia o del cliente seleccionado según el rol. |
+| `src/cliente/historia/historia.css` | Diseña el formulario clínico y sus mensajes. |
 | `vite.config.ts` | Reenvía las peticiones `/api` al backend durante el desarrollo local e incluye automáticamente `index.html` y los HTML de `src` al compilar. |
 | `tsconfig.json` | Configura la comprobación del código TypeScript del frontend. |
-| `package.json` | Declara las herramientas, la dependencia de iconos Lucide y los comandos del frontend. |
+| `package.json` | Declara las herramientas, las dependencias Lucide y ExcelJS y los comandos del frontend. |
 | `package-lock.json` | Registra las versiones de las dependencias para reproducir la instalación. |
 | `.gitignore` | Excluye dependencias instaladas, archivos generados y otros archivos locales. |
 
@@ -303,7 +320,7 @@ Los mensajes y campos incorrectos usan `--color-error`; los mensajes de éxito u
 
 `exigirAcceso()` exige una sesión antes de cargar una página. Si no hay sesión, dirige al login y devuelve `null`. Al recibir una lista de roles, como `exigirAcceso(['ADMIN'])`, comprueba además que alguno de los roles de la cuenta coincida; si no coincide, dirige a `/` y devuelve `null`. Los errores de consulta se propagan para informar el fallo. `tieneRol(usuario, rolesPermitidos)` permite decidir qué opciones mostrar.
 
-El campo `rol` puede ser un texto, como `'ADMIN'`, o un array, como `['ADMIN', 'ENTRENADOR']`. `esRolCuenta` valida ambos formatos, `obtenerRoles` devuelve una lista e `incluyeRol` comprueba pertenencia. El encabezado presenta los roles separados por `/`; Mi cuenta utiliza una etiqueta individual por rol. Las comparaciones directas contra un texto no sustituyen estas funciones.
+El formato oficial persistido de `rol` es un arreglo no vacío y sin repetidos, incluso cuando contiene un solo rol, por ejemplo `['USUARIO']` o `['ADMIN', 'ENTRENADOR']`. `esRolCuenta` valida los valores recibidos, `obtenerRoles` devuelve una lista e `incluyeRol` comprueba pertenencia. El encabezado presenta los roles separados por `/`; Mi cuenta utiliza una etiqueta individual por rol. Las comparaciones directas contra un texto no sustituyen estas funciones.
 
 Estas funciones organizan la navegación del frontend. El backend sigue comprobando los permisos de cada operación; ocultar un botón o redirigir una página no reemplaza esa autorización.
 
@@ -382,15 +399,15 @@ El frontend envía los roles como array a `/api/cuentas` o `/api/cuentas/roles`.
 | Mi perfil | `/src/cliente/perfil/perfil.html` | `USUARIO`: ficha vinculada, rutina vigente imprimible y turnos asignados; informa si todavía no tiene ficha. |
 | Historia clínica | `/src/cliente/historia/historia.html` | Cliente titular y personal consultan o actualizan antecedentes, lesiones y observaciones. |
 
-Turnos reutiliza una sola pantalla para personal administrativo y entrenadores. En la implementación actual se ingresa el identificador del entrenador en los formularios de turno y agenda; no hay un selector de cuentas por nombre. La capacidad se envía como número. El formulario de pagos también convierte el monto a número antes de enviarlo.
+Turnos reutiliza una sola pantalla para personal administrativo y entrenadores. En la implementación actual se ingresa el identificador del entrenador en los formularios de turno y agenda; no hay un selector de cuentas por nombre. La capacidad se envía como número. El formulario de pagos convierte el monto a número antes de enviarlo. La [compatibilidad con Decimal128](../README.md#6-limitaciones-del-mvp) forma parte de las limitaciones de la versión.
 
-Los pendientes de pagos se registran desde el formulario; no hay generación automática de cuotas sucesivas. Clientes y turnos todavía utilizan algunas confirmaciones nativas del navegador; el diálogo con diseño propio se incorporó en Cuentas.
+Los pendientes de pagos se registran desde el formulario; no hay generación automática de cuotas sucesivas. Clientes y turnos utilizan algunas confirmaciones nativas del navegador; Cuentas utiliza un diálogo con diseño propio.
 
-### 8.8 Estado de integración de roles múltiples
+### 8.8 Roles múltiples y navegación
 
-Los módulos del panel, el catálogo y las rutinas usan los servicios comunes para interpretar roles escalares o arrays. El acceso a la historia clínica y a los datos de perfil también se comprueba en el backend por titularidad y rol.
+Los módulos del panel, el catálogo y las rutinas usan los servicios comunes para comprobar pertenencia a los roles del arreglo. La compatibilidad de lectura con datos escalares antiguos no constituye un segundo formato oficial de persistencia. El acceso a la historia clínica y a los datos de perfil también se comprueba en el backend por titularidad y rol.
 
-Para completar la integración se deben reutilizar `tieneRol` o `incluyeRol` en cada módulo y dar prioridad al alcance administrativo cuando una cuenta tiene `ADMIN` y `ENTRENADOR`. No basta con que el menú muestre el enlace. El detalle del backend y de la validación de MongoDB está en su README.
+Las comprobaciones usan `tieneRol` o `incluyeRol` y priorizan `ADMIN` cuando también existe `ENTRENADOR`. No basta con que el menú muestre el enlace: la API autoriza cada operación. El contrato de roles y la autorización de las operaciones se describen en el README del backend.
 
 El menú incluye ejercicios, rutinas, perfil e historia clínica cuando las rutas corresponden al rol de la persona. Las cuentas que solo poseen `USUARIO` llegan a Mi perfil después del login.
 
@@ -403,6 +420,16 @@ El menú incluye ejercicios, rutinas, perfil e historia clínica cuando las ruta
 Cada botón recibe un nombre mediante `aria-label`. Una ayuda flotante compartida muestra la descripción al pasar el mouse, navegar con teclado o mantener pulsado el botón durante aproximadamente 550 ms en una pantalla táctil. Un toque corto ejecuta la acción; una pulsación larga consulta la ayuda y bloquea ese clic. Mover el dedo cancela la espera para permitir el desplazamiento.
 
 La ayuda se coloca fuera de la tabla para evitar recortes y se oculta al desplazarse, cambiar el tamaño de la ventana, salir del botón o tocar otra zona. Los iconos y estados visuales reutilizan las variables globales.
+
+---
+
+### 8.10 Ejercicios, rutinas y datos del cliente
+
+La importación de ejercicios utiliza la primera hoja de un archivo `.xlsx` de hasta 2 MiB, con hasta 1000 filas de datos. Exige las columnas `codigo`, `nombre` y `grupomuscular`; `descripcion` es opcional. Se validan encabezados, valores y códigos repetidos antes del envío. Un código existente permite actualizar el ejercicio correspondiente. Las filas se envían una por una: puede haber resultados parciales y no es una importación atómica de todo el archivo.
+
+Rutinas permite asignar y editar la vigente para clientes activos. El backend conserva como máximo 12 rutinas y desactiva la anterior al asignar otra. La vista del personal muestra el historial; Mi perfil consulta la rutina vigente del titular. Ambas vistas disponen de impresión mediante el navegador; no se genera un PDF en el servidor.
+
+Historia clínica se consulta mediante una ruta específica y conserva los datos de la última modificación y su autor. No se incluye en el listado general de clientes ni equivale a un historial completo de versiones. El cliente con `USUARIO` accede a su ficha vinculada; el personal selecciona el cliente objetivo y la API verifica su autorización.
 
 ---
 
