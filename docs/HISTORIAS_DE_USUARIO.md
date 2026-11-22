@@ -13,30 +13,26 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, Entrenador o Cliente con cuenta, **quiero** iniciar sesión con mi email y contraseña, **para** acceder a las funcionalidades correspondientes a mi rol.
 
 **Criterios de aceptación:**
+
 - Si las credenciales son correctas y la cuenta está activa, el sistema me da acceso.
 - Si las credenciales son incorrectas, el sistema muestra un error sin indicar cuál de los dos datos falló.
 - Si mi cuenta está dada de baja, el sistema rechaza el inicio de sesión.
 
 *(Relacionada con CU-01)*
 
-### HU-02: Recuperar contraseña
+### HU-02: Recuperar contraseña — fuera del MVP
 
-**Como** usuario que olvidó su contraseña, **quiero** solicitar un enlace de recuperación por email, **para** poder volver a acceder a mi cuenta.
-
-**Criterios de aceptación:**
-- Recibo un enlace de un solo uso, con tiempo de expiración.
-- Si el enlace expiró o ya fue usado, el sistema no permite cambiar la contraseña con él.
-- Al completar el cambio, puedo iniciar sesión con la nueva contraseña.
-
-*(Relacionada con CU-02)*
+La recuperación por correo se conserva como idea futura vinculada a CU-02. El MVP incluye el cambio de contraseña desde una sesión autenticada, descrito en HU-03.
 
 ### HU-03: Cambiar contraseña
 
 **Como** usuario autenticado, **quiero** cambiar mi contraseña ingresando la actual y la nueva, **para** mantener mi cuenta segura.
 
 **Criterios de aceptación:**
+
 - El sistema valida la contraseña actual antes de aceptar la nueva.
 - Si la contraseña actual es incorrecta, rechaza el cambio.
+- La nueva contraseña requiere confirmación; al cambiarla se renueva la sesión actual y se eliminan las anteriores.
 
 *(Relacionada con CU-03)*
 
@@ -49,6 +45,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** registrar un cliente con sus datos identificatorios, **para** poder asignarle rutinas, turnos y pagos, tenga o no cuenta de usuario.
 
 **Criterios de aceptación:**
+
 - No puedo registrar dos clientes con el mismo DNI.
 - El cliente queda creado con `activo: true`, con o sin cuenta asociada.
 
@@ -59,6 +56,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** dar de baja a un cliente que deja el gimnasio, **para** dejar de contarlo como activo sin perder su historial.
 
 **Criterios de aceptación:**
+
 - El cliente pasa a `activo: false` con `fechaBaja` registrada.
 - Sus rutinas, pagos e historia clínica anteriores siguen disponibles para consulta.
 
@@ -73,6 +71,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** cargar un ejercicio nuevo en el catálogo con un código identificatorio, **para** que los entrenadores lo puedan usar al armar rutinas.
 
 **Criterios de aceptación:**
+
 - No puedo cargar dos ejercicios con el mismo código.
 - El ejercicio queda disponible inmediatamente para armar rutinas.
 
@@ -87,6 +86,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Entrenador, **quiero** armar una rutina eligiendo ejercicios del catálogo y asignarla a un cliente, **para** que tenga un plan de entrenamiento actualizado.
 
 **Criterios de aceptación:**
+
 - Al asignar una rutina nueva, la anterior queda marcada como no vigente, pero no se borra (salvo que se supere el límite de 12).
 - El cliente solo tiene una rutina vigente a la vez.
 
@@ -97,6 +97,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Cliente con cuenta, **quiero** ver mi rutina actual con los ejercicios asignados, **para** saber qué entrenamiento me corresponde hacer.
 
 **Criterios de aceptación:**
+
 - Veo únicamente la rutina marcada como vigente, con series, repeticiones y peso de cada ejercicio.
 
 *(Relacionada con CU-08)*
@@ -110,6 +111,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Cliente con cuenta, **quiero** cargar mis antecedentes y lesiones previas cuando yo decida hacerlo, **para** que el entrenador tenga en cuenta mi condición física al armar mi rutina.
 
 **Criterios de aceptación:**
+
 - No es obligatorio completarla al registrarme.
 - Puedo actualizarla si sufro una lesión nueva.
 
@@ -120,6 +122,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador o Entrenador, **quiero** consultar (y, de ser necesario, cargar) la historia clínica de cualquier cliente, incluso sin cuenta, **para** entrenarlo de forma segura.
 
 **Criterios de aceptación:**
+
 - Puedo ver y cargar la historia clínica de cualquier cliente.
 - No puedo ver la historia clínica si soy otro cliente (no soy el titular).
 
@@ -134,7 +137,8 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador o Entrenador, **quiero** crear un turno con día, horario y cupo máximo, **para** organizar las clases de la semana.
 
 **Criterios de aceptación:**
-- El turno queda disponible para asignar clientes.
+
+- El turno semanal dura una hora y queda disponible para asignar clientes. El entrenador administra los propios y ADMIN puede operar sobre cualquiera.
 - El día/horario representa una recurrencia semanal, no una fecha puntual.
 
 *(Relacionada con CU-11)*
@@ -144,6 +148,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador o Entrenador, **quiero** anotar a un cliente en un turno, **para** que asista a esa clase.
 
 **Criterios de aceptación:**
+
 - No puedo asignar un cliente si el turno ya alcanzó su cupo máximo.
 
 *(Relacionada con CU-12)*
@@ -157,6 +162,7 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** registrar la inscripción o la cuota de un cliente, **para** llevar el control de quién está al día.
 
 **Criterios de aceptación:**
+
 - El pago queda asociado al cliente, con fecha de pago y de vencimiento.
 - Queda registrado qué usuario cargó el pago (auditoría).
 
@@ -167,7 +173,8 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** ver un listado de clientes con cuotas vencidas, **para** poder contactarlos y regularizar la situación.
 
 **Criterios de aceptación:**
-- El sistema marca automáticamente como `VENCIDO` el pago cuya fecha de vencimiento ya pasó sin un pago nuevo.
+
+- Al consultar pagos, el sistema identifica las obligaciones impagas vencidas y actualiza su estado a `VENCIDO`. Las obligaciones ya cobradas conservan `PAGADO`.
 
 *(Relacionada con CU-14)*
 
@@ -180,6 +187,58 @@ Historias de usuario correspondientes a los casos de uso definidos en `CASOS_DE_
 **Como** Administrador, **quiero** ver un panel con clientes activos, cuotas vencidas, ocupación de turnos e ingresos del mes, **para** tener una visión general sin revisar cliente por cliente.
 
 **Criterios de aceptación:**
+
 - Los datos del dashboard se calculan en base a la información ya cargada (no requiere carga manual adicional).
 
 *(Relacionada con CU-15)*
+
+---
+
+## Cuentas, sesión y perfil
+
+### HU-16: Registrarme y mantener mi sesión
+
+**Como** persona que quiere acceder a su información, **quiero** registrar una cuenta e iniciar sesión, **para** consultar mi perfil cuando administración la vincule con mi ficha.
+
+**Criterios de aceptación:**
+
+- El registro asigna `['USUARIO']` y crea una sesión.
+- La ficha se vincula por administración sin duplicarla.
+- Puedo cerrar mi sesión y la aplicación comprueba su vencimiento.
+
+*(Relacionada con CU-22, CU-23 y CU-25)*
+
+### HU-17: Administrar cuentas
+
+**Como** Administrador, **quiero** crear cuentas, modificar sus roles y administrar su estado, **para** controlar los accesos al gimnasio.
+
+**Criterios de aceptación:**
+
+- Puedo asignar uno o varios roles válidos sin repetidos.
+- La baja de la cuenta elimina sus sesiones y conserva sus datos.
+- No puedo desactivar mi propia cuenta ni quitarme ADMIN desde ella.
+
+*(Relacionada con CU-24)*
+
+### HU-18: Consultar mis turnos
+
+**Como** Cliente con cuenta, **quiero** consultar día, horario y entrenador de mis turnos, **para** conocer mis asignaciones.
+
+**Criterios de aceptación:**
+
+- Veo únicamente las asignaciones de mi ficha.
+- Si todavía no tengo ficha o turnos, se muestra un estado informativo.
+
+*(Relacionada con CU-26)*
+
+### HU-19: Actualizar una rutina vigente
+
+**Como** Administrador o Entrenador, **quiero** editar la rutina vigente y consultar las anteriores, **para** ajustar el entrenamiento y conservar su seguimiento.
+
+**Criterios de aceptación:**
+
+- La edición conserva la identidad de la rutina y actualiza su fecha de modificación.
+- Puedo consultar e imprimir el historial conservado.
+- Una nueva asignación respeta el máximo de 12 rutinas y una única vigente.
+
+*(Relacionada con CU-07 y CU-27)*

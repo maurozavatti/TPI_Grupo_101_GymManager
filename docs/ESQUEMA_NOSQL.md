@@ -2,9 +2,9 @@
 
 ## Descripción
 
-Para el desarrollo del sistema **Gym Manager** se utilizará una base de datos documental **MongoDB NoSQL**.
+Gym Manager utiliza la base documental **gym_manager** en **MongoDB Atlas**, accedida desde el backend mediante el driver oficial.
 
-El modelo estará compuesto por **siete colecciones principales**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
+El modelo está compuesto por **siete colecciones**, buscando representar las entidades necesarias para el funcionamiento del MVP y aprovechando las características de una base de datos documental.
 
 Las colecciones definidas son:
 
@@ -18,7 +18,7 @@ Las colecciones definidas son:
 
 De estas, `sesiones` es una colección técnica (no representa una entidad del negocio): almacena las sesiones de acceso autenticado, como se detalla en la sección correspondiente más abajo.
 
-La información correspondiente a las **rutinas** y a la **historia clínica básica** se almacenará como documentos embebidos dentro de la colección `clientes`, evitando crear colecciones independientes para estos datos.
+La información correspondiente a las **rutinas** y a la **historia clínica básica** se almacena como documentos embebidos dentro de la colección `clientes`, evitando crear colecciones independientes para estos datos.
 
 ---
 
@@ -26,7 +26,7 @@ La información correspondiente a las **rutinas** y a la **historia clínica bá
 
 Representa las cuentas que pueden acceder al sistema.
 
-Los usuarios tendrán diferentes roles según sus permisos dentro del gimnasio.
+Las cuentas tienen uno o varios roles según sus permisos dentro del gimnasio.
 
 ### Roles
 
@@ -63,12 +63,12 @@ usuarios
 | `apellido` | String | Apellido del usuario. |
 | `email` | String | Correo utilizado para iniciar sesión. |
 | `passwordHash` | String | Hash de la contraseña (nunca se almacena en texto plano). |
-| `rol` | Array\<String\> | Uno o más de `ADMIN`, `ENTRENADOR` o `USUARIO`. Una misma cuenta puede tener más de un rol a la vez (por ejemplo, el dueño del gimnasio puede ser `ADMIN` y además `ENTRENADOR`). Aunque tenga un solo rol, siempre se almacena como arreglo (por ejemplo `["USUARIO"]`), para no tener que soportar dos formatos distintos en el código. |
-| `clienteId` | ObjectId / null | Referencia al cliente cuando el usuario representa a un cliente. |
+| `rol` | Array\<String\> | Uno o más de `ADMIN`, `ENTRENADOR` o `USUARIO`. Una misma cuenta puede tener más de un rol a la vez (por ejemplo, el dueño del gimnasio puede ser `ADMIN` y además `ENTRENADOR`). Aunque tenga un solo rol, se almacena como arreglo (por ejemplo `["USUARIO"]`). |
+| `clienteId` | ObjectId (opcional) | Referencia a la ficha vinculada. Se omite cuando no existe vínculo para respetar el índice único sparse. |
 | `activo` | Boolean | Indica si la cuenta está habilitada (baja lógica). |
 | `fechaCreacion` | Date | Fecha en la que se creó la cuenta. |
 | `fechaModificacion` | Date | Fecha de la última modificación de los datos del usuario. |
-| `fechaBaja` | Date / null | Fecha en la que se dio de baja la cuenta (`null` si sigue activa). |
+| `fechaBaja` | Date / null (opcional) | Fecha de baja de la cuenta; puede estar ausente mientras está activa. |
 
 ### Ejemplo
 
@@ -149,7 +149,8 @@ clientes
     ├── antecedentes
     ├── lesiones
     ├── observaciones
-    └── fechaActualizacion
+    ├── fechaActualizacion
+    └── usuarioModificacionId
 ```
 
 ### Campos principales
@@ -160,18 +161,18 @@ clientes
 | `nombre` | String | Nombre del cliente. |
 | `apellido` | String | Apellido del cliente. |
 | `dni` | String | Documento de identidad. |
-| `fechaNacimiento` | Date | Fecha de nacimiento. |
-| `telefono` | String | Número de teléfono. |
-| `email` | String | Correo electrónico. |
-| `direccion` | String | Domicilio. |
+| `fechaNacimiento` | Date / null (opcional) | Fecha de nacimiento, cuando se informa. |
+| `telefono` | String / null (opcional) | Número de teléfono. |
+| `email` | String / null (opcional) | Correo de contacto; es independiente del correo de acceso de la cuenta. |
+| `direccion` | String / null (opcional) | Domicilio. |
 | `contactoEmergencia` | Object (opcional) | Datos de contacto de emergencia: `nombre`, `telefono` y `relacion` (vínculo con el cliente, por ejemplo "madre" o "pareja"). |
-| `usuarioId` | ObjectId / null | Referencia a su cuenta de usuario, si posee una. |
+| `usuarioId` | ObjectId (opcional) | Referencia a la cuenta vinculada. Se omite cuando no existe vínculo para respetar el índice único sparse. |
 | `rutinas` | Array de objetos | Historial de rutinas asignadas al cliente (ver abajo). |
 | `historiaClinica` | Object (opcional) | Información clínica básica. No todo cliente la tiene cargada: solo existe una vez que el cliente la completa por primera vez (por eso se modela como `0..1` en el diagrama UML, no como un campo obligatorio). |
 | `activo` | Boolean | Indica si el cliente está habilitado (baja lógica). |
 | `fechaCreacion` | Date | Fecha de alta del cliente. |
 | `fechaModificacion` | Date | Fecha de la última modificación de sus datos. |
-| `fechaBaja` | Date / null | Fecha en la que se dio de baja al cliente (`null` si sigue activo). |
+| `fechaBaja` | Date / null (opcional) | Fecha de baja de la ficha; puede estar ausente mientras está activa. |
 
 Al igual que en `usuarios`, la baja de un cliente es lógica: se marca `activo: false` y se completa `fechaBaja`, sin eliminar el documento ni su historial de rutinas, historia clínica o pagos asociados.
 
@@ -185,9 +186,9 @@ Cada rutina se almacena como un elemento dentro del arreglo `rutinas`, embebido 
 
 **Regla de negocio:** en el arreglo `rutinas`, solo un elemento puede tener `activo: true` a la vez (la rutina vigente). Cuando el entrenador asigna una rutina nueva, la anterior pasa a `activo: false` y se completa su `fechaBaja` con la fecha del reemplazo; la nueva rutina se agrega al arreglo con `activo: true`.
 
-**Límite del historial:** para evitar que el arreglo `rutinas` crezca de forma indefinida (un arreglo embebido sin límite es una mala práctica en MongoDB, ya que todo el documento del cliente se lee y se reescribe en cada operación), se define un máximo de **12 rutinas** por cliente — equivalente, en promedio, a un año de historial si las rutinas se actualizan mensualmente. Cuando se asigna una rutina nueva y el arreglo ya alcanzó ese límite, se elimina físicamente la rutina inactiva más antigua (nunca la que está `activo: true`), manteniendo siempre las 12 más recientes.
+**Límite del historial:** se conservan como máximo **12 rutinas en total por cliente**, incluida la vigente. El límite acota el crecimiento del documento y el volumen de historial consultado. No representa un plazo fijo de conservación: depende de la frecuencia de asignación. Cuando se asigna una rutina nueva y el arreglo ya alcanzó ese límite, se elimina físicamente la rutina inactiva más antigua (nunca la que está `activo: true`), manteniendo siempre las 12 más recientes.
 
-Cada ejercicio dentro de una rutina tiene una referencia al catálogo de `ejercicios`.
+Cada ejercicio dentro de una rutina referencia al catálogo de `ejercicios`. Las rutinas tienen `_id` propio dentro del arreglo para poder consultarlas y editar la vigente. El código registra en `entrenadorId` la cuenta del personal que realiza la asignación.
 
 ### Ejemplo
 
@@ -246,13 +247,13 @@ De esta manera, no es necesario crear una colección independiente llamada `ruti
 
 ## Historia clínica embebida
 
-La historia clínica básica también se almacenará dentro del documento del cliente.
+La historia clínica básica se almacena dentro del documento del cliente.
 
-Su objetivo será registrar información mínima necesaria para el funcionamiento del MVP, como antecedentes, lesiones y observaciones.
+Registra antecedentes, lesiones y observaciones relevantes para el entrenamiento. El controlador añade `fechaActualizacion` y `usuarioModificacionId` para identificar la última modificación y su autor. Los archivos médicos adjuntos quedan fuera del MVP.
 
 Es un campo **opcional** (cardinalidad `0..1`): no se exige al cliente completarla para poder registrarse. Puede ser cargada por el propio cliente si tiene cuenta o por el administrador/entrenador cuando corresponda, incluyendo clientes sin cuenta. Un cliente sin historia clínica cargada simplemente no tiene ese campo en su documento.
 
-El acceso a esta información estará restringido según el rol del usuario
+El acceso se restringe al titular y al personal autorizado según [SEGURIDAD.md](SEGURIDAD.md).
 
 ---
 
@@ -283,14 +284,14 @@ ejercicios
 | `_id` | ObjectId | Identificador interno generado por MongoDB. |
 | `codigo` | String | Identificador legible del ejercicio (por ejemplo, `EJ-0001`), usado para referenciarlo de forma más clara que con el `_id`. |
 | `nombre` | String | Nombre del ejercicio. |
-| `descripcion` | String | Descripción general. |
+| `descripcion` | String (opcional) | Descripción general; el formulario permite dejarla vacía. |
 | `grupoMuscular` | String | Grupo muscular trabajado. |
 | `activo` | Boolean | Permite realizar eliminación lógica. |
 | `fechaCreacion` | Date | Fecha en la que se dio de alta el ejercicio. |
 | `fechaModificacion` | Date | Fecha de la última modificación. |
-| `fechaBaja` | Date / null | Fecha en la que se dio de baja el ejercicio (`null` si sigue activo). |
+| `fechaBaja` | Date / null (opcional) | Fecha de baja del ejercicio; puede estar ausente mientras está activo. |
 
-Los ejercicios serán referenciados desde las rutinas mediante `ejercicioId`.
+Los ejercicios son referenciados desde las rutinas mediante `ejercicioId`.
 
 ```text
 CLIENTE
@@ -339,12 +340,12 @@ turnos
 | Campo | Tipo | Descripción |
 |---|---|---|
 | `_id` | ObjectId | Identificador único del turno. |
-| `dia` | String | Día de la semana. |
+| `dia` | String | Uno de `LUNES`, `MARTES`, `MIERCOLES`, `JUEVES`, `VIERNES`, `SABADO` o `DOMINGO`. |
 | `horaInicio` | String | Hora de inicio. |
 | `horaFin` | String | Hora de finalización. Todo turno dura exactamente una hora: `horaFin` es siempre `horaInicio + 1h` (RN-19), tanto si se crea individualmente como si se genera en bloque con "Generar agenda". |
-| `capacidad` | Number | Cantidad máxima de clientes. |
+| `capacidad` | Int32 | Cupo entero positivo; la versión admite valores de 1 a 100. |
 | `entrenadorId` | ObjectId | Entrenador responsable del turno. |
-| `clientes` | Array<ObjectId> | Clientes asignados al turno. |
+| `clientes` | Array\<ObjectId\> | Clientes asignados al turno. |
 | `historialClientes` | Array de objetos | Registro de cada asignación o retiro de un cliente del turno (quién, cuándo y qué acción), análogo al historial de pagos. |
 | `activo` | Boolean | Indica si el turno está disponible. |
 | `observaciones` | String | Información adicional. |
@@ -354,7 +355,7 @@ turnos
 ```json
 {
   "_id": "ObjectId",
-  "dia": "Lunes",
+  "dia": "LUNES",
   "horaInicio": "18:00",
   "horaFin": "19:00",
   "capacidad": 10,
@@ -403,9 +404,9 @@ pagos
 | `_id` | ObjectId | Identificador único del pago. |
 | `clienteId` | ObjectId | Cliente al que corresponde el pago. |
 | `tipo` | String | `INSCRIPCION` o `CUOTA`. |
-| `monto` | Number (entero) | Importe del pago, en pesos enteros (sin centavos). Al tratarse siempre de un entero, no hay riesgo de los errores de precisión que sí podrían afectar a un `Number` con parte decimal. |
-| `fechaPago` | Date | Fecha en la que se realizó el pago. |
-| `fechaVencimiento` | Date | Fecha de vencimiento de la cuota. |
+| `monto` | Decimal128 | Importe monetario conforme al diseño de Atlas confirmado por el equipo. La API debe definir una representación decimal precisa para el transporte JSON. |
+| `fechaPago` | Date (obligatorio en Atlas) | Fecha del cobro. El validador de Atlas compartido exige que el campo exista y sea BSON Date; no admite `null` ni su omisión. |
+| `fechaVencimiento` | Date (obligatorio en Atlas) | Fecha de vencimiento. El validador de Atlas compartido exige que el campo exista y sea BSON Date, también para pagos ya cobrados; no admite `null` ni su omisión. |
 | `estado` | String | `PAGADO`, `PENDIENTE` o `VENCIDO`. |
 | `observaciones` | String | Información adicional. |
 | `usuarioRegistroId` | ObjectId | Referencia al usuario con rol `ADMIN` que registró el pago, para poder auditar quién lo cargó. La gestión de pagos es una operación exclusiva del Administrador; el Entrenador no tiene acceso a este módulo. |
@@ -417,7 +418,7 @@ pagos
   "_id": "ObjectId",
   "clienteId": "ObjectId",
   "tipo": "CUOTA",
-  "monto": 25000,
+  "monto": { "$numberDecimal": "25000.00" },
   "fechaPago": "2026-09-01",
   "fechaVencimiento": "2026-10-01",
   "estado": "PAGADO",
@@ -428,6 +429,16 @@ pagos
 
 ---
 
+## Importes y estados de pago
+
+El modelo utiliza BSON Decimal128 para importes monetarios. La representación de esos valores en JSON debe preservar la precisión decimal.
+
+Una obligación impaga permanece `PENDIENTE` hasta superar su vencimiento y pasa a `VENCIDO` al consultar pagos. El cobro establece `PAGADO` y `fechaPago`. La carga de cuotas es manual y no cancela obligaciones anteriores. Las restricciones de la implementación se describen en las [limitaciones del MVP](../README.md#6-limitaciones-del-mvp).
+
+**Distinción entre validación y comportamiento funcional:** una obligación pendiente representa un cobro que aún no ocurrió. Esto no implica que Atlas permita guardar `fechaPago: null` o prescindir de alguna fecha: el validador compartido exige ambas como BSON Date. La representación de obligaciones pendientes debe distinguirse de esa restricción de persistencia; aquí no se define una fecha ficticia ni una modificación del validador para resolver la incompatibilidad.
+
+---
+
 # Índices únicos
 
 Para garantizar la integridad de los datos, se definen los siguientes índices únicos a nivel de base de datos (no solo validados desde el backend):
@@ -435,18 +446,18 @@ Para garantizar la integridad de los datos, se definen los siguientes índices �
 | Colección | Campo | Tipo de índice | Motivo |
 |---|---|---|---|
 | `usuarios` | `email` | Único | No puede haber dos cuentas con el mismo correo de acceso. |
-| `usuarios` | `clienteId` | Único (sparse) | Garantiza que un mismo cliente no quede vinculado a más de una cuenta de usuario. Es `sparse` porque no todos los usuarios tienen `clienteId` (los `ADMIN`/`ENTRENADOR`, no). |
+| `usuarios` | `clienteId` | Único (sparse) | Garantiza que un mismo cliente no quede vinculado a más de una cuenta de usuario. Es `sparse` porque una cuenta, cualquiera sea su combinación de roles, puede carecer de ficha. |
 | `clientes` | `dni` | Único | No puede haber dos clientes registrados con el mismo documento de identidad. |
 | `clientes` | `usuarioId` | Único (sparse) | Garantiza que una misma cuenta de usuario no quede vinculada a más de un cliente. Es `sparse` porque no todos los clientes tienen cuenta. |
 | `ejercicios` | `codigo` | Único | El código legible de cada ejercicio (por ejemplo `EJ-0001`) debe ser irrepetible dentro del catálogo. |
 
-Los índices únicos y `sparse` sobre `usuarios.clienteId` y `clientes.usuarioId` son, en conjunto, los que garantizan a nivel de base de datos que la relación entre `usuarios` y `clientes` sea efectivamente **uno a uno** (ver sección de relaciones más abajo), y no solo una convención documentada.
+Los índices únicos `sparse` impiden referencias duplicadas presentes. No comprueban la existencia del documento referenciado ni la reciprocidad de los dos campos; esa coherencia se mantiene desde la aplicación mediante una transacción. Un valor `null` explícito participa del índice único, por lo que las referencias sin vínculo deben omitirse.
 
 ---
 
 # 6. Colección `configuracion`
 
-Almacena parámetros globales del gimnasio, que no pertenecen a una entidad individual sino a la operación general del sistema. Es un documento único (singleton), identificado siempre con el mismo `_id` fijo.
+Almacena parámetros globales del gimnasio, que no pertenecen a una entidad individual sino a la operación general del sistema. La agenda utiliza un documento de configuración de `_id` fijo. El identificador distingue esa configuración dentro de la colección; por sí solo no impide que existan otros documentos técnicos.
 
 Para el MVP, esta colección guarda la configuración de la agenda de turnos: las franjas horarias en las que el gimnasio abre sus puertas, el cupo por defecto para turnos nuevos, y los días de trabajo que cada entrenador tiene asignados dentro de esas franjas.
 
@@ -470,13 +481,13 @@ configuracion
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `_id` | ObjectId | Identificador fijo; solo existe un documento en esta colección. |
+| `_id` | ObjectId | La agenda usa `000000000000000000000001`. El backend hace upsert al generar la agenda. |
 | `franjas` | Array de objetos `{ inicio, fin }` | Franjas horarias en las que el gimnasio abre (por ejemplo, 09:00–12:00 y 16:00–21:00). Configuración exclusiva del Administrador (RN-17). |
-| `capacidad` | Number | Cupo por defecto que se aplica a los turnos generados automáticamente. Configuración exclusiva del Administrador (RN-17). |
-| `trabajos` | Array de objetos `{ entrenadorId, dias }` | Para cada entrenador, los días de la semana en los que dicta turnos dentro de las franjas de apertura. Cada entrenador solo puede modificar su propia entrada (RN-16, RN-17). |
+| `capacidad` | Int32 | Cupo por defecto de turnos generados. Configuración exclusiva del Administrador (RN-17). |
+| `trabajos` | Array de objetos `{ entrenadorId, dias }` | Para cada entrenador, los días de la semana en los que dicta turnos dentro de las franjas de apertura. El entrenador solo modifica su propia entrada; ADMIN puede gestionar todas (RN-16, RN-17). |
 | `fechaModificacion` | Date | Fecha del último cambio a la configuración. |
 
-Si no existe un documento en esta colección, el sistema utiliza valores por defecto (una franja de 06:00 a 21:00 y cupo 5) hasta que el Administrador la configure por primera vez.
+Si no existe la configuración de agenda, el backend de referencia utiliza 09:00–21:00, cupo 5 y ningún entrenador asignado hasta la configuración inicial. El cinco es un valor predeterminado; no define el máximo de clientes del gimnasio.
 
 ---
 
@@ -513,7 +524,7 @@ sesiones
 | Campo | Tipo de índice | Motivo |
 |---|---|---|
 | `tokenHash` | Único | No puede haber dos sesiones con el mismo hash de token. |
-| `fechaVencimiento` | TTL (`expireAfterSeconds: 0`) | MongoDB elimina automáticamente el documento una vez alcanzada la fecha de vencimiento, sin necesidad de un proceso de limpieza manual. |
+| `fechaVencimiento` | TTL (`expireAfterSeconds: 0`) | MongoDB limpia los documentos vencidos mediante su proceso TTL. La eliminación no es inmediata; el backend verifica el vencimiento en cada autorización. |
 
 Al cerrar sesión, además de eliminarse la cookie del navegador, se elimina el documento correspondiente de esta colección.
 
@@ -531,7 +542,7 @@ Aunque MongoDB es una base de datos documental y permite almacenar información 
 
 **Turno y Clientes.** Cada `turno` mantiene un arreglo `clientes[]` con los clientes anotados a ese horario, y un mismo cliente puede estar anotado a más de un turno (por ejemplo, si asiste varios días a la semana o a distintas clases). Es una relación **muchos a muchos**: varios clientes pueden compartir un turno, y un cliente puede pertenecer a varios turnos.
 
-**Rutina y Entrenador.** Cada rutina embebida dentro de un cliente referencia, mediante `entrenadorId`, al entrenador que la asignó. Un mismo entrenador puede haber asignado rutinas a muchos clientes distintos (y, a lo largo del tiempo, varias rutinas al mismo cliente). Es una relación **uno a muchos**: un entrenador puede estar asociado a muchas rutinas, pero cada rutina fue asignada por un único entrenador.
+**Rutina y cuenta responsable.** Cada rutina embebida referencia, mediante `entrenadorId`, a la cuenta del personal que la asignó. El controlador admite `ADMIN` o `ENTRENADOR` y guarda el identificador del actor, aunque solo tenga `ADMIN`. Una cuenta puede asignar varias rutinas y cada rutina tiene un responsable. El nombre del campo se conserva para mantener el contrato existente.
 
 **Rutina y Ejercicio.** Cada rutina contiene un arreglo `ejercicios[]` donde cada elemento referencia, mediante `ejercicioId`, a un ejercicio del catálogo. Un mismo ejercicio puede formar parte de muchas rutinas distintas (de distintos clientes, o de distintas rutinas del mismo cliente), y una rutina normalmente incluye varios ejercicios. Es una relación **muchos a muchos**: un ejercicio puede estar en muchas rutinas, y una rutina puede tener muchos ejercicios.
 
@@ -543,8 +554,19 @@ Aunque MongoDB es una base de datos documental y permite almacenar información 
 
 La elección de MongoDB permite representar determinados datos como documentos embebidos, reduciendo la necesidad de separar información que pertenece directamente a una entidad.
 
-En particular, las **rutinas del cliente** se almacenarán dentro de `clientes`, ya que sus ejercicios, series, repeticiones, peso y observaciones forman parte de la información correspondiente a ese cliente.
+En particular, las **rutinas del cliente** se almacenan dentro de `clientes`, ya que sus ejercicios, series, repeticiones, peso y observaciones forman parte de la información correspondiente a ese cliente.
 
-También se utilizará un documento embebido para la **historia clínica básica**, manteniendo esta información asociada directamente al cliente y aplicando controles de acceso según el rol.
+También se utiliza un documento embebido para la **historia clínica básica**, manteniendo esta información asociada directamente al cliente y aplicando controles de acceso según el rol.
 
 Por otro lado, se mantienen como colecciones independientes los ejercicios, turnos y pagos debido a que son elementos que pueden ser reutilizados o registrados múltiples veces.
+
+
+## Convenciones de tipos
+
+Los ejemplos con `"ObjectId"` o fechas de calendario son ilustrativos. En BSON las referencias se guardan como ObjectId y las fechas como Date. El ejemplo de `monto` usa la representación Extended JSON de Decimal128. Las fechas de auditoría se almacenan como instantes y su presentación se adapta a la zona horaria argentina.
+
+Las cantidades de rutina `series`, `repeticiones`, `descanso` y `orden` son enteros BSON. `peso` admite valor numérico con parte decimal. La historia clínica incluye textos opcionales y la referencia ObjectId `usuarioModificacionId` cuando se guarda una actualización. La ausencia de estos metadatos en registros anteriores debe tratarse al consultar.
+
+La reactivación de una ficha puede registrar `inicioCicloCuotas` (Date) y `cicloCuotasId` (ObjectId) como metadatos de ciclo. No generan obligaciones de pago por sí mismos.
+
+El modelo documental, los validadores y las actualizaciones de la aplicación son mecanismos complementarios; ninguno establece por sí solo todas las reglas de negocio.

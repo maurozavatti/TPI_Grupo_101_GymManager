@@ -1,7 +1,7 @@
 # Matriz de Trazabilidad — Gym Manager
 
 **Proyecto:** Gym Manager · Grupo 101  
-**Versión:** 2.0 — Propuesta para validación  
+**Versión:** 2.1 — MVP
 **Convención:** esta matriz relaciona identificadores; no reproduce las descripciones completas de los RF, RNF ni reglas. Las definiciones oficiales se mantienen en sus documentos fuente.
 
 ## 1. Objetivo y documentos fuente
@@ -26,9 +26,9 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RF-001 | CU-01 | — | CP-01 |
 | RF-002 | CU-01 | — | CP-01 |
 | RF-003 | CU-01 | — | CP-02 |
-| RF-004 | CU-01 | — | CP-01 |
+| RF-004 | CU-23 | RN-22 | CP-01 |
 | RF-005 | CU-03 | — | CP-03 |
-| RF-006 | CU-04 (cobertura parcial; alta/vinculación requiere aclaración) | RN-02 | CP-04 |
+| RF-006 | CU-25 | RN-02 | CP-04 |
 | RF-007 | CU-04 | RN-02, RN-12 | CP-04 |
 | RF-008 | CU-20 | RN-01 | CP-05 |
 | RF-009 | CU-16 | — | CP-05 |
@@ -49,7 +49,7 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RF-024 | CU-10 | RN-05, RN-06 | CP-11 |
 | RF-025 | CU-10 | RN-06 | CP-11, CP-12 |
 | RF-026 | CU-11 | RN-07 | CP-13 |
-| RF-027 | CU-11, CU-12 (consulta del cliente pendiente de detalle) | RN-07 | CP-13 |
+| RF-027 | CU-11, CU-26 | RN-07 | CP-13 |
 | RF-028 | CU-12 | RN-08 | CP-14 |
 | RF-029 | CU-12 | RN-08 | CP-14 |
 | RF-030 | CU-19 | RN-08, RN-14 | CP-14 |
@@ -64,6 +64,13 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RF-039 | CU-15 | RN-13 | CP-17 |
 | RF-040 | CU-15 | — | CP-17 |
 | RF-041 | CU-15 | — | CP-17 |
+| RF-042 | CU-22 | RN-20, RN-21 | CP-01, CP-04 |
+| RF-043 | CU-24 | RN-01, RN-20, RN-22 | CP-02, CP-05 |
+| RF-044 | CU-05 (reactivación complementaria) | RN-01, RN-18 | CP-05 |
+| RF-045 | CU-27 | RN-03, RN-04 | CP-07, CP-09 |
+| RF-046 | CU-11 (generación complementaria) | RN-16, RN-17, RN-19 | CP-13, CP-14 |
+| RF-047 | CU-19 (operación de turno complementaria) | RN-14 | CP-14 |
+| RF-048 | CU-13 (cobro posterior) | RN-10, RN-11 | CP-15, CP-16 |
 
 ## 3. Trazabilidad de requerimientos no funcionales
 
@@ -85,11 +92,11 @@ La matriz permite seguir cada requerimiento hacia sus casos de uso, reglas de ne
 | RNF-014 | Arquitectura | — | CP-24 |
 | RNF-015 | Arquitectura | — | CP-25 |
 | RNF-016 | Despliegue/configuración | — | CP-21 |
-| RNF-017 | Todos los documentos | RN-01–RN-13 | CP-26 |
+| RNF-017 | Todos los documentos | RN-01–RN-24 | CP-26 |
 | RNF-018 | CU-08, CU-15 | — | CP-27 |
 | RNF-019 | Casos con formularios | — | CP-28 |
-| RNF-020 | CU-01, CU-07, CU-13, CU-15 | — | CP-29 (umbral pendiente) |
-| RNF-021 | Despliegue | — | CP-30 (objetivo pendiente) |
+| RNF-020 | CU-01, CU-07, CU-13, CU-15 | — | CP-29 |
+| RNF-021 | Despliegue | — | CP-30 |
 
 ## 4. Catálogo único de verificaciones previstas
 
@@ -100,8 +107,8 @@ La matriz referencia las pruebas mediante `CP-XX`. Sus descripciones se mantiene
 | CP-01 | Probar inicio de sesión correcto, credenciales incorrectas, cuenta inactiva y cierre de sesión. | RF-001, RF-002, RF-004 |
 | CP-02 | Intentar operaciones protegidas con cada rol y comprobar que el backend rechace permisos insuficientes. | RF-003, RNF-002 |
 | CP-03 | Cambiar la contraseña autenticado; comprobar que no se acepte una contraseña actual incorrecta. | RF-005 |
-| CP-04 | Registrar clientes con y sin cuenta y comprobar que la asociación usuario-cliente no se duplique. | RF-006, RF-007 |
-| CP-05 | Consultar, buscar, modificar y dar de baja un cliente; comprobar que la baja conserve el historial. | RF-008–RF-011 |
+| CP-04 | Registrar cuenta y ficha por sus flujos y comprobar que la vinculación recíproca no se duplique. | RF-006, RF-007 |
+| CP-05 | Consultar, buscar, modificar, dar de baja y reactivar fichas/cuentas según permisos; comprobar conservación de datos y sesiones de cuentas inactivas. | RF-008–RF-011 |
 | CP-06 | Ejecutar alta, consulta/búsqueda, modificación y baja lógica de ejercicios; probar un código duplicado. | RF-012–RF-015 |
 | CP-07 | Asignar una rutina con ejercicios válidos; comprobar que la nueva rutina quede activa y la anterior inactiva. | RF-016, RF-017, RF-019 |
 | CP-08 | Superar el límite de historial en un escenario controlado y comprobar que solo se elimina la rutina inactiva más antigua. | RF-020 |
@@ -117,28 +124,24 @@ La matriz referencia las pruebas mediante `CP-XX`. Sus descripciones se mantiene
 | CP-18 | Inspeccionar el almacenamiento para comprobar que no persistan contraseñas en texto plano. | RNF-001 |
 | CP-19 | Probar tokens válidos, expirados, inválidos y ausentes. | RNF-003 |
 | CP-20 | En el entorno desplegado, comprobar HTTPS y un certificado válido. | RNF-007 |
-| CP-21 | Revisar configuración, secretos, CORS y permisos de acceso a MongoDB para verificar que no haya credenciales en código fuente. | RNF-008, RNF-009, RNF-016 |
-| CP-22 | Ejecutar los scripts de índices y comprobar que email, DNI, código de ejercicio y relación uno-a-uno rechacen duplicados. | RNF-010 |
+| CP-21 | Revisar configuración, secretos, origen HTTPS/cookies y permisos de acceso a MongoDB para verificar que no haya credenciales en código fuente. | RNF-008, RNF-009, RNF-016 |
+| CP-22 | Cotejar los scripts con el esquema acordado y comprobar en un entorno controlado que email, DNI, código de ejercicio y relación uno-a-uno rechacen duplicados. | RNF-010 |
 | CP-23 | Comprobar que el monto se persista como `Decimal128` y que sus operaciones no sufran redondeo inesperado. | RNF-011 |
-| CP-24 | Revisar que frontend, backend, controladores, servicios, repositorios y persistencia mantengan las responsabilidades documentadas. | RNF-013, RNF-014 |
+| CP-24 | Revisar que frontend, backend, controladores, servicios comunes y persistencia mantengan las responsabilidades documentadas. | RNF-013, RNF-014 |
 | CP-25 | Inspeccionar solicitudes y respuestas de API para verificar REST/JSON y los contratos publicados. | RNF-015 |
 | CP-26 | Comparar identificadores y referencias entre RF, RNF, reglas, casos de uso, seguridad y matriz. | RNF-017 |
 | CP-27 | Probar las pantallas principales en tamaños de pantalla móvil y escritorio. | RNF-018 |
 | CP-28 | Probar validaciones y mensajes de error de formularios con datos válidos e inválidos. | RNF-019 |
-| CP-29 | Ejecutar mediciones de rendimiento cuando el equipo haya aprobado los umbrales y condiciones de carga. | RNF-020 |
-| CP-30 | Verificar disponibilidad y recuperación según los objetivos que el equipo defina tras seleccionar el hosting. | RNF-021 |
+| CP-29 | Medir rendimiento frente al objetivo RNF-020 y registrar las condiciones de carga. | RNF-020 |
+| CP-30 | Medir disponibilidad en Render frente a RNF-021 y revisar las condiciones operativas y respaldos acordados. | RNF-021 |
 
-## 5. Gaps de trazabilidad detectados
+## 5. Criterios de trazabilidad
 
-Los siguientes puntos no deben ocultarse marcándolos como cumplidos; requieren una actualización posterior de los documentos:
-
-1. **Casos de uso por ampliar:** las operaciones de consulta/edición/búsqueda de clientes, modificación y baja de ejercicios, baja de asignación de un turno y ciertos flujos de cuenta no tienen un caso de uso específico completo en la versión actual. Se indica en la tabla como pendiente de ampliar.
-2. **Recuperación de contraseña:** `CU-02` y su historia de usuario siguen en el repositorio, pero la especificación actual del MVP la excluye. El equipo debe retirar esos elementos del alcance del MVP o aprobar explícitamente un cambio de alcance; no deben mantenerse como requisito vigente y excluido al mismo tiempo.
-3. **Permisos de ejercicios:** `MODULOS.md` y `CASOS_DE_USO.md` no asignan de manera idéntica los permisos del catálogo. Debe aprobarse una política única.
-4. **Pagos vencidos:** definir la relación entre vencimiento, estado impago y registro de una cuota posterior, de modo que el proceso periódico no marque incorrectamente una obligación ya saldada.
-5. **Permisos de pagos:** `MODULOS.md` y `CU-13` reservan el registro de pagos al Administrador, pero `RN-10` dice que `usuarioRegistroId` puede corresponder a `ADMIN` o `ENTRENADOR`. El equipo debe acordar una política única y alinear el RF y los casos de uso.
-6. **RNF-020 y RNF-021:** los umbrales cuantitativos de rendimiento, disponibilidad y recuperación no figuran definidos; las verificaciones correspondientes no pueden aprobarse hasta que se establezcan.
+- CU-02 y HU-02 identifican la recuperación de contraseña por correo como una evolución fuera del MVP. El cambio autenticado se describe por separado.
+- Los identificadores RF, RNF, CU y RN conservan su numeración y remiten a sus documentos fuente.
+- Los permisos de pagos y mantenimiento de ejercicios corresponden a ADMIN. La consulta del catálogo y la gestión de rutinas están habilitadas para el personal conforme a sus reglas.
+- Los CP-XX identifican verificaciones previstas; RNF-020 y RNF-021 expresan objetivos de rendimiento y disponibilidad.
 
 ## 6. Estado de ejecución
 
-Todas las entradas `CP-XX` de esta versión son **verificaciones previstas**. Debe agregarse el resultado de ejecución (pendiente/aprobada/rechazada), fecha, responsable y evidencia cuando se realicen las pruebas. No se considera que una prueba esté aprobada por estar documentada.
+Las entradas `CP-XX` describen **verificaciones previstas**. Esta matriz no publica resultados de ejecución. Una aprobación se respalda con fecha, responsable y evidencia; no se deduce de la existencia de una fila.

@@ -2,13 +2,13 @@
 
 ## 1. Objetivo
 
-El diagrama representa la distribución prevista de los componentes de Gym Manager y sus comunicaciones.
-
-Se utiliza una representación independiente del proveedor de hosting porque la infraestructura definitiva todavía no fue seleccionada.
+El diagrama representa la demostración en Render y su conexión con MongoDB Atlas. El equipo selecciona manualmente las versiones a desplegar. La aplicación está publicada en [gymmanager-grupo-101.onrender.com](https://gymmanager-grupo-101.onrender.com/).
 
 ## 2. Diagrama
 
-```text
+[Ver diagrama en PNG](diagramas/despliegue.png)
+
+```mermaid
 flowchart TB
     U["Usuario<br/>Navegador web"]
 
@@ -16,22 +16,25 @@ flowchart TB
         FE["Frontend<br/>HTML, CSS y TypeScript<br/>Aplicación web compilada con Vite"]
     end
 
-    subgraph HOSTING["Infraestructura de despliegue"]
-        WEB["Servicio de hosting del frontend<br/>Proveedor por definir"]
+    subgraph HOSTING["Render · un servicio web"]
+        WEB["Archivos frontend/dist<br/>Entregados por Node.js"]
         API["Servidor de aplicaciones<br/>Node.js (http nativo)"]
-        SEC["Middleware de sesion<br/>Autenticación y autorización"]
+        SEC["Funciones de sesión y permisos<br/>Autenticación y autorización"]
         REST["API REST<br/>Controladores y servicios"]
         DATA["Driver mongodb<br/>(sin ODM)"]
     end
 
     subgraph PERSISTENCIA["Persistencia"]
-        DB["MongoDB Atlas<br/>Base de datos documental"]
+        DB["MongoDB Atlas<br/>Base gym_manager · siete colecciones"]
     end
 
-    U -->|"HTTPS"| WEB
-    WEB --> FE
-    FE -->|"HTTPS / JSON"| SEC
-    SEC --> REST
+    U --> FE
+    FE -->|"HTTPS / mismo origen"| API
+    API --> WEB
+    WEB -->|"HTML, CSS y JavaScript"| FE
+    API --> REST
+    REST --> SEC
+    SEC -->|"Resultado de autorización"| REST
     REST --> DATA
     DATA -->|"Conexión segura"| DB
 ```
@@ -41,10 +44,10 @@ flowchart TB
 | Nodo | Responsabilidad |
 |---|---|
 | Navegador web | Permite al usuario utilizar el sistema. |
-| Hosting del frontend | Publica la aplicación web compilada. El proveedor queda pendiente de definición. |
+| Archivos del frontend | `frontend/dist` contiene páginas y recursos entregados por el backend en Render. |
 | Frontend | Presenta las pantallas y consume los endpoints de la API REST. |
 | Servidor Node.js (http nativo) | Ejecuta la lógica del backend y expone los servicios del sistema. |
-| Middleware de sesión | Gestiona autenticación y autorización según la configuración implementada. |
+| Funciones de sesión y permisos | Gestiona autenticación y autorización según la configuración implementada. |
 | Controladores y servicios REST | Procesan solicitudes, validan reglas de negocio y coordinan las operaciones. |
 | Driver mongodb (sin ODM) | Facilita el acceso a los documentos almacenados. |
 | MongoDB Atlas | Aloja la base de datos documental del sistema. |
@@ -57,12 +60,14 @@ flowchart TB
 
 ## 5. Consideraciones de despliegue y seguridad
 
-1. El frontend y el backend podrán alojarse en servicios diferentes.
-2. La API deberá admitir únicamente los orígenes autorizados mediante la configuración CORS correspondiente.
-3. Las credenciales y cadenas de conexión deberán almacenarse como variables de entorno o secretos del entorno de ejecución, no dentro del código fuente.
-4. El acceso a MongoDB Atlas deberá restringirse mediante los mecanismos de red y autenticación que se definan para el despliegue.
-5. El backend deberá validar el token y los permisos de cada operación protegida; ocultar una pantalla en el frontend no constituye una autorización suficiente.
-6. El proveedor concreto, los dominios, las regiones y la configuración de red quedan pendientes de decisión.
+1. La demostración entrega páginas y API desde el mismo servicio y origen HTTPS. Durante el desarrollo se utiliza el proxy de Vite o el servidor conjunto.
+2. Un despliegue con orígenes separados requeriría configurar expresamente la comunicación y las cookies.
+3. La URI de Atlas y demás credenciales se configuran mediante variables de entorno privadas del backend.
+4. El acceso a MongoDB Atlas se configura mediante autenticación y restricciones de red que deben comprobarse en el entorno.
+5. El backend comprueba sesión, cuenta activa y permisos de cada operación. En Render se establece `NODE_ENV=production` para la cookie `Secure`.
+6. El equipo selecciona manualmente la versión desplegada. La región y los parámetros operativos deben verificarse en el servicio.
+
+El bloque Mermaid representa los componentes del despliegue y se visualiza directamente en GitHub.
 
 ## 6. Relación con la arquitectura
 
