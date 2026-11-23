@@ -1,18 +1,61 @@
-/* Distribucion compartida del panel y sus colores globales.*/
+/* Contenedor raíz y distribución vertical general del panel */
 .estructura-panel {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr);
-}
-
-/* La barra lateral organiza la marca, el menu y la salida.*/
-.barra-lateral {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-grande);
-  padding: var(--espacio-grande);
+}
+
+/* Utilidad de accesibilidad para contenido perceptible exclusivamente por lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Controles de navegación móvil inicializados como ocultos en visualización de escritorio */
+.boton-fijo-movil {
+  display: none;
+}
+
+.menu-movil-desplegable {
+  display: none;
+}
+
+/* Encabezado principal persistente para pantallas de escritorio */
+.encabezado-panel {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--espacio-extra-grande);
+  min-height: 3.75rem;
   background: var(--color-superficie);
-  border-right: 2px solid var(--color-principal-claro);
+  border-bottom: 2px solid var(--color-principal-claro);
+  box-shadow: 0 4px 14px rgb(2 6 12 / 30%);
+}
+
+.barra-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--espacio-mediano);
+  min-width: 0;
+  width: 100%;
+}
+
+.cabecera-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .marca-panel {
@@ -20,68 +63,270 @@
   font-size: var(--texto-subtitulo);
   font-weight: var(--peso-negrita);
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color var(--transicion-rapida);
 }
 
+.marca-panel:hover {
+  color: var(--color-principal-hover);
+}
+
+/* Contenedor de navegación horizontal con soporte de desplazamiento y pestañas de acceso directo */
 .menu-panel {
-  display: grid;
+  display: flex;
+  align-items: center;
   gap: var(--espacio-pequeno);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-borde) transparent;
+}
+
+.menu-panel::-webkit-scrollbar {
+  height: 3px;
+}
+
+.menu-panel::-webkit-scrollbar-thumb {
+  background: var(--color-borde);
+  border-radius: var(--radio-pequeno);
 }
 
 .opcion-menu {
-  padding: var(--espacio-pequeno) var(--espacio-mediano);
-  color: var(--color-texto);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-pequeno);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.875rem;
+  color: var(--color-texto-secundario);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--color-borde);
+  border-radius: 0;
   text-decoration: none;
-  overflow-wrap: anywhere;
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: color var(--transicion-rapida),
+              border-bottom-color var(--transicion-rapida),
+              background-color var(--transicion-rapida);
 }
 
-.opcion-menu:hover,
+.opcion-menu:hover {
+  color: var(--color-principal-hover);
+  border-bottom-color: var(--color-principal);
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.opcion-menu:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: -2px;
+  color: var(--color-principal-hover);
+  border-bottom-color: var(--color-principal);
+}
+
 .opcion-menu[aria-current="page"] {
   color: var(--color-principal-hover);
-  border-color: var(--color-principal);
-  background: var(--color-principal-claro);
-}
-
-.opcion-menu[aria-current="page"] {
+  border-bottom: 2px solid var(--color-principal);
   font-weight: var(--peso-negrita);
+  background: transparent;
 }
 
-/* El encabezado muestra la pantalla y la cuenta autenticada.*/
-.zona-principal {
-  min-width: 0;
-}
-
-.encabezado-panel {
+/* Sección lateral de perfil y anclaje del menú contextual de usuario */
+.bloque-superior-derecho {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--espacio-mediano);
-  padding: var(--espacio-grande) var(--espacio-extra-grande);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.contenedor-usuario {
+  position: relative;
+}
+
+/* Botón disparador del menú de usuario con información de identidad y rol */
+.cuenta-panel.boton-usuario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-pequeno);
+  padding: 0.375rem 0.625rem;
   background: var(--color-superficie);
-  border-bottom: 2px solid var(--color-principal-claro);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transicion-rapida),
+              border-color var(--transicion-rapida),
+              box-shadow var(--transicion-rapida);
 }
 
-.encabezado-panel h1 {
-  font-size: var(--texto-subtitulo);
-  overflow-wrap: anywhere;
+.datos-cuenta-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.25;
+  min-width: 0;
+  text-align: left;
 }
 
-.cuenta-panel {
-  display: grid;
-  gap: var(--espacio-minimo);
-  overflow-wrap: anywhere;
+/* Tipografía y estados cromáticos base del bloque de usuario */
+.nombre-panel {
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  color: var(--color-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 11rem;
+  transition: color var(--transicion-rapida);
 }
 
 .rol-panel {
-  color: var(--color-principal);
-  font-size: var(--texto-pequeno);
-  font-weight: var(--peso-negrita);
+  color: var(--color-texto-secundario);
+  font-size: 0.75rem;
+  font-weight: var(--peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 11rem;
+  transition: color var(--transicion-rapida);
 }
 
-/* Clases reutilizables para el contenido de cada modulo.*/
+/* Indicador visual de avatar con iniciales del usuario autenticado */
+.cuenta-panel .avatar-cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  font-weight: var(--peso-negrita);
+  font-size: var(--texto-pequeno);
+  line-height: 1;
+  text-transform: uppercase;
+  transition: border-color var(--transicion-rapida),
+              color var(--transicion-rapida),
+              box-shadow var(--transicion-rapida);
+}
+
+/* Estados interactivos de foco, cursor y apertura del bloque de usuario */
+.cuenta-panel.boton-usuario:hover,
+.cuenta-panel.boton-usuario:focus-visible,
+.cuenta-panel.boton-usuario[aria-expanded="true"] {
+  background: var(--color-principal-claro);
+  border-color: var(--color-principal);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.cuenta-panel.boton-usuario:hover .nombre-panel,
+.cuenta-panel.boton-usuario:focus-visible .nombre-panel,
+.cuenta-panel.boton-usuario[aria-expanded="true"] .nombre-panel {
+  color: var(--color-principal-hover);
+}
+
+.cuenta-panel.boton-usuario:hover .rol-panel,
+.cuenta-panel.boton-usuario:focus-visible .rol-panel,
+.cuenta-panel.boton-usuario[aria-expanded="true"] .rol-panel {
+  color: var(--color-principal);
+}
+
+.cuenta-panel.boton-usuario:hover .avatar-cuenta,
+.cuenta-panel.boton-usuario:focus-visible .avatar-cuenta,
+.cuenta-panel.boton-usuario[aria-expanded="true"] .avatar-cuenta {
+  border-color: var(--color-principal);
+  color: var(--color-principal-hover);
+}
+
+.cuenta-panel.boton-usuario:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* Menú contextual desplegable del usuario con acciones de cuenta y sesión */
+.desplegable-usuario {
+  position: absolute;
+  top: calc(100% + var(--espacio-pequeno));
+  right: 0;
+  z-index: 150;
+  min-width: 11rem;
+  width: max-content;
+  max-width: min(16rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-minimo);
+  padding: var(--espacio-pequeno);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-mediano);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.desplegable-usuario[hidden] {
+  display: none !important;
+}
+
+.opcion-desplegable {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background: transparent;
+  border: none;
+  border-radius: var(--radio-pequeno);
+  font: inherit;
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transicion-rapida),
+              color var(--transicion-rapida);
+}
+
+.opcion-desplegable:hover {
+  background: var(--color-principal-claro);
+  color: var(--color-principal-hover);
+}
+
+.opcion-desplegable:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: -1px;
+  background: var(--color-principal-claro);
+  color: var(--color-principal-hover);
+}
+
+.opcion-desplegable[aria-current="page"] {
+  color: var(--color-principal);
+  font-weight: var(--peso-negrita);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.opcion-cerrar-sesion {
+  border-top: 1px solid var(--color-borde);
+  margin-top: var(--espacio-minimo);
+  padding-top: var(--espacio-pequeno);
+}
+
+.opcion-cerrar-sesion:hover {
+  color: var(--color-error);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* Área de contenido principal y componentes transversales del panel */
 .contenido-panel {
+  flex: 1;
   padding: var(--espacio-extra-grande);
 }
 
@@ -101,18 +346,20 @@
   border: 1px solid var(--color-principal);
   border-radius: var(--radio-pequeno);
   font-weight: var(--peso-negrita);
+  cursor: pointer;
+  transition: background-color var(--transicion-rapida),
+              border-color var(--transicion-rapida),
+              opacity var(--transicion-rapida);
 }
 
 .boton-panel:hover:not(:disabled) {
   background: var(--color-principal-hover);
+  border-color: var(--color-principal-hover);
 }
 
 .boton-panel:disabled {
   opacity: 0.65;
-}
-
-.cerrar-panel {
-  margin-top: auto;
+  cursor: not-allowed;
 }
 
 .mensaje-panel,
@@ -128,48 +375,158 @@
   margin: var(--espacio-extra-grande);
 }
 
-/* En el celular el menu pasa arriba con bordes y fondo celeste.*/
-@media (max-width: 800px) {
-  .estructura-panel {
-    grid-template-columns: minmax(0, 1fr);
+/* Adaptabilidad responsiva para dispositivos móviles y pantallas reducidas (<= 768px) */
+@media (max-width: 768px) {
+  /* Ocultamiento del encabezado de escritorio en pantallas reducidas */
+  .encabezado-panel {
+    display: none !important;
   }
 
-  .barra-lateral {
-    border-right: 0;
-    border-bottom: 2px solid var(--color-principal);
-    background: var(--color-principal-claro);
-  }
-
-  .menu-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .opcion-menu {
-    background: var(--color-superficie);
-  }
-
-  .encabezado-panel,
+  /* Compensación de margen superior para preservar visibilidad bajo el control fijo */
   .contenido-panel {
-    padding: var(--espacio-grande);
+    padding: 4rem var(--espacio-mediano) var(--espacio-grande);
   }
-}
 
-/* En escritorio la barra lateral permanece visible y ocupa
- la altura de la pantalla, aunque el contenido sea mas largo. */
-@media (min-width: 801px) {
-  .barra-lateral {
-    position: sticky;
-    top: 0;
-    align-self: start;
-    height: 100vh;
-    height: 100dvh;
+  /* Disparador de navegación flotante con posicionamiento fijo superior izquierdo */
+  .boton-fijo-movil {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 1000;
+    width: 2.625rem;
+    height: 2.625rem;
+    padding: 0;
+    color: var(--color-texto);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-pequeno);
+    box-shadow: 0 4px 14px rgba(2, 6, 12, 0.55);
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: background-color var(--transicion-rapida),
+                border-color var(--transicion-rapida),
+                color var(--transicion-rapida);
+  }
+
+  .boton-fijo-movil:hover {
+    background: #1c2b3d;
+    border-color: var(--color-principal);
+    color: var(--color-principal-hover);
+  }
+
+  .boton-fijo-movil:focus-visible {
+    outline: 3px solid var(--color-foco);
+    outline-offset: 2px;
+  }
+
+  .boton-fijo-movil[aria-expanded="true"] {
+    background: #1c2b3d;
+    border-color: var(--color-principal);
+    color: var(--color-principal);
+  }
+
+  /* Dimensionamiento y presentación del vector de icono de menú */
+  .boton-fijo-movil svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    pointer-events: none;
+  }
+
+  /* Panel flotante de navegación y acciones de perfil para dispositivos móviles */
+  .menu-movil-desplegable {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 3.75rem;
+    left: 0.75rem;
+    z-index: 999;
+    width: max-content;
+    max-width: min(260px, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 4.5rem);
     overflow-y: auto;
+    gap: var(--espacio-pequeno);
+    padding: var(--espacio-pequeno);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-mediano);
+    box-shadow: 0 10px 28px rgba(2, 6, 12, 0.65);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-borde) transparent;
   }
 
-  /* Si falta espacio vertical, permitimos desplazar la barra
-   sin comprimir las opciones ni el boton de salida. */
-  .menu-panel,
-  .cerrar-panel {
-    flex-shrink: 0;
+  .menu-movil-desplegable[hidden] {
+    display: none !important;
+  }
+
+  .nav-movil {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-minimo);
+  }
+
+  .perfil-movil {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-minimo);
+    border-top: 1px solid var(--color-borde);
+    padding-top: var(--espacio-pequeno);
+    margin-top: var(--espacio-minimo);
+  }
+
+  .opcion-movil {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--espacio-pequeno) var(--espacio-mediano);
+    color: var(--color-texto);
+    background: transparent;
+    border: none;
+    border-radius: var(--radio-pequeno);
+    font: inherit;
+    font-size: var(--texto-pequeno);
+    font-weight: var(--peso-medio);
+    text-decoration: none;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color var(--transicion-rapida),
+                color var(--transicion-rapida);
+  }
+
+  .opcion-movil:hover {
+    background: var(--color-principal-claro);
+    color: var(--color-principal-hover);
+  }
+
+  .opcion-movil:focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: -1px;
+    background: var(--color-principal-claro);
+    color: var(--color-principal-hover);
+  }
+
+  .opcion-movil[aria-current="page"] {
+    background: var(--color-principal-claro);
+    color: var(--color-principal);
+    font-weight: var(--peso-negrita);
+  }
+
+  .opcion-cerrar-movil {
+    color: var(--color-error);
+  }
+
+  .opcion-cerrar-movil:hover {
+    background: rgba(248, 113, 113, 0.12);
+    color: var(--color-error);
   }
 }
