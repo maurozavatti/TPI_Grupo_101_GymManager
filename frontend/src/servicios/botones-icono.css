@@ -33,11 +33,12 @@
   position: fixed;
   z-index: 10000;
   max-width: min(18rem, calc(100vw - 1rem));
-  padding: var(--espacio-pequeno) var(--espacio-mediano);
-  color: var(--color-secundario);
-  background: var(--color-texto);
+  padding: 0.3rem var(--espacio-mediano);
+  color: var(--color-texto);
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
   border-radius: var(--radio-pequeno);
-  box-shadow: var(--sombra-tarjeta);
+  box-shadow: 0 4px 14px rgb(2 6 12 / 50%);
   font-size: var(--texto-pequeno);
   line-height: var(--interlineado-general);
   overflow-wrap: anywhere;
