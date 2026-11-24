@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./perfil.css">
 </head>
 <body>
-  <section id="vista" hidden>
+  <section id="vista" class="vista-perfil" hidden>
     <div class="cabecera-modulo">
       <div>
         <h2>Mi perfil</h2>
@@ -24,7 +24,7 @@
     </section>
 
     <div id="contenido-perfil" class="contenido-perfil" hidden>
-      <section class="tarjeta-panel">
+      <section class="tarjeta-panel tarjeta-perfil">
         <div class="cabecera-seccion">
           <div>
             <h3 id="nombre-cliente"></h3>
@@ -41,9 +41,20 @@
         </dl>
       </section>
 
-      <section class="tarjeta-panel">
+      <section class="tarjeta-panel tarjeta-turno">
         <div class="cabecera-seccion">
-          <div><h3>Rutina vigente</h3><p id="fecha-rutina" class="nota-modulo"></p></div>
+          <h3>Mi turno semanal</h3>
+        </div>
+        <p id="mensaje-turno" class="nota-modulo"></p>
+        <ul id="lista-turnos" class="lista-turnos"></ul>
+      </section>
+
+      <section class="tarjeta-panel tarjeta-rutina">
+        <div class="cabecera-seccion">
+          <div>
+            <h3>Rutina vigente</h3>
+            <p id="fecha-rutina" class="nota-modulo"></p>
+          </div>
           <button id="imprimir-rutina" class="boton-secundario" type="button" hidden>Imprimir rutina</button>
         </div>
         <p id="mensaje-rutina" class="nota-modulo"></p>
@@ -51,17 +62,21 @@
           <p id="observaciones-rutina"></p>
           <div class="tabla-contenedor">
             <table class="tabla-datos">
-              <thead><tr><th>#</th><th>Ejercicio</th><th>Series</th><th>Repeticiones</th><th>Peso</th><th>Descanso</th><th>Observaciones</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ejercicio</th>
+                  <th>Series</th>
+                  <th>Repeticiones</th>
+                  <th>Peso</th>
+                  <th>Descanso</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
               <tbody id="ejercicios-rutina"></tbody>
             </table>
           </div>
         </div>
-      </section>
-
-      <section class="tarjeta-panel">
-        <h3>Mi turno semanal</h3>
-        <p id="mensaje-turno" class="nota-modulo"></p>
-        <ul id="lista-turnos" class="lista-turnos"></ul>
       </section>
     </div>
   </section>
