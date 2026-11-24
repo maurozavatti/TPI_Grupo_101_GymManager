@@ -256,12 +256,16 @@ export async function prepararPanel(
 
     function alternarMenuMovil(abrir?: boolean): void {
       menuMovilAbierto = typeof abrir === 'boolean' ? abrir : !menuMovilAbierto
-      botonMovil.setAttribute('aria-expanded', String(menuMovilAbierto))
-      botonMovil.setAttribute(
-        'aria-label',
-        menuMovilAbierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación',
-      )
-      menuMovil.hidden = !menuMovilAbierto
+      if (botonMovil) {
+        botonMovil.setAttribute('aria-expanded', String(menuMovilAbierto))
+        botonMovil.setAttribute(
+          'aria-label',
+          menuMovilAbierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación',
+        )
+      }
+      if (menuMovil) {
+        menuMovil.hidden = !menuMovilAbierto
+      }
     }
 
     botonMovil.addEventListener('click', (evento) => {
@@ -282,8 +286,10 @@ export async function prepararPanel(
 
     function alternarMenuUsuario(abrir?: boolean): void {
       menuUsuarioAbierto = typeof abrir === 'boolean' ? abrir : !menuUsuarioAbierto
-      botonUsuario.setAttribute('aria-expanded', String(menuUsuarioAbierto))
-      menuUsuario.hidden = !menuUsuarioAbierto
+      if (botonUsuario && menuUsuario) {
+        botonUsuario.setAttribute('aria-expanded', String(menuUsuarioAbierto))
+        menuUsuario.hidden = !menuUsuarioAbierto
+      }
     }
 
     botonUsuario.addEventListener('click', (evento) => {
@@ -337,15 +343,19 @@ export async function prepararPanel(
       boton.disabled = true
       const textoOriginal = boton.textContent
       boton.textContent = 'Cerrando sesión...'
-      mensaje.textContent = ''
+      if (mensaje) {
+        mensaje.textContent = ''
+      }
 
       try {
         await cerrarSesion()
         window.location.replace('/src/autenticacion/login/login.html')
       } catch (error) {
-        mensaje.textContent = error instanceof Error
-          ? error.message
-          : 'No se pudo cerrar la sesión. Intentá nuevamente.'
+        if (mensaje) {
+          mensaje.textContent = error instanceof Error
+            ? error.message
+            : 'No se pudo cerrar la sesión. Intentá nuevamente.'
+        }
         alternarMenuUsuario(false)
         alternarMenuMovil(false)
       } finally {
