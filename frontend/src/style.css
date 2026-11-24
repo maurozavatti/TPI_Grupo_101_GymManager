@@ -4,24 +4,24 @@
  Los cambios se aplican en las paginas que cargan este archivo.*/
 :root {
   /* Colores principales */
-  --color-principal: #087ca7;
-  --color-principal-hover: #066384;
-  --color-principal-claro: #e0f4fc;
-  --color-secundario: #ffffff;
+  --color-principal: #38bdf8;
+  --color-principal-hover: #56ccf2;
+  --color-principal-claro: #132c3d;
+  --color-secundario: #08121a;
 
   /* Fondos */
-  --color-fondo: #fffdf5;
-  --color-superficie: #ffffff;
+  --color-fondo: #0f1720;
+  --color-superficie: #162230;
 
   /* Textos y bordes */
-  --color-texto: #243746;
-  --color-texto-secundario: #5d6b76;
-  --color-borde: #ccd6de;
+  --color-texto: #e6edf3;
+  --color-texto-secundario: #9fb0c0;
+  --color-borde: #28394c;
 
   /* Estados */
-  --color-error: #b42318;
-  --color-exito: #187044;
-  --color-foco: #087ca7;
+  --color-error: #f87171;
+  --color-exito: #34d399;
+  --color-foco: #38bdf8;
 
   /* Tipografía */
   --fuente-general: "Segoe UI", Roboto, Arial, sans-serif;
@@ -52,7 +52,7 @@
   --radio-mediano: 0.75rem;
   --radio-grande: 1rem;
 
-  --sombra-tarjeta: 0 8px 24px rgb(36 55 70 / 8%);
+  --sombra-tarjeta: 0 10px 28px rgb(2 6 12 / 45%);
   --transicion-rapida: 150ms ease;
 }
 

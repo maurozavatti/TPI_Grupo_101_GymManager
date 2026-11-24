@@ -172,6 +172,10 @@ function prepararCuentas(usuarioActualId: string): void {
 
   ponerIconoBoton(paginaAnterior, 'anterior', 'Ir a la página anterior')
   ponerIconoBoton(paginaSiguiente, 'siguiente', 'Ir a la página siguiente')
+  ponerIconoBoton(botonActualizar, 'actualizar', 'Actualizar')
+
+  const botonNuevaCuenta = elemento<HTMLButtonElement>('#abrir-alta-cuenta')
+  ponerIconoBoton(botonNuevaCuenta, 'nueva', 'Nueva cuenta')
 
   let enviandoAlta = false
   let intentoEnviar = false
@@ -396,7 +400,11 @@ function prepararCuentas(usuarioActualId: string): void {
 
       nombre.textContent = `${cuenta.nombre} ${cuenta.apellido}`
       correo.textContent = cuenta.email
-      estado.textContent = cuenta.activo ? 'Activa' : 'Inactiva'
+      const badgeEstado = document.createElement('span')
+      badgeEstado.className = `badge-estado ${cuenta.activo ? 'badge-activa' : 'badge-inactiva'}`
+      badgeEstado.textContent = cuenta.activo ? 'Activa' : 'Inactiva'
+      estado.append(badgeEstado)
+      estado.dataset.estado = cuenta.activo ? 'activa' : 'inactiva'
       celdaRoles.className = 'celda-roles'
 
       const actuales = obtenerRoles(cuenta.rol)

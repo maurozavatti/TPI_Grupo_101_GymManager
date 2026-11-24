@@ -24,8 +24,8 @@ export async function prepararAccesoAutenticacion(
   formulario.setAttribute('aria-busy', 'true')
   boton.disabled = true
 
-  for (const campo of campos) {
-    campo.readOnly = true
+  for (let i = 0; i < campos.length; i++) {
+    campos[i].readOnly = true
   }
 
   mensaje.classList.remove('mensaje-error', 'mensaje-exito')
@@ -63,8 +63,8 @@ export async function prepararAccesoAutenticacion(
       formulario.removeEventListener('submit', bloquearEnvio)
       boton.disabled = false
 
-      for (const campo of campos) {
-        campo.readOnly = false
+      for (let i = 0; i < campos.length; i++) {
+        campos[i].readOnly = false
       }
     }
   }

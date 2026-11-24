@@ -77,6 +77,19 @@
   border-color: var(--color-foco);
 }
 
+/* Mantiene el fondo oscuro y el color del texto cuando el navegador
+ autocompleta credenciales en los campos del formulario.*/
+.campo-formulario input:-webkit-autofill,
+.campo-formulario input:-webkit-autofill:hover,
+.campo-formulario input:-webkit-autofill:focus,
+.campo-formulario input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-superficie) inset;
+  box-shadow: 0 0 0 1000px var(--color-superficie) inset;
+  -webkit-text-fill-color: var(--color-texto);
+  caret-color: var(--color-texto);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Este es el estilo de los textos de ayuda que acompañan
  a los campos, como el minimo de caracteres de la contraseña.*/
 .campo-formulario small {

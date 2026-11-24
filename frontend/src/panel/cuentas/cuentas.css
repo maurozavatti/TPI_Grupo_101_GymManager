@@ -1,10 +1,17 @@
-/* El encabezado organiza el titulo y la actualizacion del listado. */
+/* El encabezado organiza el titulo y las acciones del listado. */
 .encabezado-cuentas {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--espacio-mediano);
+  gap: var(--espacio-pequeno);
+  min-width: 0;
+}
+
+.encabezado-cuentas h2 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ayuda-cuentas,
@@ -26,15 +33,51 @@
   color: var(--color-exito);
 }
 
-/* La tabla puede desplazarse si no entra en pantallas pequeñas. */
+/* La tabla se desplaza dentro del cuadro; filtros y paginacion quedan fuera. */
 .contenedor-tabla-cuentas {
-  overflow-x: auto;
+  max-height: 55vh;
+  max-height: 55dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-borde) transparent;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.contenedor-tabla-cuentas::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.contenedor-tabla-cuentas::-webkit-scrollbar-thumb {
+  background: var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.contenedor-tabla-cuentas::-webkit-scrollbar-thumb:hover {
+  background: var(--color-texto-secundario);
+}
+
+.contenedor-tabla-cuentas::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .tabla-cuentas {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
+}
+
+.tabla-cuentas th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-principal-claro);
+  white-space: nowrap;
 }
 
 .tabla-cuentas th,
@@ -42,10 +85,6 @@
   padding: var(--espacio-mediano);
   border-bottom: 1px solid var(--color-borde);
   vertical-align: top;
-}
-
-.tabla-cuentas th {
-  background: var(--color-principal-claro);
 }
 
 .tabla-cuentas td {
@@ -62,6 +101,63 @@
 
 .tabla-cuentas .boton-panel {
   white-space: nowrap;
+}
+
+.tabla-cuentas th:first-child,
+.tabla-cuentas td:first-child {
+  min-width: 11rem;
+}
+
+.tabla-cuentas th:nth-child(2),
+.tabla-cuentas td:nth-child(2) {
+  min-width: 15rem;
+}
+
+.tabla-cuentas th:nth-child(4),
+.tabla-cuentas td:nth-child(4) {
+  min-width: 6rem;
+  white-space: nowrap;
+}
+
+/* Badge de estado de cada cuenta con ancho uniforme y color semantico. */
+.tabla-cuentas td[data-estado] {
+  white-space: nowrap;
+}
+
+.tabla-cuentas td[data-estado]::after {
+  content: attr(data-estado-texto);
+}
+
+.tabla-cuentas td[data-estado="activa"] {
+  color: var(--color-exito);
+}
+
+.tabla-cuentas td[data-estado="inactiva"] {
+  color: var(--color-error);
+}
+
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+}
+
+.badge-activa {
+  color: var(--color-exito);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.badge-inactiva {
+  color: var(--color-error);
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
 }
 
 /* La descripcion identifica la tabla para lectores de pantalla. */
@@ -219,55 +315,72 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .formulario-cuentas button,
-  .encabezado-cuentas .boton-panel {
+  .formulario-cuentas button {
     width: 100%;
   }
 }
 
 /* Estos controles filtran el listado sin recargar la pagina. */
 .filtros-cuentas {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
-  gap: var(--espacio-mediano);
-  margin-top: var(--espacio-grande);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: var(--espacio-pequeno);
+  margin-top: var(--espacio-mediano);
+  min-width: 0;
 }
 
 .filtros-cuentas > div {
   display: grid;
-  gap: var(--espacio-pequeno);
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.filtros-cuentas > div:first-child {
+  flex: 1.6 1 0;
+}
+
+.filtros-cuentas > div:not(:first-child) {
+  flex: 1 1 0;
 }
 
 .filtros-cuentas label {
+  font-size: var(--texto-pequeno);
   font-weight: var(--peso-medio);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filtros-cuentas input,
 .filtros-cuentas select {
   width: 100%;
   min-width: 0;
-  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  padding: 0.3rem var(--espacio-pequeno);
   color: var(--color-texto);
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-pequeno);
-}
-
-@media (max-width: 700px) {
-  .filtros-cuentas {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  font-size: var(--texto-pequeno);
 }
 
 /* Las acciones principales quedan junto al titulo del listado. */
 .acciones-encabezado-cuentas {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
   gap: var(--espacio-pequeno);
 }
 
 .acciones-encabezado-cuentas .boton-panel {
   width: auto;
+}
+
+/* Los botones de encabezado con icono usan dimensiones compactas cuadradas. */
+.acciones-encabezado-cuentas .boton-panel.boton-icono {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
 }
 
 /* El alta se despliega en una tarjeta independiente, sin ocupar
@@ -392,57 +505,17 @@
   }
 }
 
-/* Las filas se desplazan dentro del cuadro.
- Los filtros y los controles de pagina quedan fuera de ese scroll. */
-.contenedor-tabla-cuentas {
-  max-height: 55vh;
-  max-height: 55dvh;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-pequeno);
-}
-
-/* El ancho minimo evita comprimir las columnas en el celular.
- Si no entran, se puede deslizar horizontalmente dentro del cuadro. */
-.tabla-cuentas {
-  min-width: 54rem;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.tabla-cuentas th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--color-principal-claro);
-  white-space: nowrap;
-}
-
-.tabla-cuentas th:first-child,
-.tabla-cuentas td:first-child {
-  min-width: 11rem;
-}
-
-.tabla-cuentas th:nth-child(2),
-.tabla-cuentas td:nth-child(2) {
-  min-width: 15rem;
-}
-
-.tabla-cuentas th:nth-child(4),
-.tabla-cuentas td:nth-child(4) {
-  min-width: 6rem;
-  white-space: nowrap;
-}
-
 /* La paginacion permanece debajo del cuadro de filas. */
 .paginacion-cuentas {
+  position: relative;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--espacio-mediano);
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: var(--espacio-pequeno);
   margin-top: var(--espacio-mediano);
 }
 
@@ -451,22 +524,20 @@
   font-size: var(--texto-pequeno);
 }
 
-@media (max-width: 600px) {
-  .paginacion-cuentas {
-    justify-content: center;
-    gap: var(--espacio-pequeno);
-  }
-}
-
-/* Las acciones de cada fila se apilan para ocupar menos ancho. */
+/* Las acciones de cada fila se apilan y se reducen al ancho de los iconos. */
 .tabla-cuentas .acciones-cuenta {
   flex-direction: column;
-  align-items: stretch;
-  width: 6.5rem;
+  align-items: center;
+  width: 2.75rem;
+  gap: var(--espacio-pequeno);
 }
 
 .tabla-cuentas .acciones-cuenta .boton-panel {
   padding: var(--espacio-pequeno);
+}
+
+.tabla-cuentas .acciones-cuenta .boton-icono {
+  padding: 0;
 }
 
 /* El selector de edicion mantiene un ancho compacto. */
@@ -493,27 +564,6 @@
 
 .selector-roles-edicion .opcion-rol {
   font-size: var(--texto-pequeno);
-}
-
-/* La columna de acciones se reduce al ancho de los iconos. */
-.tabla-cuentas .acciones-cuenta {
-  width: 2.75rem;
-  align-items: center;
-}
-
-.tabla-cuentas .acciones-cuenta .boton-icono {
-  padding: 0;
-}
-
-/* Centramos la paginacion y limitamos su ancho al listado. */
-.paginacion-cuentas {
-  position: relative;
-  justify-content: center;
-  flex-wrap: nowrap;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  gap: var(--espacio-pequeno);
 }
 
 .numeros-pagina {
@@ -564,23 +614,6 @@
   color: var(--color-texto-secundario);
 }
 
-/* Reducimos el espacio en celular sin comprimir los numeros. */
-@media (max-width: 600px) {
-  .paginacion-cuentas {
-    gap: var(--espacio-minimo);
-  }
-
-  .paginacion-cuentas .boton-panel.boton-icono {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-
-  .numero-pagina {
-    min-width: 2rem;
-    height: 2.25rem;
-    font-size: var(--texto-pequeno);
-  }
-}
 /* Las acciones del alta quedan juntas debajo de los campos. */
 .panel-alta-cuenta .formulario-cuentas > .acciones-alta-cuenta {
   grid-column: 1 / -1;
@@ -604,4 +637,113 @@
 .boton-panel.boton-cancelar-alta:hover:not(:disabled) {
   color: var(--color-secundario);
   background: var(--color-error);
+}
+
+/* Ajuste progresivo en pantallas intermedias y chicas. */
+@media (max-width: 1024px) {
+  .tabla-cuentas th,
+  .tabla-cuentas td {
+    padding: var(--espacio-pequeno);
+    font-size: var(--texto-pequeno);
+  }
+
+  .badge-estado {
+    min-width: 4.5rem;
+    padding: 0.15rem 0.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabla-cuentas {
+    min-width: 44rem;
+  }
+
+  .tabla-cuentas th,
+  .tabla-cuentas td {
+    padding: 0.4rem var(--espacio-pequeno);
+    font-size: 0.8rem;
+  }
+
+  .tabla-cuentas th:first-child,
+  .tabla-cuentas td:first-child {
+    min-width: 8rem;
+  }
+
+  .tabla-cuentas th:nth-child(2),
+  .tabla-cuentas td:nth-child(2) {
+    min-width: 11rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .encabezado-cuentas h2 {
+    font-size: 1.15rem;
+  }
+
+  .acciones-encabezado-cuentas {
+    gap: 0.3rem;
+  }
+
+  .acciones-encabezado-cuentas .boton-panel.boton-icono {
+    width: 1.95rem;
+    height: 1.95rem;
+  }
+
+  .filtros-cuentas {
+    gap: 0.35rem;
+  }
+
+  .filtros-cuentas label {
+    font-size: 0.72rem;
+  }
+
+  .filtros-cuentas input,
+  .filtros-cuentas select {
+    padding: 0.25rem 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .paginacion-cuentas {
+    gap: var(--espacio-minimo);
+  }
+
+  .paginacion-cuentas .boton-panel.boton-icono {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .numero-pagina {
+    min-width: 2rem;
+    height: 2.25rem;
+    font-size: var(--texto-pequeno);
+  }
+}
+
+@media (max-width: 420px) {
+  .encabezado-cuentas h2 {
+    font-size: 1rem;
+  }
+
+  .acciones-encabezado-cuentas .boton-panel.boton-icono {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .filtros-cuentas {
+    gap: 0.25rem;
+  }
+
+  .filtros-cuentas > div:first-child {
+    flex: 1.45 1 0;
+  }
+
+  .filtros-cuentas label {
+    font-size: 0.68rem;
+  }
+
+  .filtros-cuentas input,
+  .filtros-cuentas select {
+    padding: 0.22rem 0.28rem;
+    font-size: 0.7rem;
+  }
 }

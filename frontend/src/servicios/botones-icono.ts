@@ -7,6 +7,8 @@ import {
   Recycle,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
+  Plus,
 } from 'lucide'
 import './botones-icono.css'
 
@@ -18,6 +20,8 @@ const nombresIconos = {
   cancelar: 'x',
   anterior: 'chevron-left',
   siguiente: 'chevron-right',
+  actualizar: 'refresh-cw',
+  nueva: 'plus',
 } as const
 
 type AccionBoton = keyof typeof nombresIconos
@@ -121,6 +125,8 @@ export function ponerIconoBoton(
       Recycle,
       ChevronLeft,
       ChevronRight,
+      RefreshCw,
+      Plus,
     },
     root: boton,
     attrs: {
