@@ -1,0 +1,385 @@
+/* ==========================================================================
+   GymManager — Hoja de estilos unificada para impresión de rutinas
+   Diseño optimizado para papel, orientación horizontal y alto contraste
+   Compartido entre:
+   - Vista del alumno (frontend/src/cliente/perfil/)
+   - Panel de rutinas del administrador (frontend/src/panel/rutinas/)
+   ========================================================================== */
+
+@media print {
+  /* Configuración de página horizontal con márgenes limpios y seguros */
+  @page {
+    size: landscape;
+    margin: 10mm 12mm;
+  }
+
+  /* Reset del documento para impresión en papel blanco sin desbordes */
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Desactivar paddings y alturas del contenedor principal del panel */
+  .contenido-panel {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     1. Elementos comunes de interfaz a ocultar en ambas vistas
+     ------------------------------------------------------------------------ */
+  .boton-fijo-movil,
+  .encabezado-panel,
+  .menu-panel,
+  .desplegable-usuario,
+  button,
+  .boton-panel,
+  .boton-secundario,
+  .no-imprimir {
+    display: none !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     2. Vista del alumno (perfil.html): aislar exclusivamente la tarjeta-rutina
+     ------------------------------------------------------------------------ */
+  .vista-perfil .cabecera-modulo,
+  .vista-perfil #mensaje-perfil,
+  .vista-perfil #sin-ficha,
+  .vista-perfil .tarjeta-perfil,
+  .vista-perfil .tarjeta-turno,
+  .vista-perfil #imprimir-rutina,
+  .vista-perfil #mensaje-rutina {
+    display: none !important;
+  }
+
+  .vista-perfil,
+  .vista-perfil #contenido-perfil {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .vista-perfil .tarjeta-rutina {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .vista-perfil .tarjeta-rutina .cabecera-seccion {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin: 0 0 10px 0 !important;
+    padding: 0 0 8px 0 !important;
+    border-bottom: 2.5px solid #0284c7 !important;
+  }
+
+  .vista-perfil .tarjeta-rutina .cabecera-seccion::before {
+    content: "GymManager";
+    display: block;
+    font-size: 18pt;
+    font-weight: 800;
+    color: #0284c7;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .vista-perfil .tarjeta-rutina .cabecera-seccion > div {
+    text-align: right !important;
+  }
+
+  .vista-perfil .tarjeta-rutina .cabecera-seccion h3 {
+    margin: 0 !important;
+    font-size: 12pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    line-height: 1.2 !important;
+  }
+
+  .vista-perfil .tarjeta-rutina .cabecera-seccion p,
+  .vista-perfil #fecha-rutina {
+    margin: 2px 0 0 0 !important;
+    font-size: 9pt !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    line-height: 1.2 !important;
+  }
+
+  .vista-perfil #observaciones-rutina {
+    display: block !important;
+    margin: 0 0 10px 0 !important;
+    padding: 6px 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: 4px solid #0284c7 !important;
+    border-radius: 4px !important;
+    color: #334155 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .vista-perfil #observaciones-rutina::before {
+    content: "Observaciones: ";
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .vista-perfil #observaciones-rutina:empty {
+    display: none !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     3. Panel de administración (rutinas.html): aislar #area-impresion
+     ------------------------------------------------------------------------ */
+  #vista > .cabecera-modulo,
+  #mensaje-rutinas,
+  .tarjeta-selector,
+  #tarjeta-historial,
+  #tarjeta-editor,
+  #tarjeta-detalle > .cabecera-seccion,
+  #aviso-rutina {
+    display: none !important;
+  }
+
+  #tarjeta-detalle,
+  #area-impresion {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  #area-impresion .encabezado-impresion {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-areas:
+      "logo titulo"
+      "logo fecha"
+      "logo cliente" !important;
+    align-items: end !important;
+    margin: 0 0 10px 0 !important;
+    padding: 0 0 8px 0 !important;
+    border-bottom: 2.5px solid #0284c7 !important;
+  }
+
+  #area-impresion .encabezado-impresion h2 {
+    grid-area: logo !important;
+    margin: 0 !important;
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    color: #0284c7 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+  }
+
+  #area-impresion .encabezado-impresion #titulo-rutina {
+    grid-area: titulo !important;
+    justify-self: end !important;
+    text-align: right !important;
+    margin: 0 !important;
+    font-size: 12pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    line-height: 1.2 !important;
+  }
+
+  #area-impresion .encabezado-impresion #fecha-rutina {
+    grid-area: fecha !important;
+    justify-self: end !important;
+    text-align: right !important;
+    margin: 2px 0 0 0 !important;
+    font-size: 9pt !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    line-height: 1.2 !important;
+  }
+
+  #area-impresion .encabezado-impresion #cliente-impresion {
+    grid-area: cliente !important;
+    justify-self: end !important;
+    text-align: right !important;
+    margin: 2px 0 0 0 !important;
+    font-size: 9pt !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    line-height: 1.2 !important;
+  }
+
+  #area-impresion .observaciones-impresion {
+    display: block !important;
+    margin: 0 0 10px 0 !important;
+    padding: 6px 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: 4px solid #0284c7 !important;
+    border-radius: 4px !important;
+  }
+
+  #area-impresion .observaciones-impresion strong {
+    display: inline-block !important;
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    margin-right: 4px !important;
+  }
+
+  #area-impresion .observaciones-impresion p {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #334155 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     4. Tabla de ejercicios (común y unificada)
+     ------------------------------------------------------------------------ */
+  .tabla-contenedor {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .tabla-datos {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.3 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+  }
+
+  .tabla-datos thead {
+    display: table-header-group !important;
+  }
+
+  .tabla-datos th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 8pt !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    padding: 5px 6px !important;
+    border-top: 1.5px solid #0284c7 !important;
+    border-bottom: 2px solid #0f172a !important;
+    border-left: none !important;
+    border-right: none !important;
+    white-space: nowrap !important;
+  }
+
+  .tabla-datos tbody {
+    display: table-row-group !important;
+  }
+
+  .tabla-datos tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .tabla-datos tbody tr {
+    border-bottom: 1px solid #cbd5e1 !important;
+    background: transparent !important;
+  }
+
+  .tabla-datos tbody tr:nth-child(even) {
+    background: #f8fafc !important;
+  }
+
+  .tabla-datos td {
+    padding: 5px 6px !important;
+    color: #1e293b !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    vertical-align: middle !important;
+  }
+
+  /* Alineaciones de columnas */
+  .tabla-datos th:nth-child(1),
+  .tabla-datos td:nth-child(1) {
+    width: 2.2rem !important;
+    text-align: center !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    white-space: nowrap !important;
+  }
+
+  .tabla-datos th:nth-child(2),
+  .tabla-datos td:nth-child(2) {
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    min-width: 9rem !important;
+    white-space: normal !important;
+  }
+
+  .tabla-datos th:nth-child(3),
+  .tabla-datos td:nth-child(3),
+  .tabla-datos th:nth-child(4),
+  .tabla-datos td:nth-child(4),
+  .tabla-datos th:nth-child(5),
+  .tabla-datos td:nth-child(5),
+  .tabla-datos th:nth-child(6),
+  .tabla-datos td:nth-child(6) {
+    text-align: center !important;
+    white-space: nowrap !important;
+    width: 4.8rem !important;
+  }
+
+  .tabla-datos th:nth-child(7),
+  .tabla-datos td:nth-child(7) {
+    text-align: left !important;
+    color: #475569 !important;
+    font-size: 8pt !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* Evitar desbordes de margen inferior que causen hoja en blanco */
+  .tabla-contenedor:last-child,
+  .tabla-datos:last-child {
+    margin-bottom: 0 !important;
+  }
+}

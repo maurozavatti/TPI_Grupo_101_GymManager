@@ -285,44 +285,4 @@
   }
 }
 
-/* Al imprimir, mostramos solamente la rutina seleccionada. */
-@media print {
-  @page {
-    size: A4 landscape;
-    margin: 15mm;
-  }
-
-  body * {
-    visibility: hidden !important;
-  }
-
-  #area-impresion,
-  #area-impresion * {
-    visibility: visible !important;
-  }
-
-  #area-impresion {
-    display: block !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 0;
-    border: 0;
-    box-shadow: none;
-    background: white;
-  }
-
-  #area-impresion .tabla-datos {
-    font-size: 10pt;
-  }
-
-  #area-impresion .tabla-datos th,
-  #area-impresion .tabla-datos td {
-    padding: 6px;
-  }
-
-  #area-impresion tr {
-    break-inside: avoid;
-  }
-}
+/* Los estilos de impresión unificados de la rutina se gestionan en impresion-rutina.css */

@@ -486,37 +486,4 @@
   }
 }
 
-/* Estilos de impresión para la rutina */
-@media print {
-  body * {
-    visibility: hidden !important;
-  }
-
-  #detalle-rutina,
-  #detalle-rutina * {
-    visibility: visible !important;
-  }
-
-  #detalle-rutina {
-    position: absolute;
-    inset: 0;
-    display: block !important;
-    width: 100%;
-  }
-
-  #detalle-rutina .tabla-datos {
-    font-size: 10pt;
-    color: #000;
-  }
-
-  #detalle-rutina .tabla-datos th {
-    background: #e2e8f0;
-    color: #000;
-  }
-
-  #detalle-rutina .tabla-datos th,
-  #detalle-rutina .tabla-datos td {
-    border-color: #cbd5e1;
-    color: #000;
-  }
-}
+/* Los estilos de impresión unificados de la rutina se gestionan en impresion-rutina.css */
