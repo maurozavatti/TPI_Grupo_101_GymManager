@@ -2,8 +2,7 @@ import { validarFormulario } from '../validaciones.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { prepararAccesoAutenticacion } from '../acceso.ts'
 
-/* Estos son los elementos necesarios para controlar el registro
- y mostrar los mensajes que devuelve el backend.*/
+/* Elementos interactivos del formulario de registro y visualización de estados. */
 const formulario = document.querySelector<HTMLFormElement>(
   '#formulario-registro',
 )
@@ -16,7 +15,7 @@ const boton = formulario?.querySelector<HTMLButtonElement>(
   'button[type="submit"]',
 )
 
-/* Comprobamos la sesion antes de preparar el formulario.*/
+/* Verifica el estado de sesión previo para redirigir si el usuario ya está autenticado. */
 const puedeMostrarFormulario = await prepararAccesoAutenticacion(
   formulario,
   mensaje,
@@ -32,8 +31,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
   formulario.addEventListener('submit', async (evento) => {
     evento.preventDefault()
 
-    /* Evitamos enviar otra peticion mientras esperamos
-     la respuesta del registro anterior.*/
+    /* Previene envíos concurrentes mientras se procesa la solicitud actual. */
     if (enviando) {
       return
     }
@@ -49,8 +47,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
       return
     }
 
-    /* Los nombres del formulario se adaptan a los campos
-     que recibe el controlador del backend.*/
+    /* Normaliza los datos del formulario al esquema de registro esperado por la API. */
     const datos = new FormData(formulario)
 
     const registro = {
@@ -65,9 +62,8 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
     boton.textContent = 'Creando cuenta...'
     formulario.setAttribute('aria-busy', 'true')
 
-    /* Mientras se envia el formulario conservamos sus valores
-     para que coincidan con los datos que recibe el backend.*/
-    for (const campo of campos) {
+    /* Bloquea la edición de los campos durante el procesamiento de la solicitud. */
+    for (const campo of Array.from(campos)) {
       campo.readOnly = true
     }
 
@@ -80,8 +76,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         body: JSON.stringify(registro),
       })
 
-      /* El mensaje de exito aparece solamente cuando el backend
-       confirma que guardo la cuenta y su sesion.*/
+      /* Procesa el registro exitoso confirmado por el servidor y redirige a la raíz. */
       formulario.reset()
       seIntentoEnviar = false
 
@@ -89,8 +84,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
       mensaje.textContent = 'Cuenta creada correctamente.'
       window.location.replace('/')
     } catch (error) {
-      /* Conservamos los datos ingresados para poder corregirlos
-       o volver a intentar si hubo un problema de conexion.*/
+      /* Gestiona errores devueltos por el backend o problemas de conexión. */
       mensaje.classList.remove('mensaje-exito')
       mensaje.classList.add('mensaje-error')
 
@@ -98,10 +92,9 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         ? error.message
         : 'No se pudo crear la cuenta. Intentá nuevamente.'
 
-      /* El backend indica los campos incorrectos mediante
-       sus identificadores, como correo o contrasena.*/
+      /* Resalta los campos rechazados por la API y enfoca el primer elemento inválido. */
       if (error instanceof ErrorAPI) {
-        for (const campo of campos) {
+        for (const campo of Array.from(campos)) {
           if (error.campos.includes(campo.id)) {
             campo.setAttribute('aria-invalid', 'true')
           }
@@ -112,21 +105,19 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         )?.focus()
       }
     } finally {
-      /* El formulario vuelve a quedar disponible tanto si
-       la operacion termina correctamente como si falla.*/
+      /* Restaura la interactividad del formulario al finalizar la solicitud. */
       enviando = false
       boton.disabled = false
       boton.textContent = 'Registrarse'
       formulario.removeAttribute('aria-busy')
 
-      for (const campo of campos) {
+      for (const campo of Array.from(campos)) {
         campo.readOnly = false
       }
     }
   })
 
-  /* Despues del primer intento revisamos los datos mientras
-   se corrigen. Durante el envio conservamos el mensaje de espera.*/
+  /* Revalida los campos de forma dinámica al escribir tras un intento previo de envío. */
   formulario.addEventListener('input', () => {
     if (enviando) {
       return
@@ -142,7 +133,6 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
     }
   })
 
-  /* Utilizamos nuestros mensajes en lugar de los carteles
-   de validacion predeterminados del navegador.*/
+  /* Desactiva la validación nativa del navegador para aplicar el esquema de validación personalizado. */
   formulario.noValidate = true
 }

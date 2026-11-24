@@ -2,8 +2,7 @@ import { validarFormulario } from '../validaciones.ts'
 import { ErrorAPI, solicitarAPI } from '../../servicios/api.ts'
 import { prepararAccesoAutenticacion } from '../acceso.ts'
 
-/* Estos son los elementos necesarios para controlar el login
- y mostrar los mensajes que devuelve el backend.*/
+/* Elementos interactivos del formulario de inicio de sesión y visualización de estados. */
 const formulario = document.querySelector<HTMLFormElement>(
   '#formulario-login',
 )
@@ -16,7 +15,7 @@ const boton = formulario?.querySelector<HTMLButtonElement>(
   'button[type="submit"]',
 )
 
-/* Comprobamos la sesion antes de preparar el formulario.*/
+/* Verifica el estado de sesión previo para redirigir si el usuario ya está autenticado. */
 const puedeMostrarFormulario = await prepararAccesoAutenticacion(
   formulario,
   mensaje,
@@ -32,8 +31,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
   formulario.addEventListener('submit', async (evento) => {
     evento.preventDefault()
 
-    /* Evitamos enviar otra peticion mientras esperamos
-     la respuesta del intento anterior.*/
+    /* Previene envíos concurrentes mientras se procesa la solicitud actual. */
     if (enviando) {
       return
     }
@@ -49,8 +47,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
       return
     }
 
-    /* Adaptamos el nombre del campo correo al dato email
-     que espera el controlador del backend.*/
+    /* Normaliza los datos del formulario al esquema de autenticación esperado por la API. */
     const datos = new FormData(formulario)
 
     const credenciales = {
@@ -63,9 +60,8 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
     boton.textContent = 'Ingresando...'
     formulario.setAttribute('aria-busy', 'true')
 
-    /* Conservamos los valores mientras se comprueban
-     las credenciales enviadas.*/
-    for (const campo of campos) {
+    /* Bloquea la edición de los campos durante el procesamiento de la solicitud. */
+    for (const campo of Array.from(campos)) {
       campo.readOnly = true
     }
 
@@ -78,9 +74,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         body: JSON.stringify(credenciales),
       })
 
-      /* El mensaje de exito aparece cuando el backend
-       confirma las credenciales y guarda la nueva sesion.
-       El navegador recibe la cookie automaticamente.*/
+      /* Procesa la autenticación exitosa confirmada por el servidor y redirige a la raíz. */
       formulario.reset()
       seIntentoEnviar = false
 
@@ -88,8 +82,7 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
       mensaje.textContent = 'Sesión iniciada correctamente.'
       window.location.replace('/')
     } catch (error) {
-      /* Conservamos los datos para corregirlos o volver
-       a intentar si hubo un problema de conexion.*/
+      /* Gestiona errores de autenticación o fallas de comunicación con el servidor. */
       mensaje.classList.remove('mensaje-exito')
       mensaje.classList.add('mensaje-error')
 
@@ -97,10 +90,9 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         ? error.message
         : 'No se pudo iniciar sesión. Intentá nuevamente.'
 
-      /* Marcamos los campos que indique el backend.
-       Si las credenciales no coinciden, se marcan ambos.*/
+      /* Resalta los campos rechazados por el backend y enfoca el primer elemento inválido. */
       if (error instanceof ErrorAPI) {
-        for (const campo of campos) {
+        for (const campo of Array.from(campos)) {
           if (error.campos.includes(campo.id)) {
             campo.setAttribute('aria-invalid', 'true')
           }
@@ -111,20 +103,19 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
         )?.focus()
       }
     } finally {
-      /* Restauramos el formulario al terminar la peticion.*/
+      /* Restaura la interactividad del formulario al finalizar la solicitud. */
       enviando = false
       boton.disabled = false
       boton.textContent = 'Ingresar'
       formulario.removeAttribute('aria-busy')
 
-      for (const campo of campos) {
+      for (const campo of Array.from(campos)) {
         campo.readOnly = false
       }
     }
   })
 
-  /* Actualizamos las validaciones mientras se corrigen
-   los datos, conservando el mensaje durante el envio.*/
+  /* Revalida los campos de forma dinámica al escribir tras un intento previo de envío. */
   formulario.addEventListener('input', () => {
     if (enviando) {
       return
@@ -140,6 +131,6 @@ if (formulario && mensaje && boton && puedeMostrarFormulario) {
     }
   })
 
-  /* Utilizamos los mensajes propios del formulario.*/
+  /* Desactiva la validación nativa del navegador para aplicar el esquema de validación personalizado. */
   formulario.noValidate = true
 }
