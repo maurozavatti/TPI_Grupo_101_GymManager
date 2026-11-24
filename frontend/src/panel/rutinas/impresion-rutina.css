@@ -13,7 +13,10 @@
     margin: 10mm 12mm;
   }
 
-  /* Reset del documento para impresión en papel blanco sin desbordes */
+  /* Reset del documento para impresión en papel blanco sin desbordes.
+     Crítico: body { min-height: 100vh } y .estructura-panel { min-height: 100vh }
+     se heredan en impresión y fuerzan una segunda hoja en blanco.
+     Se neutralizan aquí con height: auto y min-height: 0. */
   html,
   body {
     height: auto !important;
@@ -29,6 +32,12 @@
     print-color-adjust: exact !important;
   }
 
+  /* Neutralizar la altura mínima de 100vh del contenedor raíz del panel */
+  .estructura-panel {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
   /* Desactivar paddings y alturas del contenedor principal del panel */
   .contenido-panel {
     margin: 0 !important;
@@ -36,6 +45,7 @@
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    flex: none !important;
   }
 
   /* ------------------------------------------------------------------------
