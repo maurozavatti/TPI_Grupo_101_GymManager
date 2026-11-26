@@ -1,5 +1,7 @@
-/* Estilos propios de la pantalla de Inicio.
- Reutilizan las variables y las clases compartidas del panel. */
+/* Estilos propios de la pantalla de Inicio (dashboard).
+ Reutilizan las variables y las clases compartidas del panel, y siguen
+ el mismo lenguaje visual que Cuentas y Mi perfil (tarjetas con acento,
+ tablas con encabezado fijo, breakpoints progresivos). */
 .saludo-inicio {
   font-size: var(--texto-subtitulo);
   font-weight: var(--peso-negrita);
@@ -10,12 +12,25 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: var(--espacio-mediano);
-  margin-bottom: var(--espacio-grande);
+  margin-bottom: var(--espacio-extra-grande);
 }
 
+/* Cada tarjeta metrica tiene un acento de color a la izquierda y se
+ levanta levemente al pasar el mouse, igual que los bloques de aviso
+ de Mi perfil. */
 .tarjeta-metrica {
   display: grid;
-  gap: var(--espacio-pequeno);
+  gap: var(--espacio-minimo);
+  border-left: 3px solid var(--color-principal);
+  transition:
+    transform var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    border-color var(--transicion-rapida);
+}
+
+.tarjeta-metrica:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-tarjeta);
 }
 
 .etiqueta-metrica {
@@ -23,42 +38,156 @@
   font-size: var(--texto-pequeno);
   font-weight: var(--peso-medio);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .valor-metrica {
   font-size: var(--texto-titulo);
   font-weight: var(--peso-negrita);
   color: var(--color-principal);
+  line-height: var(--interlineado-titulos);
+}
+
+/* Las tarjetas de alerta (cuotas vencidas, proximas a vencer) usan el
+ color de error tanto en el acento como en el valor. */
+.tarjeta-alerta {
+  border-left-color: var(--color-error);
 }
 
 .tarjeta-alerta .valor-metrica {
   color: var(--color-error);
 }
 
-.bloque-turnos-hoy h2 {
-  margin-bottom: var(--espacio-mediano);
+.bloque-turnos-hoy {
+  display: grid;
+  gap: var(--espacio-mediano);
 }
 
+.bloque-turnos-hoy h2 {
+  margin-bottom: 0;
+}
+
+/* La tabla se desplaza dentro del cuadro; el encabezado queda fijo
+ arriba, igual que en Cuentas y en Mi perfil. */
 .tabla-contenedor {
-  overflow-x: auto;
+  max-height: 50vh;
+  max-height: 50dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-borde) transparent;
+}
+
+.tabla-contenedor::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tabla-contenedor::-webkit-scrollbar-thumb {
+  background: var(--color-borde);
+  border-radius: var(--radio-pequeno);
+}
+
+.tabla-contenedor::-webkit-scrollbar-thumb:hover {
+  background: var(--color-texto-secundario);
 }
 
 .tabla-datos {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 24rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
 }
 
 .tabla-datos th,
 .tabla-datos td {
   padding: var(--espacio-pequeno) var(--espacio-mediano);
-  text-align: left;
   border-bottom: 1px solid var(--color-borde);
   overflow-wrap: anywhere;
 }
 
 .tabla-datos th {
-  color: var(--color-texto-secundario);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-principal-claro);
+  color: var(--color-principal);
   font-size: var(--texto-pequeno);
   font-weight: var(--peso-negrita);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tabla-datos tbody tr {
+  transition: background-color var(--transicion-rapida);
+}
+
+.tabla-datos tbody tr:hover {
+  background: var(--color-fondo);
+}
+
+/* Ajuste progresivo en pantallas intermedias y chicas, igual que Cuentas. */
+@media (max-width: 1024px) {
+  .rejilla-tarjetas {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+
+  .valor-metrica {
+    font-size: 1.5rem;
+  }
+
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: var(--espacio-pequeno);
+    font-size: var(--texto-pequeno);
+  }
+}
+
+@media (max-width: 800px) {
+  .rejilla-tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: 0.4rem var(--espacio-pequeno);
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .rejilla-tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .valor-metrica {
+    font-size: 1.35rem;
+  }
+
+  .bloque-turnos-hoy h2 {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .etiqueta-metrica {
+    font-size: 0.75rem;
+  }
+
+  .valor-metrica {
+    font-size: 1.2rem;
+  }
+
+  .bloque-turnos-hoy h2 {
+    font-size: 1rem;
+  }
+
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.75rem;
+  }
 }
