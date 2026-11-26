@@ -1,6 +1,3 @@
-/* Estilos propios de la pantalla de Turnos.
- Reutilizan las variables y las clases compartidas del panel,
- y las mismas clases de formulario y tabla que usa Clientes. */
 .cabecera-modulo {
   display: flex;
   justify-content: space-between;
@@ -75,6 +72,14 @@
   border-color: var(--color-error);
 }
 
+/* La hora de fin se calcula sola: lo marcamos como campo de solo
+ lectura para que no parezca editable. */
+.campo-formulario input[readonly] {
+  color: var(--color-texto-secundario);
+  background-color: var(--color-fondo);
+  cursor: not-allowed;
+}
+
 .acciones-formulario {
   display: flex;
   gap: var(--espacio-mediano);
@@ -88,11 +93,20 @@
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-pequeno);
   font-weight: var(--peso-medio);
+  transition:
+    border-color var(--transicion-rapida),
+    color var(--transicion-rapida),
+    background-color var(--transicion-rapida);
 }
 
 .boton-secundario:hover:not(:disabled) {
   border-color: var(--color-principal);
   color: var(--color-principal-hover);
+}
+
+.boton-secundario:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
 }
 
 .bloque-franjas,
@@ -123,8 +137,15 @@
   gap: var(--espacio-pequeno);
   flex-wrap: wrap;
   padding: var(--espacio-pequeno);
+  background: var(--color-fondo);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-pequeno);
+  transition: border-color var(--transicion-rapida);
+}
+
+.fila-franja:hover,
+.fila-trabajo:hover {
+  border-color: var(--color-principal-claro);
 }
 
 .fila-trabajo {
@@ -145,6 +166,12 @@
   font-weight: var(--peso-normal);
 }
 
+.dias-trabajo input {
+  accent-color: var(--color-principal);
+}
+
+/* Barra de acciones en lote, destacada igual que el resto de los
+ avisos informativos del panel. */
 .acciones-lote {
   display: flex;
   align-items: center;
@@ -153,49 +180,98 @@
   margin-bottom: var(--espacio-mediano);
   padding: var(--espacio-pequeno) var(--espacio-mediano);
   background: var(--color-principal-claro);
+  border: 1px solid var(--color-principal);
+  border-radius: var(--radio-pequeno);
+  color: var(--color-principal-hover);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+/* La tabla se desplaza dentro del cuadro; el encabezado queda fijo
+ arriba, igual que en Cuentas y en Mi perfil. */
+.tabla-contenedor {
+  max-height: 60vh;
+  max-height: 60dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-borde) transparent;
+}
+
+.tabla-contenedor::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tabla-contenedor::-webkit-scrollbar-thumb {
+  background: var(--color-borde);
   border-radius: var(--radio-pequeno);
 }
 
-.tabla-contenedor {
-  overflow-x: auto;
-  padding: 0;
+.tabla-contenedor::-webkit-scrollbar-thumb:hover {
+  background: var(--color-texto-secundario);
 }
 
 .tabla-datos {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
 }
 
 .tabla-datos th,
 .tabla-datos td {
   padding: var(--espacio-pequeno) var(--espacio-mediano);
-  text-align: left;
   border-bottom: 1px solid var(--color-borde);
   overflow-wrap: anywhere;
 }
 
 .tabla-datos th {
-  color: var(--color-texto-secundario);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-principal-claro);
+  color: var(--color-principal);
   font-size: var(--texto-pequeno);
   font-weight: var(--peso-negrita);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
+.tabla-datos tbody tr {
+  transition: background-color var(--transicion-rapida);
+}
+
+.tabla-datos tbody tr:hover {
+  background: var(--color-fondo);
+}
+
+/* Badge de estado con borde y fondo tenue, igual que en Cuentas. */
 .etiqueta-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
   padding: 0.125rem var(--espacio-pequeno);
   border-radius: var(--radio-pequeno);
   font-size: var(--texto-pequeno);
-  font-weight: var(--peso-negrita);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
 }
 
 .etiqueta-activo {
   color: var(--color-exito);
   background: color-mix(in srgb, var(--color-exito) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-exito) 35%, transparent);
 }
 
 .etiqueta-inactivo {
   color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-error) 35%, transparent);
 }
 
 .acciones-fila {
@@ -212,14 +288,73 @@
   border-radius: var(--radio-pequeno);
   font-size: var(--texto-pequeno);
   font-weight: var(--peso-medio);
+  transition:
+    background-color var(--transicion-rapida),
+    color var(--transicion-rapida);
 }
 
 .boton-fila:hover:not(:disabled) {
   background: var(--color-principal-claro);
+  color: var(--color-principal-hover);
+}
+
+.boton-fila:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: -1px;
+}
+
+@media (max-width: 1024px) {
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: var(--espacio-pequeno);
+    font-size: var(--texto-pequeno);
+  }
+
+  .etiqueta-estado {
+    min-width: 4rem;
+    padding: 0.1rem 0.4rem;
+  }
 }
 
 @media (max-width: 800px) {
   .rejilla-campos {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tabla-datos {
+    min-width: 40rem;
+  }
+
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: 0.4rem var(--espacio-pequeno);
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .cabecera-modulo h2 {
+    font-size: 1.15rem;
+  }
+
+  .acciones-lote {
+    font-size: 0.8rem;
+    padding: 0.4rem var(--espacio-pequeno);
+  }
+}
+
+@media (max-width: 420px) {
+  .cabecera-modulo h2 {
+    font-size: 1rem;
+  }
+
+  .tabla-datos {
+    min-width: 34rem;
+  }
+
+  .tabla-datos th,
+  .tabla-datos td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.75rem;
   }
 }
