@@ -12,6 +12,27 @@
   margin-bottom: var(--espacio-grande);
 }
 
+.campo-filtro select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--espacio-pequeno) var(--espacio-mediano);
+  color: var(--color-texto);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  transition: border-color var(--transicion-rapida);
+}
+
+.campo-filtro select:hover {
+  border-color: var(--color-principal);
+}
+
+.campo-filtro select:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 1px;
+  border-color: var(--color-foco);
+}
+
 .formulario-pago {
   display: grid;
   gap: var(--espacio-mediano);
@@ -31,6 +52,7 @@
 .campo-formulario {
   display: grid;
   gap: var(--espacio-pequeno);
+  min-width: 0;
 }
 
 .campo-formulario label {
@@ -58,6 +80,8 @@
 
 .campo-formulario input:focus-visible,
 .campo-formulario select:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 1px;
   border-color: var(--color-foco);
 }
 
@@ -101,8 +125,6 @@
   outline-offset: 2px;
 }
 
-/* La tabla se desplaza dentro del cuadro; el encabezado queda fijo
- arriba, igual que en Cuentas y en Mi perfil. */
 .tabla-contenedor {
   max-height: 60vh;
   max-height: 60dvh;
@@ -146,6 +168,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
+  isolation: isolate;
   background: var(--color-principal-claro);
   color: var(--color-principal);
   font-size: var(--texto-pequeno);
@@ -153,6 +176,13 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  box-shadow: inset 0 -1px 0 var(--color-borde);
+  border-bottom: none;
+}
+
+.tabla-datos th:last-child,
+.tabla-datos td:last-child {
+  padding-right: var(--espacio-grande);
 }
 
 .tabla-datos tbody tr {
@@ -163,8 +193,6 @@
   background: var(--color-fondo);
 }
 
-/* Badge de estado con borde y fondo tenue, igual que en Cuentas.
- Pagos tiene tres estados: pagado, vencido y pendiente. */
 .etiqueta-estado {
   display: inline-flex;
   align-items: center;
@@ -224,7 +252,6 @@
   outline-offset: -1px;
 }
 
-/* Ajuste progresivo en pantallas intermedias y chicas, igual que Cuentas. */
 @media (max-width: 1024px) {
   .tabla-datos th,
   .tabla-datos td {
@@ -238,33 +265,109 @@
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 720px) {
   .rejilla-campos {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .tabla-contenedor {
+    max-height: none;
+    overflow: visible;
+  }
+
   .tabla-datos {
-    min-width: 38rem;
+    min-width: 0;
+    width: 100%;
+    display: block;
   }
 
-  .tabla-datos th,
+  .tabla-datos thead {
+    position: static;
+    display: none;
+  }
+
+  .tabla-datos tbody {
+    display: block;
+  }
+
+  .tabla-datos tbody tr {
+    display: block;
+    margin-bottom: var(--espacio-mediano);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-mediano);
+    overflow: hidden;
+  }
+
+  .tabla-datos tbody tr:hover {
+    background: var(--color-superficie);
+  }
+
   .tabla-datos td {
-    padding: 0.4rem var(--espacio-pequeno);
-    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-mediano);
+    padding: var(--espacio-pequeno) var(--espacio-mediano);
+    border-bottom: 1px solid var(--color-borde);
+    text-align: right;
   }
-}
 
-@media (max-width: 600px) {
+  .tabla-datos td:last-child {
+    border-bottom: none;
+    padding-right: var(--espacio-mediano);
+  }
+
+  .tabla-datos td::before {
+    flex-shrink: 0;
+    color: var(--color-texto-secundario);
+    font-size: var(--texto-pequeno);
+    font-weight: var(--peso-medio);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+
+  .tabla-datos td:nth-child(1)::before {
+    content: "Cliente";
+  }
+
+  .tabla-datos td:nth-child(2)::before {
+    content: "Tipo";
+  }
+
+  .tabla-datos td:nth-child(3)::before {
+    content: "Monto";
+  }
+
+  .tabla-datos td:nth-child(4)::before {
+    content: "Fecha de pago";
+  }
+
+  .tabla-datos td:nth-child(5)::before {
+    content: "Vencimiento";
+  }
+
+  .tabla-datos td:nth-child(6)::before {
+    content: "Estado";
+  }
+
+  .tabla-datos td:nth-child(7) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-pequeno);
+  }
+
+  .tabla-datos td:nth-child(7)::before {
+    content: "Acciones";
+  }
+
+  .tabla-datos td:nth-child(7) .acciones-fila {
+    width: 100%;
+  }
+
   .cabecera-modulo h2 {
     font-size: 1.15rem;
-  }
-
-  .boton-fila {
-    padding: 0.2rem 0.4rem;
-  }
-
-  .acciones-fila {
-    gap: 0.35rem;
   }
 }
 
@@ -273,13 +376,16 @@
     font-size: 1rem;
   }
 
-  .tabla-datos {
-    min-width: 32rem;
+  .tabla-datos tbody tr {
+    border-radius: var(--radio-pequeno);
   }
 
-  .tabla-datos th,
   .tabla-datos td {
-    padding: 0.35rem 0.4rem;
-    font-size: 0.75rem;
+    padding: 0.45rem var(--espacio-pequeno);
+    font-size: 0.85rem;
+  }
+
+  .tabla-datos td::before {
+    font-size: 0.7rem;
   }
 }
