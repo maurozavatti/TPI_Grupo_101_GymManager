@@ -52,8 +52,33 @@ if (usuario) {
 
   const mensaje = elemento<HTMLParagraphElement>('#mensaje-pagos')
   const cuerpoTabla = elemento<HTMLTableSectionElement>('#cuerpo-tabla-pagos')
-  const filtroCliente = elemento<HTMLSelectElement>('#filtroCliente')
+  const buscarCliente = elemento<HTMLInputElement>('#buscar-pago-cliente')
   const botonNuevoPago = elemento<HTMLButtonElement>('#boton-nuevo-pago')
+
+  let pagosCargados: Pago[] = []
+
+  function normalizarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+  }
+
+  function aplicarFiltroBusqueda(): void {
+    const busqueda = normalizarTexto(buscarCliente.value.trim())
+
+    if (!busqueda) {
+      dibujarTabla(pagosCargados)
+      return
+    }
+
+    const filtrados = pagosCargados.filter((pago) => {
+      const nombre = nombresClientes.get(pago.clienteId) ?? ''
+      return normalizarTexto(nombre).includes(busqueda)
+    })
+
+    dibujarTabla(filtrados)
+  }
 
   const formularioPago = elemento<HTMLFormElement>('#formulario-pago')
   const mensajeFormularioPago = elemento<HTMLParagraphElement>('#mensaje-formulario-pago')
@@ -83,11 +108,9 @@ if (usuario) {
     const datos = await solicitarAPI<{ clientes: ClienteOpcion[] }>('/api/clientes')
     nombresClientes = new Map(datos.clientes.map(c => [c.id, `${c.apellido}, ${c.nombre}`]))
 
-    filtroCliente.replaceChildren(crearOpcion('', 'Todos los clientes'))
     selectClienteId.replaceChildren()
 
     for (const cliente of datos.clientes) {
-      filtroCliente.append(crearOpcion(cliente.id, `${cliente.apellido}, ${cliente.nombre}`))
       if (cliente.activo) selectClienteId.append(crearOpcion(cliente.id, `${cliente.apellido}, ${cliente.nombre}`))
     }
   }
@@ -99,18 +122,17 @@ if (usuario) {
     return opcion
   }
 
-  /* Pide los pagos al backend, filtrando por cliente cuando
-   corresponde, y vuelve a dibujar la tabla. */
+  /* Pide todos los pagos al backend y vuelve a dibujar la tabla.
+  El filtrado por cliente ahora se hace en vivo sobre este listado,
+   sin pedirle nada mas al backend (ver aplicarFiltroBusqueda). */
   async function cargarPagos(): Promise<void> {
     mensaje.textContent = 'Cargando pagos...'
 
     try {
-      const ruta = filtroCliente.value
-        ? `/api/pagos?clienteId=${encodeURIComponent(filtroCliente.value)}`
-        : '/api/pagos'
-      const datos = await solicitarAPI<{ pagos: Pago[] }>(ruta)
+      const datos = await solicitarAPI<{ pagos: Pago[] }>('/api/pagos')
       mensaje.textContent = ''
-      dibujarTabla(datos.pagos)
+      pagosCargados = datos.pagos
+      aplicarFiltroBusqueda()
     } catch (error) {
       mensaje.textContent = error instanceof Error
         ? error.message
@@ -193,7 +215,7 @@ if (usuario) {
 
   botonNuevoPago.addEventListener('click', abrirFormulario)
   botonCancelarPago.addEventListener('click', ocultarFormulario)
-  filtroCliente.addEventListener('change', cargarPagos)
+  buscarCliente.addEventListener('input', aplicarFiltroBusqueda)
 
   /* Cuando se tilda "Ya está pagado" la fecha de vencimiento pasa
    a ser opcional, igual que lo espera el backend. */

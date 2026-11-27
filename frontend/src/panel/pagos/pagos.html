@@ -23,11 +23,14 @@
 
       <p id="mensaje-pagos" class="mensaje-panel" role="status"></p>
 
-      <div class="campo-formulario campo-filtro">
-        <label for="filtroCliente">Filtrar por cliente</label>
-        <select id="filtroCliente" name="filtroCliente">
-          <option value="">Todos los clientes</option>
-        </select>
+      <div class="campo-formulario campo-busqueda">
+        <label for="buscar-pago-cliente">Buscar por cliente</label>
+        <input
+          type="search"
+          id="buscar-pago-cliente"
+          placeholder="Buscar por nombre o apellido..."
+          autocomplete="off"
+        />
       </div>
 
       <!-- Alta de un pago o una cuota pendiente. -->

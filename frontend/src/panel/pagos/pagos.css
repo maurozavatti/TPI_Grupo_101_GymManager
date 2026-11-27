@@ -7,30 +7,9 @@
   margin-bottom: var(--espacio-grande);
 }
 
-.campo-filtro {
+.campo-busqueda {
   max-width: 20rem;
   margin-bottom: var(--espacio-grande);
-}
-
-.campo-filtro select {
-  width: 100%;
-  min-width: 0;
-  padding: var(--espacio-pequeno) var(--espacio-mediano);
-  color: var(--color-texto);
-  background-color: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-pequeno);
-  transition: border-color var(--transicion-rapida);
-}
-
-.campo-filtro select:hover {
-  border-color: var(--color-principal);
-}
-
-.campo-filtro select:focus-visible {
-  outline: 2px solid var(--color-foco);
-  outline-offset: 1px;
-  border-color: var(--color-foco);
 }
 
 .formulario-pago {

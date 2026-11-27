@@ -21,6 +21,16 @@
 
       <p id="mensaje-clientes" class="mensaje-panel" role="status"></p>
 
+      <div class="campo-formulario campo-busqueda">
+        <label for="buscar-cliente">Buscar cliente</label>
+        <input
+          type="search"
+          id="buscar-cliente"
+          placeholder="Buscar por nombre o apellido..."
+          autocomplete="off"
+        />
+      </div>
+
       <form id="formulario-cliente" class="tarjeta-panel formulario-cliente" hidden>
         <h3 id="titulo-formulario-cliente">Nuevo cliente</h3>
         <input type="hidden" id="cliente-id" name="clienteId" />
