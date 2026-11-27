@@ -166,9 +166,10 @@ db.createCollection("pagos", {
       properties: {
         clienteId: { bsonType: "objectId" },
         tipo: { enum: ["INSCRIPCION", "CUOTA"] },
-        // monto se guarda como entero (pesos sin centavos), nunca Decimal128.
-        monto: { bsonType: "int" },
-        fechaPago: { bsonType: "date" },
+        // monto se guarda como Decimal128 (pesos sin centavos).
+        monto: { bsonType: "decimal" },
+        // fechaPago es null mientras la cuota esta PENDIENTE: todavia no se pago.
+        fechaPago: { bsonType: ["date", "null"] },
         fechaVencimiento: { bsonType: "date" },
         estado: { enum: ["PAGADO", "PENDIENTE", "VENCIDO"] },
         observaciones: { bsonType: "string" },

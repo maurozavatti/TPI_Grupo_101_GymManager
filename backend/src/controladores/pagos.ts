@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Db } from 'mongodb'
-import { ObjectId } from 'mongodb'
+import { Decimal128, ObjectId } from 'mongodb'
 import { conectarDB } from '../db.ts'
 import { obtenerUsuarioSesion } from './sesion.ts'
 import type { UsuarioSesion } from './sesion.ts'
-import { ErrorHTTP, responder, leerJSON, texto, identificador, entero, fechaArgentina } from '../compartidos/http.ts'
+import { ErrorHTTP, responder, leerJSON, texto, identificador, entero, fechaArgentina, numeroSeguro } from '../compartidos/http.ts'
 import { incluyeRol } from '../servicios/roles.ts'
 
 const tiposPago = ['INSCRIPCION', 'CUOTA'] as const
@@ -16,17 +16,52 @@ async function promoverVencidos(db: Db): Promise<void> {
     )
 }
 
+/* Calcula el rango [inicio, fin) de un mes en horario argentino,
+ a partir de un parametro "mes" con formato AAAA-MM. */
+function rangoMes(mes: string): { inicio: Date, fin: Date } {
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
+        throw new ErrorHTTP(400, 'El mes indicado no es válido.')
+    }
+    const [anioTexto, mesTexto] = mes.split('-')
+    const anio = Number(anioTexto)
+    const mesNumero = Number(mesTexto)
+
+    const inicio = fechaArgentina(`${mes}-01`, 'mes')
+    const siguienteAnio = mesNumero === 12 ? anio + 1 : anio
+    const siguienteMes = mesNumero === 12 ? 1 : mesNumero + 1
+    const fin = fechaArgentina(`${siguienteAnio}-${String(siguienteMes).padStart(2, '0')}-01`, 'mes')
+
+    return { inicio, fin }
+}
+
+/* Mes actual en horario argentino, usado cuando no se indica
+ ninguno (la pantalla arranca mostrando el mes en curso). */
+function mesActualArgentina(): string {
+    return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).slice(0, 7)
+}
+
 async function listarPagos(db: Db, datos: URLSearchParams, respuesta: ServerResponse): Promise<void> {
     await promoverVencidos(db)
     const clienteId = datos.get('clienteId')
-    const filtro = clienteId ? { clienteId: identificador(clienteId) } : {}
+    const { inicio, fin } = rangoMes(datos.get('mes') ?? mesActualArgentina())
+
+    /* Un pago "pertenece" al mes elegido si se pago en ese mes o si
+     su cuota vence en ese mes (lo que corresponda segun su estado). */
+    const filtro: Record<string, unknown> = {
+        $or: [
+            { fechaPago: { $gte: inicio, $lt: fin } },
+            { fechaVencimiento: { $gte: inicio, $lt: fin } },
+        ],
+    }
+    if (clienteId) filtro.clienteId = identificador(clienteId)
+
     const pagos = await db.collection('pagos').find(filtro).sort({ fechaVencimiento: -1, fechaPago: -1 }).toArray()
     responder(respuesta, 200, {
         pagos: pagos.map(pago => ({
             id: pago._id.toHexString(),
             clienteId: pago.clienteId.toHexString(),
             tipo: pago.tipo,
-            monto: pago.monto,
+            monto: numeroSeguro(pago.monto),
             fechaPago: pago.fechaPago ?? null,
             fechaVencimiento: pago.fechaVencimiento ?? null,
             estado: pago.estado,
@@ -41,6 +76,7 @@ async function registrarPago(db: Db, datos: Record<string, unknown>, personal: U
     if (!tiposPago.includes(tipo as typeof tiposPago[number]))
         throw new ErrorHTTP(400, 'Seleccioná un tipo de pago válido.', ['tipo'])
     const monto = entero(datos.monto, 'monto', 1, 100_000_000)
+    const montoDecimal = Decimal128.fromString(String(monto))
     const observaciones = texto(datos, 'observaciones', 500)
     const vencimientoTexto = texto(datos, 'fechaVencimiento', 10)
     const fechaVencimiento = vencimientoTexto ? fechaArgentina(vencimientoTexto, 'fechaVencimiento', true) : undefined
@@ -54,7 +90,8 @@ async function registrarPago(db: Db, datos: Record<string, unknown>, personal: U
 
     if (pagado) {
         await db.collection('pagos').insertOne({
-            clienteId, tipo, monto, observaciones, usuarioRegistroId,
+            clienteId, tipo, observaciones, usuarioRegistroId,
+            monto: montoDecimal,
             fechaPago: new Date(),
             estado: 'PAGADO',
             ...(fechaVencimiento ? { fechaVencimiento } : {}),
@@ -65,7 +102,8 @@ async function registrarPago(db: Db, datos: Record<string, unknown>, personal: U
 
     if (!fechaVencimiento) throw new ErrorHTTP(400, 'Indicá la fecha de vencimiento de la cuota.', ['fechaVencimiento'])
     await db.collection('pagos').insertOne({
-        clienteId, tipo, monto, observaciones, fechaVencimiento, usuarioRegistroId,
+        clienteId, tipo, observaciones, fechaVencimiento, usuarioRegistroId,
+        monto: montoDecimal,
         fechaPago: null,
         estado: 'PENDIENTE',
     })
@@ -117,6 +155,10 @@ export function crearGestorPagos(dependencias = {
             if (error instanceof ErrorHTTP) {
                 responder(respuesta, error.estado, { mensaje: error.message, campos: error.campos })
                 return
+            }
+            console.error('Error inesperado en /api/pagos:', error)
+            if (error && typeof error === 'object' && 'errInfo' in error) {
+                console.error('Detalle de la validación de Mongo:', JSON.stringify((error as { errInfo?: unknown }).errInfo, null, 2))
             }
             responder(respuesta, 500, { mensaje: 'No pudimos completar la operación. Intentá nuevamente.' })
         }

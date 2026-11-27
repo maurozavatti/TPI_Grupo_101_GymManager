@@ -54,8 +54,50 @@ if (usuario) {
   const cuerpoTabla = elemento<HTMLTableSectionElement>('#cuerpo-tabla-pagos')
   const buscarCliente = elemento<HTMLInputElement>('#buscar-pago-cliente')
   const botonNuevoPago = elemento<HTMLButtonElement>('#boton-nuevo-pago')
+  const botonMesAnterior = elemento<HTMLButtonElement>('#mes-anterior')
+  const botonMesSiguiente = elemento<HTMLButtonElement>('#mes-siguiente')
+  const textoMesActual = elemento<HTMLSpanElement>('#mes-actual-texto')
+  const grillaCalendario = elemento<HTMLDivElement>('#calendario-grilla')
+  const botonVerTodoMes = elemento<HTMLButtonElement>('#boton-ver-todo-mes')
 
+  /* Guardamos el ultimo listado pedido al backend para poder filtrarlo
+   en vivo por nombre, sin pedirlo de nuevo en cada tecla. */
   let pagosCargados: Pago[] = []
+
+  /* El mes que se esta mirando (1 = enero). Arranca en el mes actual
+   y se mueve con los botones < y >, sin salir de esta pantalla. */
+  const hoy = new Date()
+  let anioActual = hoy.getFullYear()
+  let mesActual = hoy.getMonth() + 1
+
+  /* Dia puntual elegido en el calendario (1-31), dentro del mes que se
+   esta mirando. null = no hay ningun dia elegido, se ve el mes entero. */
+  let diaSeleccionado: number | null = null
+
+  function formatoMes(anio: number, mes: number): string {
+    return `${anio}-${String(mes).padStart(2, '0')}`
+  }
+
+  function actualizarTextoMes(): void {
+    const texto = new Date(anioActual, mesActual - 1, 1)
+      .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+    textoMesActual.textContent = texto.charAt(0).toUpperCase() + texto.slice(1)
+  }
+
+  function cambiarMes(delta: number): void {
+    mesActual += delta
+    if (mesActual < 1) {
+      mesActual = 12
+      anioActual -= 1
+    } else if (mesActual > 12) {
+      mesActual = 1
+      anioActual += 1
+    }
+    diaSeleccionado = null
+    botonVerTodoMes.hidden = true
+    actualizarTextoMes()
+    void cargarPagos()
+  }
 
   function normalizarTexto(texto: string): string {
     return texto
@@ -64,20 +106,77 @@ if (usuario) {
       .replace(/[\u0300-\u036f]/g, '')
   }
 
-  function aplicarFiltroBusqueda(): void {
-    const busqueda = normalizarTexto(buscarCliente.value.trim())
+  /* Fecha de un pago (fechaPago o fechaVencimiento) en formato
+   AAAA-MM-DD y horario argentino, para compararla con un dia del
+   calendario. null si el pago no tiene esa fecha. */
+  function fechaArgentinaISO(valor: string | null): string | null {
+    if (!valor) return null
+    return new Date(valor).toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' })
+  }
 
-    if (!busqueda) {
-      dibujarTabla(pagosCargados)
-      return
-    }
+  function pagoPerteneceAlDia(pago: Pago, diaISO: string): boolean {
+    return fechaArgentinaISO(pago.fechaPago) === diaISO || fechaArgentinaISO(pago.fechaVencimiento) === diaISO
+  }
+
+  /* Combina el filtro de texto (cliente) con el dia elegido en el
+   calendario, si hay uno, y vuelve a dibujar la tabla. */
+  function aplicarFiltros(): void {
+    const busqueda = normalizarTexto(buscarCliente.value.trim())
+    const diaISO = diaSeleccionado !== null ? `${formatoMes(anioActual, mesActual)}-${String(diaSeleccionado).padStart(2, '0')}` : null
 
     const filtrados = pagosCargados.filter((pago) => {
+      if (diaISO && !pagoPerteneceAlDia(pago, diaISO)) return false
+      if (!busqueda) return true
       const nombre = nombresClientes.get(pago.clienteId) ?? ''
       return normalizarTexto(nombre).includes(busqueda)
     })
 
     dibujarTabla(filtrados)
+  }
+
+  /* Dibuja la grilla de dias del mes elegido. Cada dia con algun pago
+   o vencimiento queda marcado con un punto; al hacer click se filtra
+   la tabla a ese dia (ver aplicarFiltros). */
+  function dibujarCalendario(): void {
+    grillaCalendario.replaceChildren()
+
+    const diasEnElMes = new Date(anioActual, mesActual, 0).getDate()
+    /* getDay() da 0 = domingo. Acomodamos para que la semana arranque
+     en lunes, como se la muestra en el encabezado L M M J V S D. */
+    const primerDiaSemana = (new Date(anioActual, mesActual - 1, 1).getDay() + 6) % 7
+
+    for (let i = 0; i < primerDiaSemana; i++) {
+      grillaCalendario.append(document.createElement('span'))
+    }
+
+    for (let dia = 1; dia <= diasEnElMes; dia++) {
+      const diaISO = `${formatoMes(anioActual, mesActual)}-${String(dia).padStart(2, '0')}`
+      const tieneActividad = pagosCargados.some(pago => pagoPerteneceAlDia(pago, diaISO))
+
+      const boton = document.createElement('button')
+      boton.type = 'button'
+      boton.className = 'dia-calendario'
+      boton.textContent = String(dia)
+      boton.setAttribute('aria-pressed', String(diaSeleccionado === dia))
+      if (tieneActividad) boton.classList.add('dia-con-pago')
+      if (diaSeleccionado === dia) boton.classList.add('dia-seleccionado')
+      boton.addEventListener('click', () => seleccionarDia(dia))
+      grillaCalendario.append(boton)
+    }
+  }
+
+  function seleccionarDia(dia: number): void {
+    diaSeleccionado = diaSeleccionado === dia ? null : dia
+    botonVerTodoMes.hidden = diaSeleccionado === null
+    dibujarCalendario()
+    aplicarFiltros()
+  }
+
+  function verTodoElMes(): void {
+    diaSeleccionado = null
+    botonVerTodoMes.hidden = true
+    dibujarCalendario()
+    aplicarFiltros()
   }
 
   const formularioPago = elemento<HTMLFormElement>('#formulario-pago')
@@ -122,17 +221,20 @@ if (usuario) {
     return opcion
   }
 
-  /* Pide todos los pagos al backend y vuelve a dibujar la tabla.
-  El filtrado por cliente ahora se hace en vivo sobre este listado,
-   sin pedirle nada mas al backend (ver aplicarFiltroBusqueda). */
+  /* Pide al backend los pagos del mes elegido y vuelve a dibujar el
+   calendario y la tabla. El filtrado por cliente y por dia se hace en
+   vivo sobre ese listado, sin pedirle nada mas al backend (ver
+   aplicarFiltros). */
   async function cargarPagos(): Promise<void> {
     mensaje.textContent = 'Cargando pagos...'
 
     try {
-      const datos = await solicitarAPI<{ pagos: Pago[] }>('/api/pagos')
+      const mes = formatoMes(anioActual, mesActual)
+      const datos = await solicitarAPI<{ pagos: Pago[] }>(`/api/pagos?mes=${mes}`)
       mensaje.textContent = ''
       pagosCargados = datos.pagos
-      aplicarFiltroBusqueda()
+      dibujarCalendario()
+      aplicarFiltros()
     } catch (error) {
       mensaje.textContent = error instanceof Error
         ? error.message
@@ -215,7 +317,10 @@ if (usuario) {
 
   botonNuevoPago.addEventListener('click', abrirFormulario)
   botonCancelarPago.addEventListener('click', ocultarFormulario)
-  buscarCliente.addEventListener('input', aplicarFiltroBusqueda)
+  buscarCliente.addEventListener('input', aplicarFiltros)
+  botonMesAnterior.addEventListener('click', () => cambiarMes(-1))
+  botonMesSiguiente.addEventListener('click', () => cambiarMes(1))
+  botonVerTodoMes.addEventListener('click', verTodoElMes)
 
   /* Cuando se tilda "Ya está pagado" la fecha de vencimiento pasa
    a ser opcional, igual que lo espera el backend. */
@@ -263,6 +368,7 @@ if (usuario) {
     }
   })
 
+  actualizarTextoMes()
   await cargarClientes()
   await cargarPagos()
 }

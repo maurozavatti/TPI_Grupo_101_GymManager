@@ -23,6 +23,29 @@
 
       <p id="mensaje-pagos" class="mensaje-panel" role="status"></p>
 
+      <div class="selector-mes">
+        <button type="button" id="mes-anterior" class="boton-fila" aria-label="Mes anterior">
+          &lt;
+        </button>
+        <span id="mes-actual-texto" class="mes-actual-texto" role="status"></span>
+        <button type="button" id="mes-siguiente" class="boton-fila" aria-label="Mes siguiente">
+          &gt;
+        </button>
+      </div>
+
+      <!-- Calendario del mes elegido: marca los dias con pagos o
+       vencimientos y permite filtrar la tabla a un dia puntual. -->
+      <div class="calendario-mes">
+        <div class="calendario-encabezado-dias" aria-hidden="true">
+          <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+        <div id="calendario-grilla" class="calendario-grilla" role="group" aria-label="Días del mes"></div>
+      </div>
+
+      <button type="button" id="boton-ver-todo-mes" class="boton-secundario" hidden>
+        Ver todo el mes
+      </button>
+
       <div class="campo-formulario campo-busqueda">
         <label for="buscar-pago-cliente">Buscar por cliente</label>
         <input

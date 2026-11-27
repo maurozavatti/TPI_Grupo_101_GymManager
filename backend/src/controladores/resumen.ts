@@ -3,7 +3,7 @@ import type { Db } from 'mongodb'
 import { conectarDB } from '../db.ts'
 import { obtenerUsuarioSesion } from './sesion.ts'
 import type { UsuarioSesion } from './sesion.ts'
-import { ErrorHTTP, responder } from '../compartidos/http.ts'
+import { ErrorHTTP, responder, numeroSeguro } from '../compartidos/http.ts'
 import { diasSemana } from '../compartidos/reglas.ts'
 import type { Turno } from '../compartidos/modelos.ts'
 import { incluyeRol } from '../servicios/roles.ts'
@@ -76,7 +76,7 @@ async function resumenAdministrativo(db: Db) {
     const pagosDelMes = await db.collection('pagos')
         .find({ estado: 'PAGADO', fechaPago: { $gte: inicioDeMes } })
         .toArray()
-    const ingresosMes = pagosDelMes.reduce((total, pago) => total + pago.monto, 0)
+    const ingresosMes = pagosDelMes.reduce((total, pago) => total + numeroSeguro(pago.monto), 0)
 
     const cuotasVencidas = await db.collection('pagos').countDocuments({
         $or: [
