@@ -101,9 +101,8 @@
   outline-offset: 2px;
 }
 
-/* La tabla se desplaza dentro del cuadro; el encabezado queda fijo
- arriba, igual que en Cuentas y en Mi perfil. */
 .tabla-contenedor {
+  padding: 0;
   max-height: 60vh;
   max-height: 60dvh;
   overflow: auto;
@@ -250,6 +249,7 @@
  Así no queda nada cortado ni apretado en celulares. */
 @media (max-width: 720px) {
   .tabla-contenedor {
+    padding: var(--espacio-grande);
     max-height: none;
     overflow: visible;
   }

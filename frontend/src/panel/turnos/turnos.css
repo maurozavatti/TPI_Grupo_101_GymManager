@@ -187,6 +187,7 @@
 }
 
 .tabla-contenedor {
+  padding: 0;
   max-height: 60vh;
   max-height: 60dvh;
   overflow: auto;
@@ -331,6 +332,7 @@
   }
 
   .tabla-contenedor {
+    padding: var(--espacio-grande);
     max-height: none;
     overflow: visible;
   }

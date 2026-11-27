@@ -59,6 +59,7 @@
 }
 
 .tabla-contenedor {
+  padding: 0;
   max-height: 50vh;
   max-height: 50dvh;
   overflow: auto;
