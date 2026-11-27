@@ -7,6 +7,90 @@
   margin-bottom: var(--espacio-grande);
 }
 
+.selector-mes {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-mediano);
+  margin-bottom: var(--espacio-mediano);
+}
+
+.mes-actual-texto {
+  min-width: 10rem;
+  font-weight: var(--peso-medio);
+  text-align: center;
+}
+
+.calendario-mes {
+  max-width: 24rem;
+  margin-bottom: var(--espacio-mediano);
+}
+
+.calendario-encabezado-dias,
+.calendario-grilla {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.calendario-encabezado-dias {
+  margin-bottom: 0.35rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dia-calendario {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font-size: var(--texto-pequeno);
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.dia-calendario:hover {
+  border-color: var(--color-principal);
+}
+
+.dia-calendario:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 1px;
+}
+
+/* Punto debajo del numero para los dias con pago o vencimiento. */
+.dia-calendario.dia-con-pago::after {
+  content: "";
+  position: absolute;
+  bottom: 0.2rem;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: var(--color-principal);
+}
+
+.dia-calendario.dia-seleccionado {
+  color: var(--color-superficie);
+  background: var(--color-principal);
+  border-color: var(--color-principal);
+}
+
+.dia-calendario.dia-seleccionado.dia-con-pago::after {
+  background: var(--color-superficie);
+}
+
 .campo-busqueda {
   max-width: 20rem;
   margin-bottom: var(--espacio-grande);

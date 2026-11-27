@@ -82,6 +82,34 @@ export function entero(valor: unknown, campo: string, minimo: number, maximo: nu
   return valor
 }
 
+export function numeroSeguro(valor: unknown): number {
+  if (typeof valor === 'number' && Number.isFinite(valor)) return valor
+
+  if (typeof valor === 'string') {
+    const desdeTexto = Number(valor)
+    return Number.isFinite(desdeTexto) ? desdeTexto : 0
+  }
+
+  if (valor && typeof valor === 'object') {
+    const envoltorio = valor as Record<string, unknown>
+
+    if (envoltorio._bsontype === 'Decimal128' && typeof envoltorio.toString === 'function') {
+      const desdeDecimal = Number(envoltorio.toString())
+      if (Number.isFinite(desdeDecimal)) return desdeDecimal
+    }
+
+    const interno = envoltorio.$numberInt ?? envoltorio.$numberDouble
+      ?? envoltorio.$numberLong ?? envoltorio.$numberDecimal
+
+    if (typeof interno === 'string' || typeof interno === 'number') {
+      const desdeInterno = Number(interno)
+      if (Number.isFinite(desdeInterno)) return desdeInterno
+    }
+  }
+
+  return 0
+}
+
 export function fechaArgentina(valor: unknown, campo: string, finDelDia = false): Date {
   if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
     throw new ErrorHTTP(400, 'Ingresá una fecha válida.', [campo])
