@@ -55,6 +55,7 @@ if (usuario) {
   }
 
   const selectorCliente = elemento<HTMLSelectElement>('#selector-cliente')
+  const buscarClienteRutina = elemento<HTMLInputElement>('#buscar-cliente-rutina')
   const mensajeGeneral = elemento<HTMLParagraphElement>('#mensaje-rutinas')
   const datosCliente = elemento<HTMLElement>('#datos-cliente')
   const nombreCliente = elemento<HTMLElement>('#nombre-cliente')
@@ -116,6 +117,25 @@ if (usuario) {
     return clientes.find(cliente => cliente.id === id) ?? null
   }
 
+  function normalizarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+  }
+
+  /* El select arranca sin mostrar a ningun cliente (solo el placeholder):
+   recien aparecen opciones a medida que se escribe en el buscador, para
+   no tener un listado completo "de una" y otro que filtra al mismo tiempo. */
+  function aplicarFiltroClienteRutina(): void {
+    const busqueda = normalizarTexto(buscarClienteRutina.value.trim())
+
+    for (const opcion of selectorCliente.options) {
+      if (!opcion.value) continue
+      opcion.hidden = busqueda.length === 0 || !normalizarTexto(opcion.textContent ?? '').includes(busqueda)
+    }
+  }
+
   function mostrarDatosCliente(cliente: Cliente): void {
     datosCliente.hidden = false
     nombreCliente.textContent = `${cliente.nombre} ${cliente.apellido}`
@@ -142,12 +162,13 @@ if (usuario) {
       catalogo = datosEjercicios.ejercicios.filter(ejercicio => ejercicio.activo)
 
       selectorCliente.replaceChildren(
-        new Option('Seleccioná un cliente...', ''),
+        new Option('Escribí arriba para buscar un cliente...', ''),
         ...clientes.map(cliente => new Option(
           `${cliente.apellido}, ${cliente.nombre}`,
           cliente.id,
         )),
       )
+      aplicarFiltroClienteRutina()
 
       mostrarMensaje(
         `${clientes.length} clientes activos y ${catalogo.length} ejercicios disponibles.`,
@@ -625,6 +646,8 @@ if (usuario) {
       botonCancelar.disabled = false
     }
   })
+
+  buscarClienteRutina.addEventListener('input', aplicarFiltroClienteRutina)
 
   selectorCliente.addEventListener('change', async () => {
     const cliente = obtenerCliente(selectorCliente.value)

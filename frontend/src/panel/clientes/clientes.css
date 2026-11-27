@@ -7,6 +7,11 @@
   margin-bottom: var(--espacio-grande);
 }
 
+.campo-busqueda {
+  max-width: 24rem;
+  margin-bottom: var(--espacio-grande);
+}
+
 .formulario-cliente {
   display: grid;
   gap: var(--espacio-mediano);

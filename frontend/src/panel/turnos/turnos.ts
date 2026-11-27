@@ -108,6 +108,7 @@ if (usuario) {
   const formularioAsignar = elemento<HTMLFormElement>('#formulario-asignar')
   const mensajeFormularioAsignar = elemento<HTMLParagraphElement>('#mensaje-formulario-asignar')
   const campoAsignarTurnoId = elemento<HTMLInputElement>('#asignarTurnoId')
+  const buscarClienteAsignar = elemento<HTMLInputElement>('#buscar-cliente-asignar')
   const selectClienteAsignar = elemento<HTMLSelectElement>('#clienteAsignar')
   const botonAsignarCliente = elemento<HTMLButtonElement>('#boton-asignar-cliente')
   const botonRetirarCliente = elemento<HTMLButtonElement>('#boton-retirar-cliente')
@@ -314,6 +315,23 @@ if (usuario) {
     }
   }
 
+  function normalizarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+  }
+
+  /* Oculta del select las opciones que no coinciden con la busqueda,
+   sin volver a pedir el listado al backend en cada tecla. */
+  function aplicarFiltroClienteAsignar(): void {
+    const busqueda = normalizarTexto(buscarClienteAsignar.value.trim())
+
+    for (const opcion of selectClienteAsignar.options) {
+      opcion.hidden = busqueda.length > 0 && !normalizarTexto(opcion.textContent ?? '').includes(busqueda)
+    }
+  }
+
   /* Trae el listado de clientes activos para el select de asignacion.
    Se reutiliza el mismo endpoint que usa la pantalla de Clientes. */
   async function cargarClientesParaAsignar(): Promise<void> {
@@ -337,6 +355,7 @@ if (usuario) {
   async function abrirAsignacion(turnoId: string): Promise<void> {
     ocultarFormularios()
     campoAsignarTurnoId.value = turnoId
+    buscarClienteAsignar.value = ''
     formularioAsignar.hidden = false
     await cargarClientesParaAsignar()
   }
@@ -540,6 +559,7 @@ if (usuario) {
   botonGenerarAgenda.addEventListener('click', abrirGenerarAgenda)
   botonCancelarGenerar.addEventListener('click', ocultarFormularios)
   botonCancelarAsignar.addEventListener('click', ocultarFormularios)
+  buscarClienteAsignar.addEventListener('input', aplicarFiltroClienteAsignar)
   botonAgregarFranja.addEventListener('click', () => agregarFilaFranja())
   botonAgregarTrabajo.addEventListener('click', () => agregarFilaTrabajo())
   botonAsignarCliente.addEventListener('click', () => asignarORetirar(true))

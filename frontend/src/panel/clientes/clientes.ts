@@ -24,6 +24,32 @@ if (usuario) {
   const mensajeGeneral = document.querySelector<HTMLElement>('#mensaje-clientes')!
   const botonNuevo = document.querySelector<HTMLButtonElement>('#boton-nuevo-cliente')!
   const cuerpoTabla = document.querySelector<HTMLTableSectionElement>('#cuerpo-tabla-clientes')!
+  const campoBuscar = document.querySelector<HTMLInputElement>('#buscar-cliente')!
+
+  let clientesCargados: Cliente[] = []
+
+  function normalizarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+  }
+
+  function aplicarFiltro(): void {
+    const busqueda = normalizarTexto(campoBuscar.value.trim())
+
+    if (!busqueda) {
+      dibujarTabla(clientesCargados)
+      return
+    }
+
+    const filtrados = clientesCargados.filter((cliente) => {
+      const nombreCompleto = normalizarTexto(`${cliente.nombre} ${cliente.apellido}`)
+      return nombreCompleto.includes(busqueda)
+    })
+
+    dibujarTabla(filtrados)
+  }
 
   const formularioCliente = document.querySelector<HTMLFormElement>('#formulario-cliente')!
   const tituloFormulario = document.querySelector<HTMLElement>('#titulo-formulario-cliente')!
@@ -56,7 +82,8 @@ if (usuario) {
     try {
       const datos = await solicitarAPI<{ clientes: Cliente[] }>('/api/clientes')
       mensajeGeneral.textContent = ''
-      dibujarTabla(datos.clientes)
+      clientesCargados = datos.clientes
+      aplicarFiltro()
     } catch (error) {
       mensajeGeneral.classList.add('mensaje-error')
       mensajeGeneral.textContent = error instanceof Error
@@ -193,6 +220,7 @@ if (usuario) {
     }
   }
 
+  campoBuscar.addEventListener('input', aplicarFiltro)
   botonNuevo.addEventListener('click', abrirAlta)
   botonCancelarCliente.addEventListener('click', ocultarFormularios)
   botonCancelarVincular.addEventListener('click', ocultarFormularios)
